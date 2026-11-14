@@ -71,12 +71,13 @@ Caddy serves the frontend, proxies `/api` to FastAPI, and gets HTTPS certificate
 Unverified items are not scored; they are flagged "needs manual check". Weights: `backend/app/config.py`.
 
 ## Team workflow
-- `main` stays deployable. Work on branches: `feature/backend-pipeline`, `feature/frontend-ui`, then open PRs.
+- `main` holds the final, stable output. Work on `feature/*` branches, merge them into `develop` to test everything together, and merge `develop` into `main` only when it works.
 - If you change the API shape, update `backend/app/models.py`, `frontend/src/types.ts` and `docs/api.md` together.
 - UI changes follow [DESIGN.md](DESIGN.md): use the tokens and `frontend/src/components/ui/` components.
 - Never commit `.env` or the private faculty syllabi (put them in `private/`, which is git-ignored).
 
 ## Documentation
+- [docs/design-brief.md](docs/design-brief.md): full design reasoning and decisions (diagram: [docs/architecture.png](docs/architecture.png))
 - [DESIGN.md](DESIGN.md): design system (colours, type, components, microcopy, accessibility)
 - [docs/use-cases.md](docs/use-cases.md): personas, user stories, main use case
 - [docs/architecture.md](docs/architecture.md): system, pipeline, sequence and deployment diagrams
