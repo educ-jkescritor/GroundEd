@@ -39,7 +39,12 @@ def _samples() -> list[Sample]:
 
 @app.get("/api/health")
 def health() -> dict:
-    return {"status": "ok", "gemini_configured": bool(config.GEMINI_API_KEY)}
+    """Liveness + which knowledge versions this server runs (useful right after a deployment)."""
+    from . import library, registry, signals
+    from .pipeline import PIPELINE_VERSION
+    return {"status": "ok", "gemini_configured": bool(config.GEMINI_API_KEY),
+            "versions": {"pipeline": PIPELINE_VERSION, "registry": registry.get().version,
+                         "library": library.version(), "rules": signals.rules_version()}}
 
 
 @app.get("/api/samples", response_model=list[Sample])
