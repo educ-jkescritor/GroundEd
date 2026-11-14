@@ -28,10 +28,10 @@ Interactive docs: run the backend and open http://localhost:8000/docs
   "score": {
     "total": 82, "max": 100, "priority": "high",
     "breakdown": [
-      { "key": "lifecycle", "label": "Lifecycle", "points": 40, "max": 40, "reason": "Support ended on 1 Jan 2020" },
-      { "key": "frequency", "label": "Frequency", "points": 12, "max": 30, "reason": "Appears on 2 pages (6 points each)" },
-      { "key": "labs", "label": "Labs", "points": 20, "max": 20, "reason": "Used in lab exercises (page 2)" },
-      { "key": "activities", "label": "Learning activities", "points": 10, "max": 10, "reason": "Used in Assignment 3 (page 5)" }
+      { "key": "lifecycle", "label": "Lifecycle", "points": 40, "max": 40, "reason": "…" },
+      { "key": "teaching", "label": "How it is taught", "points": 30, "max": 30, "reason": "…" },
+      { "key": "frequency", "label": "Frequency", "points": 8, "max": 20, "reason": "…" },
+      { "key": "hands_on", "label": "Hands-on", "points": 10, "max": 10, "reason": "…" }
     ]
   },
   "upgrade": { "target_cycle": "3.x (latest)", "source_url": "https://endoflife.date/python" }
@@ -57,17 +57,20 @@ Scoring rules: [docs/design-brief.md section 5.2](design-brief.md). The backend 
 ```
 `would_use` is `yes | maybe | no` (optional). `consent_to_quote` defaults to `false`; only quote comments where it is `true`.
 
-## Additions for the side-by-side Report (14 Nov 2026, all optional)
-The frontend works without these, but shows more when the backend sends them. Backend owner: please confirm or adjust.
+## Optional fields (all additive; the frontend works without them)
+Sent by the pipeline since 0.5.0 unless marked *not sent yet*.
 
 | Field | Where | Values | Used for |
 |---|---|---|---|
-| `status: "less_used"` | `Finding` | new status: still supported, declining in industry | "Less used in industry" badge (never "end-of-life") |
-| `kind` | `Finding` | `tool` · `language` · `framework` · `practice` · `topic` | Label before the name; filters |
-| `usage` | `Finding` | `lab` · `activity` · `mentioned` | "Taught in labs · pages 4, 6" |
-| `pages` | `Analysis` | `[{ "number": 1, "text": "…" }]` | The module column with highlights. Each citation `snippet` must appear verbatim in its page's `text`. |
-| `summary.less_used` | `Analysis.summary` | count | Header counts |
-| `coverage` | `Analysis` | `covered` (default) · `not_covered` | "Not covered yet" page for modules outside technology courses (e.g. GED); return no findings |
+| `kind` | `Finding` | `tool` · `language` · `framework` · `practice` · `topic` | Label before the name |
+| `usage` | `Finding` | `code` · `explained` · `listed` (from `signals.teaching_depth`) | "Used in code students write · pages 4, 6" |
+| `hands_on` | `Finding` | bool | "on a lab or exercise page" |
+| `pages` | `Analysis` | `[{ "number": 1, "text": "…" }]` (cleaned page text) | The module column with highlights. Snippets are matched ignoring whitespace and quote style. |
+| `lifecycle.source_name`, `lifecycle.source_quote` | `Finding` | publisher and the exact proving sentence | Source quote and link |
+| `passages` | `Finding` | source-library passages (`fact` / `replacement`) | "From the source library" on finding detail |
+| `provenance` | `Analysis` | versions, file hash, analysis date | "As of" date and "How this report was made" |
+| `status: "less_used"`, `summary.less_used` | `Finding` | still supported, declining in industry | *Not sent yet* (needs trend data); badge exists |
+| `coverage` | `Analysis` | `covered` (default) · `not_covered` | *Not sent yet*; "Not covered yet" page for non-tech modules (e.g. GED) |
 
 Errors the frontend recognises on `POST /api/analyze`: `415` not a PDF · `413` too large · `422` with a message containing "scanned" · `429`/`503` service busy. Unknown `sample_id` returns `404`.
 

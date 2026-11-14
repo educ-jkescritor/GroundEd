@@ -120,15 +120,15 @@ export default function Landing() {
               <QuoteBlock size="sm" tone="source" caption="endoflife.date · Support data">Bootstrap 3 · end of support 24 Jul 2019</QuoteBlock>
             </div>
           </Panel>
-          <Panel label="Priority" title="Know why it ranks high">
+          <Panel label="Priority" title="Know why it ranks where it does">
             <div className="space-y-3 rounded-[var(--radius-card)] bg-surface p-5 text-sm">
               {[
                 ["Lifecycle", 40, 40],
-                ["Frequency", 12, 30],
-                ["Labs", 20, 20],
-                ["Activities", 10, 10],
+                ["How it's taught", 30, 30],
+                ["Frequency", 8, 20],
+                ["Hands-on", 0, 10],
               ].map(([label, pts, max]) => (
-                <div key={label as string} className="grid grid-cols-[6.5rem_1fr_3rem] items-center gap-3">
+                <div key={label as string} className="grid grid-cols-[8rem_1fr_3rem] items-center gap-3">
                   <span className="font-medium">{label}</span>
                   <span className="h-2 overflow-hidden rounded-full bg-line" aria-hidden>
                     <span className="block h-full rounded-full bg-ink" style={{ width: `${((pts as number) / (max as number)) * 100}%` }} />
@@ -136,7 +136,7 @@ export default function Landing() {
                   <span className="text-right font-mono text-ink-subtle tabular-nums">{pts}/{max}</span>
                 </div>
               ))}
-              <p className="pt-1 text-ink-muted"><PriorityBadge priority="high" /> <span className="ml-1 font-mono">82/100</span></p>
+              <p className="pt-1 text-ink-muted"><PriorityBadge priority="medium" /> <span className="ml-1 font-mono">78/100</span></p>
             </div>
           </Panel>
           <Panel label="Your call" title="You decide what changes">

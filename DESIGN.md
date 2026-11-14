@@ -8,9 +8,9 @@ Tokens live in `frontend/src/index.css` (`@theme`). Reusable components live in 
 > information architecture, journey map and key flows.
 > **Decisions:**
 > - Palette **A · Lapis & Clay** on a **white canvas with soft grey panels (24 px corners)**.
-> - **Bold sans headings**; serif only for quoted evidence.
+> - **Headings in Instrument Serif** (slightly bolder via a thin text stroke); Inter for everything else; Source Serif 4 italic only for quoted evidence.
 > - **Horizon** logo; **Sprout** as the only "ground" illustration motif.
-> - **16 px** base text, **comfortable** density, **light theme only**.
+> - **17 px** base text, **comfortable** density, **light theme only**.
 > - Landing patterns inspired by letters.app (principles only, nothing copied): before → after hero on a horizon band, live mini-UI panels, demo video with tabs, pill header, 3-step cards.
 > - Laptop-first, English UI.
 > - Technology courses only.
@@ -109,8 +109,8 @@ All text pairs below are checked against WCAG 2.2 AA (≥ 4.5:1 for text; ≥ 3:
 | `ink` | `#17213A` | Primary text, headings, "High" priority | 16.0 on canvas · 14.7 on panel |
 | `ink-muted` | `#4F5A6E` | Secondary text | 7.0 on canvas · 6.4 on panel |
 | `ink-subtle` | `#5F687B` | Captions, metadata | 5.6 on canvas · 5.1 on panel · **not on `sky`** (4.45) |
-| `lapis` | `#2B55A6` | **Brand**: primary buttons, links, focus ring, logo "Ed" | 7.1 on white · white on lapis 7.1 |
-| `lapis-deep` | `#1F4380` | Hover/pressed lapis; text on `sky` | 7.7 on sky |
+| `lapis` | `#3A6FD0` | **Brand fills**: primary buttons, focus ring, badges, logo "Ed" | white on lapis 4.8 |
+| `lapis-deep` | `#2B55A6` | **Blue text and links**, button hover (the lighter `lapis` is too light for small text on panels) | 7.1 on white · 6.5 on panel · 5.7 on sky |
 | `sky` | `#DCE6F6` | Light brand wash: horizon band, selected tabs, info notices, logo sky | — |
 | `clay` | `#B9784A` | **Decoration only**: logo ground, groundline accents, quote rules | 3.6 on white (graphics only) |
 | `clay-deep` | `#8A5530` | Clay used as text (rare) | 6.1 on white |
@@ -141,18 +141,21 @@ Thresholds come from the backend (`score.priority`: High ≥ 80, Medium ≥ 50, 
 
 | Role | Font | Size / line-height | Weight · tracking | Use |
 |---|---|---|---|---|
-| Display | Inter | 64 / 1.05 (40 on phones) | 700 · −0.035em | Landing hero headline only |
-| Section display | Inter | 44 / 1.1 (32 on phones) | 700 · −0.03em | Landing section titles |
-| H1 | Inter | 32 / 1.15 | 700 · −0.02em | App page titles |
-| H2 | Inter | 24 / 1.25 | 650 · −0.015em | Section titles in the app |
-| H3 | Inter | 18 / 1.4 | 600 | Card and finding titles |
-| Body | Inter | **16 / 1.6** | 400 | All running text |
+| Display | Instrument Serif | 76 / 1.02 (46 on phones) | 400 + 0.022em stroke | Landing hero headline only |
+| Section display | Instrument Serif | 52 / 1.05 (36 on phones) | 400 + stroke | Landing section titles |
+| H1 | Instrument Serif | 32 / 1.15 | 400 + stroke | App page titles |
+| H2 | Instrument Serif | 24 / 1.25 | 400 + stroke | Section titles in the app |
+| H3 | Instrument Serif | 18 / 1.4 | 400 + stroke | Card and finding titles |
+| Body | Inter | **17 / 1.6** (html font-size 17 px) | 400 | All running text |
 | Small | Inter | 14 / 1.5 | 400 | Metadata, helper text |
 | Label | Inter | 12 / 1.2, +0.06em, uppercase | 600 | Section labels ("IN YOUR MODULE") |
 | Quote | Source Serif 4 italic | 16 / 1.55 | 400 | **Only** text quoted from a module or source |
 | Data | JetBrains Mono, tabular | 14 / 1.2 | 500 | Scores, versions, dates in tables |
 
-- **Bold sans for every heading** (confident and modern). **Serif means "quoted from a module or source", nothing else**, so evidence stands out instantly. Mono is numbers.
+- **Headings: Instrument Serif** for an academic feel. It has a single weight, so `h1`–`h3` get
+  `-webkit-text-stroke: 0.022em currentColor` to look slightly bolder (never browser fake-bold). No negative tracking.
+- **Quoted evidence: Source Serif 4 italic** with a coloured left rule (clay = module, lapis = source), so quotes stay
+  distinct from headings. Mono is numbers. Interface text is Inter.
 - Big headlines are short (≤ 6 words), centred on the landing page, left-aligned in the app.
 - Line length: 60–75 characters for reading text (`max-w-prose`).
 - Never smaller than 12 px; never grey text below 14 px except labels.
@@ -221,7 +224,7 @@ Icons never stand alone for meaning: always with a visible label, or an `aria-la
 
 ## 9. Showing data and evidence
 
-- **Scores:** `86/100` in mono. Breakdown as bars: points/max per factor (Lifecycle 40, Frequency 30, Labs 20, Activities 10) with one plain-sentence reason each.
+- **Scores:** `86/100` in mono. Breakdown as bars: points/max per factor (Lifecycle 40, How it's taught 30, Frequency 20, Hands-on 10; see `backend/app/score.py`) with one plain-sentence reason each.
 - **Dates:** "1 Jan 2020" (en-GB day-month-year) plus a relative hint when useful: "(6 years ago)". Reports say "As of {date}".
 - **Module evidence:** quote style, "Page 4", and a link "View in module" (scrolls the module column to that highlight).
 - **Source evidence:**
@@ -286,7 +289,7 @@ IN YOUR MODULE (p. 4)              │ SOURCE · Official documentation
  using mysql_connect()"            │ "The original MySQL extension was removed in PHP 7.0.0."
 View in module →                   │ Published 3 Dec 2015 · Checked 10 Nov 2026 ↗
 ─────────────────────────────────────────────────────────────────────────
-Why High priority (86/100)?  ▇▇▇▇ Lifecycle 40/40 · Frequency 12/30 · Labs 20/20 · Activities 10/10
+Why High priority (86/100)?  ▇▇▇▇ Lifecycle 40/40 · How it's taught 30/30 · Frequency 8/20 · Hands-on 10/10
 How can GroundEd help?  [Review evidence] [Suggested upgrade] [AI draft]
 Your decision:  (Update) (Keep intentionally) (Dismiss)   Why? ________   [Save]
 ```
@@ -310,7 +313,7 @@ Your decision:  (Update) (Keep intentionally) (Dismiss)   Why? ________   [Save]
 - [ ] Words come from the glossary and microcopy library
 - [ ] Every fact has a visible source; any AI text is inside `AiSuggestion`
 - [ ] Clay and moss used only as decoration; sprout only at completion moments
-- [ ] Headings in bold sans; serif only for quoted evidence
+- [ ] Headings in Instrument Serif; Source Serif italic only for quoted evidence
 - [ ] Inspiration from other sites is adapted as principles, never copied (no copied layouts, imagery, icons or wording)
 - [ ] Works at 1280 px and stacks cleanly below 1024 px
 - [ ] Keyboard-navigable with visible focus; passes the accessibility list above

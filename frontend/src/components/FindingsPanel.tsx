@@ -8,7 +8,7 @@ import { QuoteBlock } from "./ui/QuoteBlock";
 import { DecisionControl } from "./ui/DecisionControl";
 import { SourceLink } from "./ui/SourceLink";
 import { DECISION_DONE, type Decision, type Decisions } from "../lib/decisions";
-import { KIND_LABEL, USAGE_LABEL, needsReview, pagesLabel, rankFindings, sourceHost, summaryLine } from "../lib/findings";
+import { KIND_LABEL, needsReview, rankFindings, sourceHost, summaryLine, usageLine } from "../lib/findings";
 import { priorityOf } from "../lib/priority";
 
 type Filter = "all" | "to-review" | FindingStatus;
@@ -88,7 +88,7 @@ export default function FindingsPanel({ analysisId, findings, decisions, selecte
             <span className="flex flex-wrap items-center gap-2">
               <StatusBadge status={f.status} compact />
               <span className="text-xs text-ink-subtle">
-                {[f.usage && USAGE_LABEL[f.usage], pagesLabel(f)].filter(Boolean).join(" · ")}
+                {usageLine(f)}
               </span>
               {d && <span className="rounded-full bg-sky px-2 py-0.5 text-[11px] font-semibold text-lapis-deep">{DECISION_DONE[d.kind]}</span>}
             </span>
@@ -101,9 +101,14 @@ export default function FindingsPanel({ analysisId, findings, decisions, selecte
                 <QuoteBlock key={i} size="sm" caption={`In your module · page ${c.page}`}>{c.snippet}</QuoteBlock>
               ))}
               {f.lifecycle && (
-                <div className="space-y-1">
+                <div className="space-y-2">
                   <p className="text-xs font-semibold uppercase tracking-[0.06em] text-ink-subtle">Source</p>
-                  <SourceLink href={f.lifecycle.source_url}>{sourceHost(f.lifecycle.source_url)}</SourceLink>
+                  {f.lifecycle.source_quote && (
+                    <QuoteBlock size="sm" tone="source">{f.lifecycle.source_quote}</QuoteBlock>
+                  )}
+                  <SourceLink href={f.lifecycle.source_url}>
+                    {f.lifecycle.source_name ?? sourceHost(f.lifecycle.source_url)}
+                  </SourceLink>
                 </div>
               )}
               {f.status !== "supported" && (

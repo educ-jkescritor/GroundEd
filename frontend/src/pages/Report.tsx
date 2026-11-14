@@ -93,11 +93,29 @@ export default function Report() {
           {/* Header band */}
           <header className="space-y-4 rounded-[var(--radius-panel)] bg-panel p-6">
             <div className="flex flex-wrap items-start justify-between gap-3">
-              <p className="text-sm text-ink-subtle">
-                <span className="font-semibold text-ink-muted">{analysis.source.filename}</span> · {analysis.source.pages} pages ·
-                As of {formatDate(analysis.created_at)}
-                {analysis.source.kind === "sample" && " · Sample module"}
-              </p>
+              <div className="space-y-1 text-sm text-ink-subtle">
+                <p>
+                  <span className="font-semibold text-ink-muted">{analysis.source.filename}</span> · {analysis.source.pages} pages ·
+                  As of {formatDate(analysis.provenance?.analysis_date ?? analysis.created_at)}
+                  {analysis.source.kind === "sample" && " · Sample module"}
+                </p>
+                {analysis.provenance && (
+                  // The report's "receipt": same file + same versions = same result (set by code, never AI).
+                  <details className="group">
+                    <summary className="cursor-pointer text-xs font-semibold text-lapis-deep">How this report was made</summary>
+                    <dl className="mt-2 grid max-w-xl grid-cols-[auto_1fr] gap-x-4 gap-y-1 rounded-[var(--radius-control)] bg-surface p-3 text-xs">
+                      <dt>Analysis date</dt><dd className="font-mono">{analysis.provenance.analysis_date}</dd>
+                      <dt>Detection</dt><dd className="font-mono">{analysis.provenance.detector}</dd>
+                      <dt>Pipeline</dt><dd className="font-mono">{analysis.provenance.pipeline_version}</dd>
+                      <dt>Fact registry</dt><dd className="font-mono">{analysis.provenance.registry_version.slice(0, 12)}</dd>
+                      {analysis.provenance.library_version && (<><dt>Source library</dt><dd className="font-mono">{analysis.provenance.library_version.slice(0, 12)}</dd></>)}
+                      {analysis.provenance.rules_version && (<><dt>Scoring rules</dt><dd className="font-mono">{analysis.provenance.rules_version.slice(0, 12)}</dd></>)}
+                      <dt>File fingerprint</dt><dd className="truncate font-mono">{analysis.provenance.file_sha256.slice(0, 16)}…</dd>
+                      <dd className="col-span-2 pt-1 text-ink-subtle">The same file with the same versions always gives the same result.</dd>
+                    </dl>
+                  </details>
+                )}
+              </div>
               <ExportButtons analysis={analysis} decisions={decisions} />
             </div>
             <h1 className="text-[32px] leading-tight">

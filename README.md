@@ -71,10 +71,12 @@ Fixed rules in code (never AI), so the same syllabus always gets the same score.
 
 | Factor | Max | Rule |
 |---|---|---|
-| Lifecycle | 40 | Support stage from the registry / endoflife.date |
-| Frequency | 30 | 6 points per page where the item appears, max 30 |
-| Labs | 20 | 0 or 20: used in a lab (quote verified in the module) |
-| Learning activities | 10 | 0 or 10: used in an activity (quote verified) |
+| Lifecycle | 40 | Ended or removed = 40 · deprecated = 25 · support ends within 12 months = 20 · within 24 months = 10 |
+| How it's taught | 30 | Used in code students write = 30 · explained = 15 · only listed = 5 |
+| Frequency | 20 | 4 points per page where it appears, max 20 |
+| Hands-on | 10 | 10 if it appears on a lab / exercise / activity page |
+
+This is "Option C" (impact over age), implemented in `backend/app/score.py`.
 
 **Priority:** High >= 80 · Medium >= 50 · Low below 50. Unverified items are not scored; they are flagged
 "needs manual check". Weights: `backend/app/config.py`.

@@ -15,7 +15,7 @@ import { QuoteBlock } from "../components/ui/QuoteBlock";
 import { SourceLink } from "../components/ui/SourceLink";
 import { StatusBadge } from "../components/ui/StatusBadge";
 import { useDecisions } from "../lib/decisions";
-import { KIND_LABEL, USAGE_LABEL, needsReview, pagesLabel, rankFindings, sourceHost, summaryLine } from "../lib/findings";
+import { KIND_LABEL, needsReview, rankFindings, sourceHost, summaryLine, usageLine } from "../lib/findings";
 import { formatDate, relativeToNow } from "../lib/format";
 import { priorityOf } from "../lib/priority";
 import { usePageTitle } from "../lib/usePageTitle";
@@ -95,7 +95,7 @@ export default function FindingDetail() {
           <StatusBadge status={finding.status} />
           {priority && <PriorityBadge priority={priority} />}
           {finding.score && priority && <span className="font-mono text-sm tabular-nums">{finding.score.total}/100</span>}
-          <span className="text-sm text-ink-subtle">{[finding.usage && USAGE_LABEL[finding.usage], pagesLabel(finding)].filter(Boolean).join(" · ")}</span>
+          <span className="text-sm text-ink-subtle">{usageLine(finding)}</span>
         </div>
         <p className="text-ink-muted">{summaryLine(finding)}</p>
       </header>
@@ -113,21 +113,43 @@ export default function FindingDetail() {
         <Panel>
           <Label className="mb-4"><Library size={14} aria-hidden /> Source</Label>
           {lc ? (
-            <div className="space-y-3">
-              <SourceLink href={lc.source_url}>{sourceHost(lc.source_url)}</SourceLink>
+            <div className="space-y-4">
+              {lc.source_quote && <QuoteBlock tone="source">{lc.source_quote}</QuoteBlock>}
+              <SourceLink href={lc.source_url}>{lc.source_name ?? sourceHost(lc.source_url)}</SourceLink>
               <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-sm">
                 {lc.cycle && (<><dt className="text-ink-subtle">Version</dt><dd className="font-mono">{lc.cycle}</dd></>)}
-                <dt className="text-ink-subtle">End of support</dt>
+                <dt className="text-ink-subtle">No longer supported</dt>
                 <dd>{lc.eol_date ? <>{formatDate(lc.eol_date)} <span className="text-ink-subtle">({relativeToNow(lc.eol_date)})</span></> : "No end date announced"}</dd>
                 {lc.latest_cycle && (<><dt className="text-ink-subtle">Latest</dt><dd className="font-mono">{lc.latest_cycle}</dd></>)}
               </dl>
-              <p className="text-xs text-ink-subtle">Source passage, tier and publisher will appear here once the backend provides them.</p>
             </div>
           ) : (
             <p className="text-sm text-ink-muted">No trusted source found. GroundEd does not guess. Please check this one yourself.</p>
           )}
         </Panel>
       </div>
+
+      {finding.passages && finding.passages.length > 0 && (
+        <Card className="space-y-4">
+          <Label>From the source library</Label>
+          <ul className="space-y-5">
+            {finding.passages.map((p) => (
+              <li key={`${p.doc_id}-${p.heading}`} className="space-y-2">
+                <p className="text-sm">
+                  <span className="mr-2 rounded-full bg-panel px-2 py-0.5 text-xs font-semibold text-ink-muted">
+                    {p.role === "replacement" ? "What to use instead" : "Context"}
+                  </span>
+                  <strong>{p.title}</strong>
+                  {p.heading && <span className="text-ink-subtle"> · {p.heading}</span>}
+                </p>
+                <QuoteBlock size="sm" tone="source" caption={<>{p.publisher} · saved {formatDate(p.fetched_at)} · <SourceLink href={p.url}>{sourceHost(p.url)}</SourceLink></>}>
+                  {p.text.length > 420 ? `${p.text.slice(0, 420).trimEnd()}…` : p.text}
+                </QuoteBlock>
+              </li>
+            ))}
+          </ul>
+        </Card>
+      )}
 
       {finding.score && priority && (
         <Card><ScoreBreakdown score={finding.score} /></Card>

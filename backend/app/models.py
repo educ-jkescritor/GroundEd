@@ -8,7 +8,8 @@ from pydantic import BaseModel, Field
 # "less_used" = still supported but declining in industry (separate claim type, never "end-of-life").
 FindingStatus = Literal["eol", "nearing_eol", "less_used", "supported", "unverified"]
 ItemKind = Literal["tool", "language", "framework", "practice", "topic"]
-Usage = Literal["lab", "activity", "mentioned"]
+# How the module uses the item (from signals.teaching_depth): in code students write > explained > only listed.
+Usage = Literal["code", "explained", "listed"]
 
 
 class Citation(BaseModel):
@@ -77,6 +78,7 @@ class Finding(BaseModel):
     passages: Optional[list[SourcePassage]] = None  # additive: supporting passages from the source library
     kind: Optional[ItemKind] = None  # additive: what sort of item (for labels and filters)
     usage: Optional[Usage] = None  # additive: how the module uses it (for labels)
+    hands_on: Optional[bool] = None  # additive: appears on a lab / exercise / activity page
 
 
 class PageText(BaseModel):

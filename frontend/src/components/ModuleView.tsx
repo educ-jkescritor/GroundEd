@@ -9,16 +9,40 @@ interface Mark {
   finding: Finding;
 }
 
-/** Find each citation's snippet in its page text (verbatim first, then case-insensitive). */
+const QUOTES: Record<string, string> = { "“": '"', "”": '"', "‘": "'", "’": "'" };
+
+/** Collapse whitespace, unify quotes, lowercase; `map[i]` = index in the original text of normalised char i. */
+function normalise(text: string): { norm: string; map: number[] } {
+  let norm = "";
+  const map: number[] = [];
+  let lastSpace = true;
+  for (let i = 0; i < text.length; i++) {
+    const ch = QUOTES[text[i]] ?? text[i];
+    if (/\s/.test(ch)) {
+      if (!lastSpace) {
+        norm += " ";
+        map.push(i);
+      }
+      lastSpace = true;
+    } else {
+      norm += ch.toLowerCase();
+      map.push(i);
+      lastSpace = false;
+    }
+  }
+  return { norm, map };
+}
+
+/** Find each citation's snippet in its page text, ignoring differences in spacing, line breaks and quote marks. */
 function marksForPage(page: PageText, findings: Finding[]): Mark[] {
-  const lower = page.text.toLowerCase();
+  const { norm, map } = normalise(page.text);
   const marks: Mark[] = [];
   for (const f of findings) {
     for (const c of f.citations) {
       if (c.page !== page.number) continue;
-      let start = page.text.indexOf(c.snippet);
-      if (start < 0) start = lower.indexOf(c.snippet.toLowerCase());
-      if (start >= 0) marks.push({ start, end: start + c.snippet.length, finding: f });
+      const needle = normalise(c.snippet).norm.trim();
+      const at = needle ? norm.indexOf(needle) : -1;
+      if (at >= 0) marks.push({ start: map[at], end: map[at + needle.length - 1] + 1, finding: f });
     }
   }
   // Drop overlaps (keep the earliest) so the text renders cleanly.

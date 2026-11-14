@@ -11,10 +11,17 @@ export const KIND_LABEL: Record<ItemKind, string> = {
 };
 
 export const USAGE_LABEL: Record<Usage, string> = {
-  lab: "Taught in labs",
-  activity: "In an activity",
-  mentioned: "Mentioned",
+  code: "Used in code students write",
+  explained: "Explained in the module",
+  listed: "Only listed",
 };
+
+/** "Used in code students write · hands-on · pages 4, 6" (whatever the backend provides). */
+export function usageLine(f: Finding): string {
+  return [f.usage && USAGE_LABEL[f.usage], f.hands_on && "on a lab or exercise page", pagesLabel(f)]
+    .filter(Boolean)
+    .join(" · ");
+}
 
 /** Findings that may warrant review (everything except "supported"). */
 export const needsReview = (f: Finding) => f.status !== "supported";

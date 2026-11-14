@@ -14,16 +14,17 @@ const tiers = [
   { n: 4, name: "Industry trends", proves: "Popularity only, never \"end-of-life\" on its own", ex: "Developer surveys" },
 ];
 
+// Mirrors backend/app/config.py (SCORE_WEIGHTS, LIFECYCLE_POINTS, TEACHING_POINTS, FREQUENCY_POINTS_PER_PAGE).
 const scoring = [
-  { factor: "Lifecycle", max: 40, rule: "Support stage from the lifecycle record: end-of-life scores highest" },
-  { factor: "Frequency", max: 30, rule: "6 points for each page where the item appears, up to 30" },
-  { factor: "Labs", max: 20, rule: "20 if students use it in a lab, confirmed by a quote from the module" },
-  { factor: "Learning activities", max: 10, rule: "10 if it's part of an assignment or activity, confirmed by a quote" },
+  { factor: "Lifecycle", max: 40, rule: "How outdated it is: ended or removed = 40 · deprecated = 25 · support ends within 12 months = 20 · within 24 months = 10" },
+  { factor: "How it's taught", max: 30, rule: "Used in code students write = 30 · explained = 15 · only listed = 5" },
+  { factor: "Frequency", max: 20, rule: "4 points for each page where it appears, up to 20" },
+  { factor: "Hands-on", max: 10, rule: "10 if it appears on a lab, exercise or activity page" },
 ];
 
 const statuses: { s: FindingStatus; meaning: string }[] = [
   { s: "eol", meaning: "No longer supported by its maintainers, according to a trusted source." },
-  { s: "nearing_eol", meaning: "Support ends soon (within about two years)." },
+  { s: "nearing_eol", meaning: "Support ends within 12 months, or its maintainers have deprecated it." },
   { s: "less_used", meaning: "Still supported, but industry use is declining. A hint, not a reason on its own." },
   { s: "supported", meaning: "Currently supported. No action needed." },
   { s: "unverified", meaning: "No trusted source found. GroundEd doesn't guess; please check it yourself." },
@@ -102,8 +103,9 @@ export default function Methodology() {
       <section id="scoring" className="scroll-mt-24 space-y-4">
         <h2 className="text-2xl">How the priority score works</h2>
         <p className="text-ink-muted">
-          Each verified finding gets up to 100 points from fixed rules, never from AI. Unverified items are not scored.
-          These are initial values and will be refined as we test with educators.
+          Each verified finding gets up to 100 points from fixed rules, never from AI. The score favours impact on
+          students over age: something used in lab code ranks above something only listed. Unverified items are not
+          scored. These values will be refined as we test with educators.
         </p>
         <Card className="divide-y divide-line p-0">
           {scoring.map((s) => (
