@@ -359,3 +359,28 @@ def test_no_drafts_for_supported_items(client, monkeypatch):
     sup = next(f for f in a["findings"] if f["status"] == "supported")
     r = client.post(f"/api/analysis/{a['id']}/findings/{sup['id']}/draft")
     assert r.status_code == 409 and "still supported" in r.json()["detail"]
+
+
+# ---------- detection details ----------
+
+def test_normalise_unfolds_ligatures_for_quote_checks():
+    assert normalise("Use the con\ufb01g \ufb02ag") == normalise("Use the config flag")
+
+
+def _hands_on_for(tmp_path, page_texts):
+    from app.pipeline import analyze
+    p = tmp_path / "slides.pdf"
+    doc = pymupdf.open()
+    for t in page_texts:
+        doc.new_page().insert_textbox(pymupdf.Rect(50, 50, 550, 800), t + "\n" + "filler words here " * 4, fontsize=11)
+    doc.save(p)
+    a = analyze(p, "slides.pdf", today=TODAY, use_cache=False)
+    f = next(x for x in a.findings if x.id == "php-ext-mysql")
+    return {x.key: x.points for x in f.score.breakdown}["hands_on"]
+
+
+def test_hands_on_looks_one_page_back_but_never_forward(tmp_path):
+    code = '$r = mysql_query("SELECT * FROM t");'
+    assert _hands_on_for(tmp_path, ["Laboratory Exercise 3: PHP and MySQL", code]) == 10
+    assert _hands_on_for(tmp_path, [code, "Laboratory Exercise 4: forms"]) == 0
+    assert _hands_on_for(tmp_path, ["Lecture notes", code]) == 0
