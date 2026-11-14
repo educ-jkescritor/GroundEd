@@ -59,6 +59,8 @@ git merge --no-ff feat/<short-task-name> && git push && git branch -d feat/<shor
 **Commit messages** use Conventional Commits prefixes: `feat:` new behaviour · `fix:` bug fix · `docs:` docs only ·
 `refactor:` code change without behaviour change · `test:` tests only · `chore:` tooling, deps, config.
 One logical change per commit; subject in imperative mood, ≤ 72 chars (e.g. `fix: ignore <% %> outside PHP pages`).
+**Every commit must pass the tests on its own**: a behaviour change and the test updates it requires go in the
+same commit (`test:` commits only add new tests). Run tests on the merged branch before pushing.
 
 ## Scope
 
