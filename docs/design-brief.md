@@ -161,22 +161,22 @@ private/copyrighted modules (auth, deletion, check provider data-use policy).
 
 | Layer | Choice | Notes |
 |---|---|---|
-| Frontend | Next.js + TypeScript + Tailwind + shadcn/ui | |
+| Frontend | React + Vite + TypeScript + Tailwind + React Router | Design system and UI rules in [`DESIGN.md`](../DESIGN.md) |
 | Evidence viewer | PDF.js (`react-pdf`) with highlighted quotes | Replaces page PNG screenshots |
 | Backend | Python + FastAPI + Pydantic | |
 | Packaging | `uv` | Locked, reproducible installs |
 | Jobs | Job table + worker to start; real queue later | Never block the request |
 | Database | **PostgreSQL + pgvector** | Registry, full-text + vector search, reports, feedback in one DB |
 | PDF parsing | Docling (MIT) or PyMuPDF + OCR | ⚠️ PyMuPDF is AGPL — fine for hackathon, needs license or swap for a product |
-| Embeddings | `text-embedding-3-small` or open-source (BGE/E5) | Store model name with vectors |
+| Embeddings | Gemini embedding model (e.g. `gemini-embedding-001`) | Same provider as the LLM; store model name with vectors |
 | Search | Hybrid keyword + vector; reranker later | |
-| LLM | One main + one fallback, pinned, strict JSON schema, temperature 0 | Avoid heavy frameworks (e.g. LangChain) at first |
+| LLM | **Google Gemini**: one pinned model (+ fallback), strict JSON schema, temperature 0 | All calls in one backend module; avoid heavy frameworks (e.g. LangChain) at first |
 | Evaluation | pytest + custom scoring scripts; Ragas/DeepEval optional | Runs on every change |
 | Tracing | Langfuse | Inputs, outputs, model, cost, latency |
 | Files | S3-compatible storage (local folder in dev) | |
-| Auth | Auth.js / Clerk / Supabase Auth | |
+| Auth | Clerk / Supabase Auth, or simple backend sessions | Auth.js is Next.js-only, so it no longer fits |
 | Local dev | Docker Compose | |
-| Hosting | Vercel (frontend) + Render/Fly/Railway (backend) | |
+| Hosting | **Vultr Compute** instance (frontend + backend via Docker Compose, Caddy for HTTPS) | Required by the hackathon: backend must run on Vultr Compute |
 
 Verify exact library versions at setup time; use endoflife.date **v1** API endpoints.
 
@@ -218,7 +218,7 @@ Measure against the test set after every step.
 
 ## 11. Carried over from ModSync
 
-- **Keep (ideas):** FastAPI + Next.js stack, page/quote evidence view, faculty feedback capture (accept/reject + rationale).
+- **Keep (ideas):** FastAPI backend, page/quote evidence view, faculty feedback capture (accept/reject + rationale).
 - **Drop:** 6-model fallback chain, AI-chosen scores and labels, writing page images into the frontend folder.
 - **Never migrate:** the prototype's SQLite database (contains real module data), vendored `work/` packages, `.env.local`.
 - **Do migrate:** the team's real web module PDFs — as the test set (keep them out of git if they are private/copyrighted).

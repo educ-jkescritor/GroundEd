@@ -5,7 +5,11 @@ from typing import Literal, Optional
 
 from pydantic import BaseModel, Field
 
-FindingStatus = Literal["eol", "nearing_eol", "supported", "unverified"]
+# "less_used" = still supported but declining in industry (separate claim type, never "end-of-life").
+FindingStatus = Literal["eol", "nearing_eol", "less_used", "supported", "unverified"]
+ItemKind = Literal["tool", "language", "framework", "practice", "topic"]
+# How the module uses the item (from signals.teaching_depth): in code students write > explained > only listed.
+Usage = Literal["code", "explained", "listed"]
 
 
 class Citation(BaseModel):
@@ -72,6 +76,15 @@ class Finding(BaseModel):
     score: Optional[Score] = None  # None => unverified, "needs manual check"
     upgrade: Optional[Upgrade] = None
     passages: Optional[list[SourcePassage]] = None  # additive: supporting passages from the source library
+    kind: Optional[ItemKind] = None  # additive: what sort of item (for labels and filters)
+    usage: Optional[Usage] = None  # additive: how the module uses it (for labels)
+    hands_on: Optional[bool] = None  # additive: appears on a lab / exercise / activity page
+
+
+class PageText(BaseModel):
+    """Extracted text of one module page, so the frontend can show the module beside the findings."""
+    number: int  # 1-based
+    text: str
 
 
 class SourceInfo(BaseModel):
@@ -83,6 +96,7 @@ class SourceInfo(BaseModel):
 class Summary(BaseModel):
     eol: int = 0
     nearing_eol: int = 0
+    less_used: int = 0
     supported: int = 0
     unverified: int = 0
 
@@ -106,6 +120,9 @@ class Analysis(BaseModel):
     summary: Summary
     findings: list[Finding]
     provenance: Optional[Provenance] = None  # additive
+    pages: list[PageText] = []  # additive: module text per page, for the side-by-side Report
+    # "not_covered": the module is outside technology courses (e.g. GED), so there are no findings by design.
+    coverage: Literal["covered", "not_covered"] = "covered"
 
 
 class Draft(BaseModel):
@@ -128,6 +145,8 @@ class FeedbackIn(BaseModel):
     institution: Optional[str] = Field(None, max_length=200)
     rating: int = Field(..., ge=1, le=5)
     comments: Optional[str] = Field(None, max_length=2000)
+    would_use: Optional[Literal["yes", "maybe", "no"]] = None
+    consent_to_quote: bool = False  # may we quote the comment anonymously ("Faculty, Philippines")
     analysis_id: Optional[str] = None
 
 

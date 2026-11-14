@@ -11,11 +11,11 @@ import pymupdf
 
 from . import cache, detect, eol, library, registry, signals
 from .detect import Mention
-from .models import Analysis, Citation, Finding, Lifecycle, Provenance, SourceInfo, Summary, Upgrade
+from .models import Analysis, Citation, Finding, Lifecycle, PageText, Provenance, SourceInfo, Summary, Upgrade
 from .pdf import Page, extract_pages, file_sha256, find_snippet_bbox
 from .score import compute, status_for
 
-PIPELINE_VERSION = "0.5.0"  # 0.5.0: supported items listed (unscored)
+PIPELINE_VERSION = "0.6.0"  # 0.6.0: supported items listed (unscored) + page text, kind, usage, hands_on (Report)
 MAX_CITATIONS = 5  # per finding; prominence still counts every page
 
 
@@ -39,6 +39,20 @@ def _static_lifecycle(f: registry.StaticFact, eol_data: dict[str, str]) -> Optio
                      source_name=f"{doc.publisher} — {doc.title}", source_quote=f.quote)
 
 
+# Item kind for labels and filters (code, not AI). Registry facts are practices (functions, tags, settings);
+# lifecycle products are languages, frameworks or tools.
+_LANGUAGES = {"php", "python", "ruby", "nodejs", "java", "dotnet"}
+_FRAMEWORKS = {"angularjs", "angular", "bootstrap", "jquery", "jquery-ui", "laravel", "rails", "symfony", "vue",
+               "nextjs", "nuxt", "spring-boot", "express", "django", "react", "drupal", "joomla", "wordpress"}
+
+
+def _kind(entry: registry.Entry) -> str:
+    if entry.fact:
+        return "practice"
+    product = entry.eol.product if entry.eol else ""
+    return "language" if product in _LANGUAGES else "framework" if product in _FRAMEWORKS else "tool"
+
+
 def _finding_for_entry(entry: registry.Entry, mentions: list[Mention], pages_by_no: dict[int, Page], pdf_doc,
                        today: date, eol_data: dict[str, str], product: Optional[eol.ProductData] = None,
                        rel: Optional[eol.Release] = None) -> Optional[Finding]:
@@ -59,7 +73,8 @@ def _finding_for_entry(entry: registry.Entry, mentions: list[Mention], pages_by_
     # A versioned mention of a non-default release gets its own id, e.g. "php-5.6"; defaults keep the entry id.
     fid = entry.id if rel is None or (entry.eol and rel.name == entry.eol.cycle) or not entry.versioned \
         else f"{entry.id}-{rel.name}"
-    base = dict(id=fid, technology=entry.technology, citations=citations, upgrade=upgrade)
+    base = dict(id=fid, technology=entry.technology, citations=citations, upgrade=upgrade,
+                kind=_kind(entry), usage=depth, hands_on=hands_on)
 
     if entry.fact:
         lifecycle = _static_lifecycle(entry.fact, eol_data)
@@ -160,6 +175,7 @@ def analyze(pdf_path: Path, filename: str, kind: str = "upload", today: Optional
         source=SourceInfo(kind=kind, filename=filename, pages=len(pages)),
         summary=summary,
         findings=findings,
+        pages=[PageText(number=p.number, text=p.text) for p in pages],  # for the side-by-side Report
         provenance=Provenance(file_sha256=file_hash, registry_version=reg.version, pipeline_version=PIPELINE_VERSION,
                               detector=detector, rules_version=rules_version, library_version=library_version,
                               eol_data=eol_data,

@@ -8,6 +8,7 @@ import yaml
 from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile
 from fastapi.concurrency import run_in_threadpool
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
 
 from . import cache, config, db, limits, llm
 from .models import Analysis, Draft, FeedbackIn, FeedbackOut, Sample
@@ -34,7 +35,7 @@ SAMPLES_META = config.SAMPLES_DIR / "samples.yaml"
 def _samples() -> list[Sample]:
     if not SAMPLES_META.exists():
         return []
-    items = yaml.safe_load(SAMPLES_META.read_text()) or []
+    items = yaml.safe_load(SAMPLES_META.read_text(encoding="utf-8")) or []
     return [Sample(**s) for s in items if (config.SAMPLES_DIR / f"{s['id']}.pdf").exists()]
 
 
@@ -51,6 +52,16 @@ def health() -> dict:
 @app.get("/api/samples", response_model=list[Sample])
 def list_samples() -> list[Sample]:
     return _samples()
+
+
+@app.get("/api/samples/{sample_id}/file")
+def sample_file(sample_id: str) -> FileResponse:
+    """The public sample PDF itself, so the results page can show the real document beside the findings.
+    Only ids listed in samples.yaml are served (no path input reaches the filesystem)."""
+    if sample_id not in {s.id for s in _samples()}:
+        raise HTTPException(404, f"Sample '{sample_id}' not found.")
+    return FileResponse(config.SAMPLES_DIR / f"{sample_id}.pdf", media_type="application/pdf",
+                        headers={"Content-Disposition": f'inline; filename="{sample_id}.pdf"'})
 
 
 async def _analyze_path(path: Path, filename: str, kind: str) -> Analysis:

@@ -51,7 +51,7 @@ def _signature(a) -> list[tuple]:
 
 
 def run(runs: int = 3, modules_dir: Path = MODULES_DIR, today: date | None = None) -> Report:
-    spec = yaml.safe_load(EXPECTED.read_text())["modules"]
+    spec = yaml.safe_load(EXPECTED.read_text(encoding="utf-8"))["modules"]
     today = today or date.today()
     rep = Report()
     for name, items in spec.items():

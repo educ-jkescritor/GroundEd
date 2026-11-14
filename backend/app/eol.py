@@ -88,16 +88,16 @@ def _parse(data: dict, origin: str) -> ProductData:
 
 def _snapshot(product: str) -> Optional[dict]:
     p = SNAPSHOT_DIR / f"{product}.json"
-    return json.loads(p.read_text()) if p.exists() else None
+    return json.loads(p.read_text(encoding="utf-8")) if p.exists() else None
 
 
 def _live(product: str) -> tuple[dict, str]:
     path = CACHE_DIR / f"eol-{product}.json"
     if path.exists() and (time.time() - path.stat().st_mtime) < EOL_CACHE_HOURS * 3600:
-        return json.loads(path.read_text()), "cache"
+        return json.loads(path.read_text(encoding="utf-8")), "cache"
     data = _fetch(product)
     CACHE_DIR.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(data))
+    path.write_text(json.dumps(data), encoding="utf-8")
     return data, "live"
 
 
@@ -120,7 +120,7 @@ def snapshot_products(products: list[str]) -> list[tuple[str, str, str]]:
     for p in sorted(set(products)):
         try:
             data = _fetch(p)
-            (SNAPSHOT_DIR / f"{p}.json").write_text(json.dumps(data, indent=1) + "\n")
+            (SNAPSHOT_DIR / f"{p}.json").write_text(json.dumps(data, indent=1) + "\n", encoding="utf-8")
             rows.append((p, "ok", ""))
         except EolError as e:
             rows.append((p, "failed", f"{e} (previous snapshot kept)" if _snapshot(p) else str(e)))

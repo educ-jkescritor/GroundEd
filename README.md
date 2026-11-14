@@ -9,7 +9,12 @@ the syllabus page where it appears and the lifecycle record behind it. Anything 
 **unverified** instead of guessed. Each item gets a transparent 100-point priority score, and nothing in the
 syllabus changes without the faculty member's approval.
 
-> Status: **skeleton**. The API returns mock data in its final shape; the real pipeline is in progress.
+> Status: **frontend complete on mock data; backend pipeline in progress.** The API returns realistic mock data
+> in its final shape (`backend/app/mock.py`) until the real pipeline replaces it.
+
+**Pages:** Landing · Analyze (upload or sample, with progress) · Report (module and ranked findings side by side) ·
+Finding detail · Reports history · Sign in (browser-only demo account) · Methodology · Feedback · Not found.
+Try the **Ethics in Society (GED sample)** to see the "Not covered yet" path.
 
 ## Repository layout
 ```
@@ -20,7 +25,7 @@ backend/    FastAPI API (Python)
   app/detect.py    all Gemini calls (detection, drafts)
   app/eol.py       endoflife.date lookups + cache
   app/score.py     100-point priority score
-  app/db.py        SQLite (analyses, feedback)
+  app/db.py        database access (PostgreSQL + pgvector; SQLite stub until migrated)
   data/            aliases.json, public sample syllabi, cache
 frontend/   React + Vite + TypeScript + Tailwind
   src/pages/       Landing, Analyze, Results, Feedback
@@ -61,19 +66,31 @@ Caddy serves the frontend, proxies `/api` to FastAPI, and gets HTTPS certificate
 `SITE_ADDRESS` is a domain pointing at the instance.
 
 ## Priority score (100 points)
+Fixed rules in code (never AI), so the same syllabus always gets the same score. Initial defaults from
+[docs/design-brief.md section 5.2](docs/design-brief.md); they will be refined after the first evaluation run.
+
 | Factor | Max | Rule |
 |---|---|---|
-| Lifecycle status | 50 | EOL already = 50 · EOL within 12 months = 35 · within 24 months = 15 · supported = 0 |
-| Time past EOL | 20 | 5 per full year past EOL |
-| Version lag | 15 | 5 per major cycle behind latest supported |
-| Prominence | 15 | How often the syllabus uses it |
+| Lifecycle | 40 | Ended or removed = 40 · deprecated = 25 · support ends within 12 months = 20 · within 24 months = 10 |
+| How it's taught | 30 | Used in code students write = 30 · explained = 15 · only listed = 5 |
+| Frequency | 20 | 4 points per page where it appears, max 20 |
+| Hands-on | 10 | 10 if it appears on a lab / exercise / activity page |
 
-Unverified items are not scored; they are flagged "needs manual check". Weights: `backend/app/config.py`.
+This is "Option C" (impact over age), implemented in `backend/app/score.py`.
+
+**Priority:** High >= 80 · Medium >= 50 · Low below 50. Unverified items are not scored; they are flagged
+"needs manual check". Weights: `backend/app/config.py`.
 
 ## Team workflow
-- `main` stays deployable. Work on branches: `feature/backend-pipeline`, `feature/frontend-ui`, then open PRs.
+- `main` holds the final, stable output. Work on `feature/*` branches, merge them into `develop` to test everything together, and merge `develop` into `main` only when it works.
 - If you change the API shape, update `backend/app/models.py`, `frontend/src/types.ts` and `docs/api.md` together.
+- UI changes follow [DESIGN.md](DESIGN.md): use the tokens and `frontend/src/components/ui/` components.
 - Never commit `.env` or the private faculty syllabi (put them in `private/`, which is git-ignored).
 
-See [docs/architecture.md](docs/architecture.md) for system design diagrams.
-Full design reasoning and decisions: [docs/design-brief.md](docs/design-brief.md) (diagram: [docs/architecture.png](docs/architecture.png)).
+## Documentation
+- [docs/design-brief.md](docs/design-brief.md): full design reasoning and decisions (diagram: [docs/architecture.png](docs/architecture.png))
+- [DESIGN.md](DESIGN.md): design system (colours, type, components, microcopy, accessibility)
+- [docs/use-cases.md](docs/use-cases.md): personas, user stories, main use case
+- [docs/architecture.md](docs/architecture.md): system, pipeline, sequence and deployment diagrams
+- [docs/user-flow.md](docs/user-flow.md): user flow and screenshots
+- [docs/api.md](docs/api.md): API contract

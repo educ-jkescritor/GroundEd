@@ -91,7 +91,7 @@ text(60, 82, "Grounded curriculum review · Registry + RAG + Checks + Rule Scori
 # ---------------------------------------------------------------- row A: users + frontend
 box(60, 115, 230, 105, "Faculty", ["Uploads a module PDF", "Reviews cited evidence", "Accepts / rejects / keeps"],
     C["ui"], C["ui_bg"])
-box(350, 115, 1150, 105, "Frontend  ·  Next.js + TypeScript + Tailwind + shadcn/ui", [
+box(350, 115, 1150, 105, "Frontend  ·  React + Vite + TypeScript + Tailwind", [
     "Upload & login  ·  Analysis progress  ·  Report with priorities  ·  Evidence viewer (PDF.js, highlighted quotes)",
     "Side-by-side: “Your module says (page, quote)”  vs  “Source says (link, date)”  ·  Faculty decision + rationale",
 ], C["ui"], C["ui_bg"])
@@ -196,9 +196,9 @@ arrow(data_x[3] + 132, 852, 1300, 948, C["qa"], label="feedback → test data", 
 # ---------------------------------------------------------------- external services column
 group(1540, 260, 400, 608, "External Services", C["ext"])
 ext = [
-    ("LLM API", ["One main + one fallback model", "Pinned versions, strict JSON", "schema, temperature 0",
+    ("LLM API · Google Gemini", ["One pinned model (+ fallback)", "Pinned versions, strict JSON", "schema, temperature 0",
                  "Used in steps 2, 4, 6 only"]),
-    ("Embedding Model", ["text-embedding-3-small", "or open-source (BGE / E5)", "Model name stored with vectors"]),
+    ("Embedding Model · Gemini", ["gemini-embedding-001", "Same provider as the LLM", "Model name stored with vectors"]),
     ("endoflife.date API (v1)", ["Support stages & EOL dates", "Feeds the Facts Registry", "Results cached"]),
     ("Langfuse (tracing)", ["Every AI call: inputs,", "outputs, model, cost, latency"]),
 ]
@@ -230,8 +230,8 @@ for i, (fg, bg, lbl, desc) in enumerate(lg):
 # ---------------------------------------------------------------- footer
 text(60, 1200, "Principle: the AI can only say what the sources prove — code finds, checks and scores the evidence; "
      "the AI explains it; the faculty decides.", size=15, color=C["ink"], weight="bold")
-text(60, 1228, "Not shown: login provider (Auth.js / Clerk / Supabase Auth), Docker Compose for local dev, "
-     "hosting (Vercel + Render/Fly/Railway).", size=13, color=C["muted"])
+text(60, 1228, "Not shown: login provider (Clerk / Supabase Auth or backend sessions), Docker Compose for local dev, "
+     "hosting (Vultr Compute instance, Docker Compose + Caddy).", size=13, color=C["muted"])
 
 svg = (f'<svg xmlns="http://www.w3.org/2000/svg" width="{W}" height="{H}" viewBox="0 0 {W} {H}">'
        + "".join(out) + "</svg>")

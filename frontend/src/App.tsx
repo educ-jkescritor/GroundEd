@@ -1,28 +1,37 @@
-import { Link, Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes, useParams } from "react-router-dom";
+import Layout from "./components/Layout";
 import Landing from "./pages/Landing";
 import Analyze from "./pages/Analyze";
-import Results from "./pages/Results";
+import Report from "./pages/Report";
+import FindingDetail from "./pages/FindingDetail";
+import Reports from "./pages/Reports";
+import SignIn from "./pages/SignIn";
 import Feedback from "./pages/Feedback";
+import Methodology from "./pages/Methodology";
+import NotFound from "./pages/NotFound";
+
+/** Old /results/:id links keep working. */
+function LegacyResults() {
+  const { id } = useParams<{ id: string }>();
+  return <Navigate to={`/reports/${id ?? ""}`} replace />;
+}
 
 export default function App() {
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900">
-      <header className="border-b bg-white">
-        <nav className="mx-auto flex max-w-5xl items-center gap-6 px-4 py-3">
-          <Link to="/" className="font-semibold">GroundEd</Link>
-          <Link to="/analyze" className="text-sm text-slate-600 hover:text-slate-900">Analyze a syllabus</Link>
-          <Link to="/feedback" className="text-sm text-slate-600 hover:text-slate-900">Feedback</Link>
-        </nav>
-      </header>
-      <main className="mx-auto max-w-5xl px-4 py-8">
-        <Routes>
-          <Route path="/" element={<Landing />} />
-          <Route path="/analyze" element={<Analyze />} />
-          <Route path="/results/:id" element={<Results />} />
-          <Route path="/feedback" element={<Feedback />} />
-          <Route path="*" element={<p>Page not found.</p>} />
-        </Routes>
-      </main>
-    </div>
+    <Routes>
+      {/* The results workspace has its own top bar instead of the site navigation (DESIGN.md §7). */}
+      <Route path="/reports/:id" element={<Report />} />
+      <Route element={<Layout />}>
+        <Route path="/" element={<Landing />} />
+        <Route path="/analyze" element={<Analyze />} />
+        <Route path="/reports" element={<Reports />} />
+        <Route path="/reports/:id/findings/:fid" element={<FindingDetail />} />
+        <Route path="/results/:id" element={<LegacyResults />} />
+        <Route path="/sign-in" element={<SignIn />} />
+        <Route path="/methodology" element={<Methodology />} />
+        <Route path="/feedback" element={<Feedback />} />
+        <Route path="*" element={<NotFound />} />
+      </Route>
+    </Routes>
   );
 }
