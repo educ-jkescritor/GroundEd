@@ -25,3 +25,4 @@ private/
 Thumbs.db
 .vscode/
 .idea/
+*.tsbuildinfo

@@ -1,1 +1,0 @@
-{"root":["./src/app.tsx","./src/api.ts","./src/main.tsx","./src/types.ts","./src/vite-env.d.ts","./src/components/evidencepanel.tsx","./src/components/findingcard.tsx","./src/components/scorebreakdown.tsx","./src/pages/analyze.tsx","./src/pages/feedback.tsx","./src/pages/landing.tsx","./src/pages/results.tsx","./vite.config.ts"],"version":"5.6.3"}
