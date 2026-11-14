@@ -165,7 +165,7 @@ def test_upload_validation(client):
 # ---------- drafts (Gemini mocked: tests never spend credits) ----------
 
 def test_draft_is_cached_and_labelled(client, monkeypatch):
-    from app import detect
+    from app import llm
     calls = []
 
     def fake(technology, snippets, fact, hint):
@@ -173,7 +173,7 @@ def test_draft_is_cached_and_labelled(client, monkeypatch):
         assert snippets and "removed" in fact  # only verified evidence is sent
         return "Use PDO.", "fake-model"
 
-    monkeypatch.setattr(detect, "draft_section", fake)
+    monkeypatch.setattr(llm, "draft_section", fake)
     a = client.post("/api/analyze", data={"sample_id": "legacy-php-lab"}).json()
     url = f"/api/analysis/{a['id']}/findings/php-ext-mysql/draft"
     d1, d2 = client.post(url).json(), client.post(url).json()
@@ -182,12 +182,12 @@ def test_draft_is_cached_and_labelled(client, monkeypatch):
 
 
 def test_draft_errors_are_specific(client, monkeypatch):
-    from app import detect
+    from app import llm
 
     def busy(*_):
-        raise detect.LlmError(503, "m1: HTTP 503 UNAVAILABLE busy | m2: HTTP 503 UNAVAILABLE busy")
+        raise llm.LlmError(503, "m1: HTTP 503 UNAVAILABLE busy | m2: HTTP 503 UNAVAILABLE busy")
 
-    monkeypatch.setattr(detect, "draft_section", busy)
+    monkeypatch.setattr(llm, "draft_section", busy)
     a = client.post("/api/analyze", data={"sample_id": "legacy-php-lab"}).json()
     r = client.post(f"/api/analysis/{a['id']}/findings/windows-7/draft")
     assert r.status_code == 503 and "m1" in r.json()["detail"] and "m2" in r.json()["detail"]
@@ -205,9 +205,9 @@ def test_asp_tags_not_flagged_in_ejs_or_jsp():
 
 def test_draft_cache_key_changes_when_fact_changes(client, monkeypatch):
     """Fix 3: a corrected registry fact must produce a fresh draft, not the cached old one."""
-    from app import db, detect
+    from app import db, llm
     calls = []
-    monkeypatch.setattr(detect, "draft_section", lambda t, s, fact, h: (calls.append(fact) or f"draft for {fact}", "fake"))
+    monkeypatch.setattr(llm, "draft_section", lambda t, s, fact, h: (calls.append(fact) or f"draft for {fact}", "fake"))
     a = client.post("/api/analyze", data={"sample_id": "legacy-php-lab"}).json()
     url = f"/api/analysis/{a['id']}/findings/php-ext-mysql/draft"
     client.post(url)

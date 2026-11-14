@@ -9,7 +9,7 @@ from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.concurrency import run_in_threadpool
 from fastapi.middleware.cors import CORSMiddleware
 
-from . import cache, config, db, detect
+from . import cache, config, db, llm
 from .models import Analysis, Draft, FeedbackIn, FeedbackOut, Sample
 from .pdf import PdfError
 from .pipeline import analyze as run_pipeline
@@ -97,23 +97,20 @@ def draft_update(analysis_id: str, finding_id: str) -> Draft:
     finding = next((f for f in analysis.findings if f.id == finding_id), None)
     if not finding:
         raise HTTPException(404, "Finding not found in this analysis.")
-    lc = finding.lifecycle
-    if not lc:
+    inputs = llm.draft_inputs(finding)
+    if inputs is None:
         raise HTTPException(409, "Drafts are only made for findings with a verified source.")
-    fact = lc.source_quote or (
-        f"{lc.source_name or 'endoflife.date'}: {finding.technology} {lc.cycle or ''} end of life {lc.eol_date or 'not announced'}"
-    )
+    fact, hint = inputs
     file_hash = analysis.provenance.file_sha256 if analysis.provenance else analysis.id
-    hint = finding.upgrade.target_cycle if finding.upgrade else None
     # Everything the draft depends on is in the key: a corrected fact or replacement => a fresh draft.
     key = cache.key(file_hash, finding.id, fact, hint or "", config.GEMINI_MODEL, config.GEMINI_FALLBACK_MODEL,
-                    detect.DRAFT_PROMPT_VERSION)
+                    llm.DRAFT_PROMPT_VERSION)
     if hit := cache.get_draft(key):
         text, model = hit
     else:
         try:
-            text, model = detect.draft_section(finding.technology, [c.snippet for c in finding.citations], fact, hint)
-        except detect.LlmError as e:
+            text, model = llm.draft_section(finding.technology, [c.snippet for c in finding.citations], fact, hint)
+        except llm.LlmError as e:
             status = e.status if e.status in (429, 503, 504) else 502
             raise HTTPException(status, f"AI draft failed: {e}") from e
         cache.put_draft(key, text, model)
