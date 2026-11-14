@@ -73,6 +73,12 @@ Unverified items are not scored; they are flagged "needs manual check". Weights:
 ## Team workflow
 - `main` stays deployable. Work on branches: `feature/backend-pipeline`, `feature/frontend-ui`, then open PRs.
 - If you change the API shape, update `backend/app/models.py`, `frontend/src/types.ts` and `docs/api.md` together.
+- UI changes follow [DESIGN.md](DESIGN.md): use the tokens and `frontend/src/components/ui/` components.
 - Never commit `.env` or the private faculty syllabi (put them in `private/`, which is git-ignored).
 
-See [docs/architecture.md](docs/architecture.md) for system design diagrams.
+## Documentation
+- [DESIGN.md](DESIGN.md): design system (colours, type, components, microcopy, accessibility)
+- [docs/use-cases.md](docs/use-cases.md): personas, user stories, main use case
+- [docs/architecture.md](docs/architecture.md): system, pipeline, sequence and deployment diagrams
+- [docs/user-flow.md](docs/user-flow.md): user flow and screenshots
+- [docs/api.md](docs/api.md): API contract

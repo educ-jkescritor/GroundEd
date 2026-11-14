@@ -1,32 +1,67 @@
+import { BookOpen, Database } from "lucide-react";
 import type { Finding } from "../types";
+import { SourceLink } from "./ui/SourceLink";
+import { formatDate, relativeToNow } from "../lib/format";
 
-// Shows the two sources behind a finding: the syllabus page/snippet and the endoflife.date record.
+// The two sources behind a finding: the syllabus page/snippet and the endoflife.date record.
 export default function EvidencePanel({ finding }: { finding: Finding }) {
+  const lc = finding.lifecycle;
   return (
-    <div className="grid gap-3 text-sm sm:grid-cols-2">
-      <div>
-        <div className="font-medium">In your syllabus</div>
+    <div className="grid gap-4 sm:grid-cols-2">
+      <section className="space-y-2 rounded-lg bg-canvas p-4">
+        <h4 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-ink-subtle">
+          <BookOpen size={14} aria-hidden /> In your syllabus
+        </h4>
         {finding.citations.map((c, i) => (
-          <blockquote key={i} className="mt-1 border-l-2 pl-2 text-slate-700">
-            “{c.snippet}” <span className="text-slate-500">(p. {c.page})</span>
+          <blockquote key={i} className="border-l-2 border-line pl-3">
+            <p className="font-serif italic">“{c.snippet}”</p>
+            <p className="text-xs text-ink-subtle">Page {c.page}</p>
           </blockquote>
         ))}
-      </div>
-      <div>
-        <div className="font-medium">Lifecycle record</div>
-        {finding.lifecycle ? (
-          <p className="mt-1 text-slate-700">
-            {finding.lifecycle.cycle && <>Cycle {finding.lifecycle.cycle} · </>}
-            {finding.lifecycle.eol_date ? <>EOL {finding.lifecycle.eol_date}</> : <>No EOL date announced</>}
-            {" · "}
-            <a className="underline" href={finding.lifecycle.source_url} target="_blank" rel="noreferrer">
-              endoflife.date
-            </a>
-          </p>
+      </section>
+
+      <section className="space-y-2 rounded-lg bg-canvas p-4">
+        <h4 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-ink-subtle">
+          <Database size={14} aria-hidden /> Lifecycle record
+        </h4>
+        {lc ? (
+          <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-sm">
+            {lc.cycle && (
+              <>
+                <dt className="text-ink-subtle">Version</dt>
+                <dd className="font-mono">{lc.cycle}</dd>
+              </>
+            )}
+            <dt className="text-ink-subtle">End of life</dt>
+            <dd>
+              {lc.eol_date ? (
+                <>
+                  {formatDate(lc.eol_date)} <span className="text-ink-subtle">({relativeToNow(lc.eol_date)})</span>
+                </>
+              ) : (
+                "No end date announced"
+              )}
+            </dd>
+            {lc.latest_cycle && (
+              <>
+                <dt className="text-ink-subtle">Latest</dt>
+                <dd className="font-mono">{lc.latest_cycle}</dd>
+              </>
+            )}
+            <dt className="text-ink-subtle">Source</dt>
+            <dd>
+              <SourceLink href={lc.source_url}>{lc.source_url.replace(/^https?:\/\//, "")}</SourceLink>
+            </dd>
+          </dl>
         ) : (
-          <p className="mt-1 text-slate-500">No source found. GroundEd does not guess. Please check manually.</p>
+          <div className="space-y-2 text-sm text-ink-muted">
+            <p>No source found. GroundEd does not guess. Please check this one manually.</p>
+            <SourceLink href={`https://endoflife.date/?q=${encodeURIComponent(finding.technology)}`}>
+              Search endoflife.date
+            </SourceLink>
+          </div>
         )}
-      </div>
+      </section>
     </div>
   );
 }

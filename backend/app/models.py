@@ -96,6 +96,8 @@ class FeedbackIn(BaseModel):
     institution: Optional[str] = Field(None, max_length=200)
     rating: int = Field(..., ge=1, le=5)
     comments: Optional[str] = Field(None, max_length=2000)
+    would_use: Optional[Literal["yes", "maybe", "no"]] = None
+    consent_to_quote: bool = False  # may we quote the comment anonymously ("Faculty, Philippines")
     analysis_id: Optional[str] = None
 
 

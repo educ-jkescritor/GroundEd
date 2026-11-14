@@ -36,3 +36,18 @@ Interactive docs: run the backend and open http://localhost:8000/docs
 ```
 
 `status` is one of `eol | nearing_eol | supported | unverified`. For `unverified`, `lifecycle` and `score` are `null`.
+
+## `FeedbackIn` (POST `/api/feedback`)
+```json
+{
+  "role": "Faculty / lecturer",
+  "country": "Philippines",
+  "institution": "optional",
+  "rating": 4,
+  "would_use": "yes",
+  "comments": "optional",
+  "consent_to_quote": true,
+  "analysis_id": "optional, set when coming from a results page"
+}
+```
+`would_use` is `yes | maybe | no` (optional). `consent_to_quote` defaults to `false`; only quote comments where it is `true`.

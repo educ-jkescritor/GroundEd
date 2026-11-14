@@ -30,10 +30,17 @@ def init_db() -> None:
                 institution TEXT,
                 rating INTEGER NOT NULL,
                 comments TEXT,
-                analysis_id TEXT
+                analysis_id TEXT,
+                would_use TEXT,
+                consent_to_quote INTEGER NOT NULL DEFAULT 0
             );
             """
         )
+        # Add columns introduced after the first version to databases that already exist.
+        existing = {row[1] for row in conn.execute("PRAGMA table_info(feedback)")}
+        for column, ddl in (("would_use", "TEXT"), ("consent_to_quote", "INTEGER NOT NULL DEFAULT 0")):
+            if column not in existing:
+                conn.execute(f"ALTER TABLE feedback ADD COLUMN {column} {ddl}")
 
 
 def save_analysis(analysis: Analysis) -> None:
@@ -53,8 +60,9 @@ def get_analysis(analysis_id: str) -> Optional[Analysis]:
 def save_feedback(fb: FeedbackIn) -> int:
     with closing(_connect()) as conn, conn:
         cur = conn.execute(
-            "INSERT INTO feedback (role, country, institution, rating, comments, analysis_id) "
-            "VALUES (?, ?, ?, ?, ?, ?)",
-            (fb.role, fb.country, fb.institution, fb.rating, fb.comments, fb.analysis_id),
+            "INSERT INTO feedback (role, country, institution, rating, comments, would_use, consent_to_quote, analysis_id) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+            (fb.role, fb.country, fb.institution, fb.rating, fb.comments, fb.would_use,
+             int(fb.consent_to_quote), fb.analysis_id),
         )
         return int(cur.lastrowid)

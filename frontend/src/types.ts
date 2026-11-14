@@ -74,5 +74,7 @@ export interface FeedbackIn {
   institution?: string;
   rating: number; // 1-5
   comments?: string;
+  would_use?: "yes" | "maybe" | "no";
+  consent_to_quote?: boolean;
   analysis_id?: string;
 }

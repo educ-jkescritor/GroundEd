@@ -1,1 +1,70 @@
 @import "tailwindcss";
+
+/* Design tokens. See DESIGN.md (repo root) before changing anything here. */
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Source Serif 4", ui-serif, Georgia, serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+
+  /* Neutrals and brand */
+  --color-ink: #16213a;
+  --color-ink-muted: #4a5568;
+  --color-ink-subtle: #718096;
+  --color-canvas: #f7f6f2;
+  --color-surface: #ffffff;
+  --color-line: #e3e1da;
+  --color-brand: #0e6e5c;
+  --color-brand-soft: #e3f2ee;
+
+  /* Finding status */
+  --color-eol: #b42318;
+  --color-eol-soft: #fef3f2;
+  --color-nearing: #b54708;
+  --color-nearing-soft: #fffaeb;
+  --color-supported: #067647;
+  --color-supported-soft: #ecfdf3;
+  --color-unverified: #475467;
+  --color-unverified-soft: #f2f4f7;
+
+  /* AI-generated (unsourced) content */
+  --color-ai: #6941c6;
+  --color-ai-soft: #f4f3ff;
+}
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+  }
+  body {
+    @apply bg-canvas font-sans text-ink leading-relaxed;
+  }
+  a {
+    @apply text-brand underline-offset-2 hover:underline;
+  }
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-brand;
+  }
+  input,
+  select,
+  textarea {
+    @apply rounded-lg border border-line bg-surface px-3 py-2 text-ink placeholder:text-ink-subtle;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+@media print {
+  body {
+    background: white;
+  }
+  a[href^="http"]::after {
+    content: " (" attr(href) ")";
+    font-size: 0.8em;
+    color: #4a5568;
+  }
+}
