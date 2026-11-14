@@ -36,6 +36,8 @@ export function errorMessage(e: unknown): string {
 export const api = {
   samples: () => request<Sample[]>("/api/samples"),
 
+  health: () => request<{ status: string; gemini_configured: boolean }>("/api/health"),
+
   analyzeFile: (file: File) => {
     const form = new FormData();
     form.append("file", file);

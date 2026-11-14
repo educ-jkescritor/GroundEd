@@ -59,18 +59,20 @@ interface Props {
   selectedId: string | null;
   /** Scroll to the selected finding's highlight (when it was selected from the panel). */
   scrollToSelected: boolean;
+  /** Changes on every "Show in document" request, so a repeat click scrolls again. */
+  focusNonce?: number;
   onSelect: (id: string) => void;
 }
 
 /** The module, page by page, with each finding highlighted where it appears (DESIGN.md §7, §9). */
-export default function ModuleView({ pages, findings, selectedId, scrollToSelected, onSelect }: Props) {
+export default function ModuleView({ pages, findings, selectedId, scrollToSelected, focusNonce, onSelect }: Props) {
   const firstMark = useRef<Record<string, HTMLButtonElement | null>>({});
   const pageMarks = useMemo(() => pages.map((p) => ({ page: p, marks: marksForPage(p, findings) })), [pages, findings]);
 
   // Selecting a finding in the panel scrolls the module to its first highlight.
   useEffect(() => {
     if (selectedId && scrollToSelected) firstMark.current[selectedId]?.scrollIntoView({ behavior: "smooth", block: "center" });
-  }, [selectedId, scrollToSelected]);
+  }, [selectedId, scrollToSelected, focusNonce]);
 
   const seen = new Set<string>();
 

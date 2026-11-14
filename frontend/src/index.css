@@ -113,3 +113,27 @@
     color: #4f5a6e;
   }
 }
+
+/* Results workspace: the page never scrolls (only its panes do), so don't reserve scrollbar space there. */
+html.workspace {
+  scrollbar-gutter: auto;
+  overflow: hidden;
+}
+
+/* "Show in document": the quoted text pulses once so the eye finds it. */
+@keyframes focus-pulse {
+  0% { box-shadow: 0 0 0 0 rgb(58 111 208 / 0.55); }
+  100% { box-shadow: 0 0 0 14px rgb(58 111 208 / 0); }
+}
+.focus-pulse {
+  animation: focus-pulse 0.9s ease-out 2;
+}
+
+/* Grey placeholder while a PDF page renders. */
+@keyframes skeleton {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.55; }
+}
+.skeleton {
+  animation: skeleton 1.4s ease-in-out infinite;
+}

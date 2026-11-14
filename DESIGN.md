@@ -190,23 +190,31 @@ plain-language verdict instead ("No longer supported since 2015.").
   - White canvas; footer with Methodology, Sources, GitHub, Feedback.
 - **Results workspace (`/reports/:id`, the originality-checker pattern).** No site navigation and no footer:
   the page is a full-height workspace; **only the two panes scroll**, never the page.
-  - **Top bar:** Horizon mark (home) · module name (serif) with pages and analysis date · **+ New analysis**
-    (back to upload) · **Download ▾** (Report as PDF, Copy as Markdown) · **Details** (how the report was made,
-    in plain language, as a modal) · account menu or Sign in.
+  - **Top bar:** Horizon mark (home) · module name (serif, nothing below it) · **+ New analysis** (back to
+    upload) · **Download ▾** (secondary while reviewing, primary once everything is decided) · **Details** (how the
+    report was made, in plain language, as a modal) · account menu or Sign in.
   - **Left (≈ 55%): the real PDF**, rendered with PDF.js (loaded only on this page), with page arrows, zoom and
     Fit. Finding boxes come from the backend's citation `bbox`, tinted by priority; the selected one gets a
     lapis outline. Uploaded files are kept only in the tab's memory (the backend deletes uploads); after a reload,
     or if the PDF fails, the pane falls back to the extracted page text with highlights.
-  - **Right (≈ 45%, min 400 px):** main result (headline, priority bar, priority tags, "n of m decided" progress)
-    → tabs **Findings | Sources** → the scrolling list.
-  - **Sync:** clicking a finding expands it and scrolls the document pane to its box; clicking a box selects and
-    scrolls to its card. Saving a decision opens the next finding to review.
+  - **Left toolbar:** ‹ Finding n of m › (also J / K keys) · page indicator · zoom · Fit. Coloured **markers** beside
+    the document's scrollbar show where every finding is; the selected one is ringed.
+  - **Right (≈ 45%, min 420 px): one scroll area.** The summary scrolls away; the **Findings | Sources** tabs stay
+    pinned. Summary: "7 findings to be reviewed" + a large **"n% reviewed"** on the right (like an originality
+    score) → the priority tags, which **are the filters** (All · ▲ High · ● Medium · ▼ Low · ? Unverified) →
+    "Hide reviewed" → completion sprout → a one-time, dismissible sign-in note after the first decision.
+  - **Opening:** the top finding is selected and the document scrolls to it (no blank first page).
+  - **Sync:** selecting a finding scrolls the document to its box; "Show in document" (the p. N chip next to each
+    quote) scrolls to *that* quote and pulses it, every time. Clicking a box in the document opens its card.
+    Saving a decision opens the next finding to review.
   - **Below `lg` (1024 px):** a Findings / Document switch shows one pane at a time.
-- **Finding card.** Collapsed: name · priority tag · one-line verdict ("No longer supported since 2015. Students
-  write it in code.") · pages · decision state. Expanded, in this order: ① In your module (quote, page, Show in
-  document) ② Why it may need updating (source's exact sentence, publisher, link) ③ What to use instead
-  (replacement, Draft updated wording) ④ Your decision; then a folded "Why is this … priority?" with the score.
-  Not shown on cards: kind tags, score number, provenance, library passages (those go to Sources / Details).
+- **Finding card (read the bold parts and you have the gist).**
+  - Collapsed: **name** + priority tag → **status** · "Use **replacement** instead" → pages · decision state.
+  - Expanded, top to bottom: **Key facts** (three tiles: Status in the priority colour · In your module ·
+    Use instead; values in bold, details small) → **The evidence** ("Your module says" quotes with a p. N chip ⇄
+    "<Source> says" quote and link) → **Draft updated wording** (outlined violet; disabled with a reason when AI
+    isn't configured) → folded "Why is this … priority?" → **Your decision**, pinned to the bottom of the open card.
+  - Not shown on cards: kind tags, score number, provenance, library passages (Sources tab / Details).
 - **Sources tab:** a bibliography: each source with type in words (Support data / Official documentation),
   publisher, saved date, the findings it backs, and a link.
 - **Finding detail (full page, for deep review):**

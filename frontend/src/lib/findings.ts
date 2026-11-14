@@ -125,3 +125,35 @@ export function verdict(f: Finding): string {
     : f.usage === "listed" ? " Only listed." : "";
   return why + how;
 }
+
+/** Short status for the collapsed card, e.g. "No longer supported since 2015". */
+export function statusShort(f: Finding): string {
+  const d = f.lifecycle?.eol_date;
+  switch (f.status) {
+    case "eol":
+      return d ? `No longer supported since ${new Date(d).getFullYear()}` : "No longer supported";
+    case "nearing_eol":
+      return d ? `Support ends ${new Date(d).toLocaleDateString("en-GB", { month: "short", year: "numeric" })}` : "Support ending soon";
+    case "less_used":
+      return "Used less in industry";
+    case "supported":
+      return "Currently supported";
+    default:
+      return "No trusted source found";
+  }
+}
+
+/** How the module uses it, in plain words. */
+export function usagePhrase(f: Finding): string | null {
+  if (f.usage === "code") return "Students write it in code";
+  if (f.usage === "explained") return "Explained in the module";
+  if (f.usage === "listed") return "Only listed in the module";
+  return null;
+}
+
+/** Short name of who said it, e.g. "PHP Manual (php.net)" from "PHP Manual (php.net) — Backward …". */
+export function sourceShortName(f: Finding): string | null {
+  const lc = f.lifecycle;
+  if (!lc) return null;
+  return (lc.source_name ?? sourceHost(lc.source_url)).split(" — ")[0];
+}
