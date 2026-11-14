@@ -7,6 +7,8 @@ from datetime import date, datetime, timezone
 from pathlib import Path
 from typing import Optional
 
+import pymupdf
+
 from . import cache, detect, eol, library, registry, signals
 from .detect import Mention
 from .models import Analysis, Citation, Finding, Lifecycle, Provenance, SourceInfo, Summary, Upgrade
@@ -37,7 +39,7 @@ def _static_lifecycle(f: registry.StaticFact, eol_data: dict[str, str]) -> Optio
                      source_name=f"{doc.publisher} — {doc.title}", source_quote=f.quote)
 
 
-def _finding_for_entry(entry: registry.Entry, mentions: list[Mention], pages_by_no: dict[int, Page], pdf_path: Path,
+def _finding_for_entry(entry: registry.Entry, mentions: list[Mention], pages_by_no: dict[int, Page], pdf_doc,
                        today: date, eol_data: dict[str, str], product: Optional[eol.ProductData] = None,
                        rel: Optional[eol.Release] = None) -> Optional[Finding]:
     """One finding for one registry entry (and, for product entries, one release). None = nothing to claim."""
@@ -48,7 +50,7 @@ def _finding_for_entry(entry: registry.Entry, mentions: list[Mention], pages_by_
     depth = signals.teaching_depth(lines)
     hands_on = any(signals.is_hands_on(pages_by_no[n].text) for n in pages)
     citations = [
-        Citation(page=m.page, snippet=m.snippet, bbox=find_snippet_bbox(pdf_path, m.page, m.snippet))
+        Citation(page=m.page, snippet=m.snippet, bbox=find_snippet_bbox(pdf_doc, m.page, m.snippet))
         for m in sorted(mentions, key=lambda m: m.page)[:MAX_CITATIONS]
     ]
     upgrade = Upgrade(target_cycle=entry.upgrade.target, source_url=entry.upgrade.source_url) if entry.upgrade else None
@@ -131,10 +133,12 @@ def analyze(pdf_path: Path, filename: str, kind: str = "upload", today: Optional
 
     eol_data: dict[str, str] = {}
     pages_by_no = {p.number: p for p in pages}
-    findings = [f for (eid, rname), ms in groups.items()
-                if (f := _finding_for_entry(entries[eid], ms, pages_by_no, pdf_path, today, eol_data,
-                                            product=products.get(entries[eid].eol.product) if entries[eid].eol else None,
-                                            rel=releases.get((eid, rname)))) is not None]
+    with pymupdf.open(pdf_path) as pdf_doc:  # opened once for every citation's highlight box
+        findings = [f for (eid, rname), ms in groups.items()
+                    if (f := _finding_for_entry(entries[eid], ms, pages_by_no, pdf_doc, today, eol_data,
+                                                product=products.get(entries[eid].eol.product) if entries[eid].eol
+                                                else None,
+                                                rel=releases.get((eid, rname)))) is not None]
 
     # LLM-proposed technologies the registry does not know: never scored, always "unverified".
     for m in detect.detect_technologies(pages):
