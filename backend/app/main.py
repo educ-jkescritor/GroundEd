@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Optional
 
 import yaml
-from fastapi import FastAPI, File, Form, HTTPException, UploadFile
+from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile
 from fastapi.concurrency import run_in_threadpool
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -96,7 +96,7 @@ def get_analysis(analysis_id: str) -> Analysis:
 
 
 @app.post("/api/analysis/{analysis_id}/findings/{finding_id}/draft", response_model=Draft)
-def draft_update(analysis_id: str, finding_id: str) -> Draft:
+def draft_update(analysis_id: str, finding_id: str, request: Request) -> Draft:
     analysis = db.get_analysis(analysis_id)
     if not analysis:
         raise HTTPException(404, "Analysis not found.")
@@ -114,6 +114,7 @@ def draft_update(analysis_id: str, finding_id: str) -> Draft:
     if hit := cache.get_draft(key):
         text, model = hit
     else:
+        limits.check_draft_allowed(request.client.host if request.client else "unknown")
         try:
             text, model = llm.draft_section(finding.technology, [c.snippet for c in finding.citations], fact, hint)
         except llm.LlmError as e:
