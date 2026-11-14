@@ -69,8 +69,9 @@ async def analyze(file: Optional[UploadFile] = File(None), sample_id: Optional[s
             raise HTTPException(404, f"Sample '{sample_id}' not found.")
         return await _analyze_path(config.SAMPLES_DIR / f"{sample_id}.pdf", f"{sample_id}.pdf", "sample")
 
-    if file.content_type != "application/pdf":
-        raise HTTPException(415, f"Only PDF files are supported (got {file.content_type or 'unknown type'}).")
+    # The declared type is only a hint (some clients send octet-stream); the file's first bytes decide below.
+    if file.content_type not in ("application/pdf", "application/x-pdf", "application/octet-stream", None, ""):
+        raise HTTPException(415, f"Only PDF files are supported (got {file.content_type}).")
     limit = config.MAX_UPLOAD_MB * 1024 * 1024
     data = await file.read(limit + 1)
     if len(data) > limit:
