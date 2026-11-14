@@ -26,7 +26,9 @@ Docs: `README.md` (setup, layout, scoring) · `docs/api.md` (API contract) · `d
 Pipeline: `pdf.py` (PyMuPDF page text) → `detect.py` (registry alias matching in code first, Gemini for extras;
 every snippet must appear verbatim on its page) → `registry.py` / `eol.py` (facts) → `score.py` → saved analysis.
 
-Scoring (100 pts): lifecycle status 50 · time past EOL 20 · version lag 15 · prominence 15. Unverified = not scored.
+Scoring (100 pts, Option C): lifecycle 40 · how it is taught 30 (code > explained > listed) · frequency 20 (4/page) ·
+hands-on 10. Supported and unverified items are not scored. Priority: high ≥ 80 · medium ≥ 50 · else low.
+Weights in `config.py`; teaching/lab patterns in `backend/rules/teaching.yaml` (data, no AI).
 
 ## API contract
 
@@ -37,6 +39,19 @@ Scoring (100 pts): lifecycle status 50 · time past EOL 20 · version lag 15 · 
 
 `feature/backend-pipeline`, `feature/frontend-ui` → PR → `develop` → PR → `main` (release/demo only).
 Merge `develop` into your feature branch before touching shared files.
+Backend files (`backend/**`) change only on backend branches; frontend files only on frontend branches.
+
+**Every coding task gets its own short-lived branch** off the area branch, then merges back:
+```
+git switch feature/backend-pipeline && git pull
+git switch -c feat/<short-task-name>          # or fix/, docs/, refactor/, test/, chore/
+# ...commit work...
+git switch feature/backend-pipeline
+git merge --no-ff feat/<short-task-name> && git push && git branch -d feat/<short-task-name>
+```
+**Commit messages** use Conventional Commits prefixes: `feat:` new behaviour · `fix:` bug fix · `docs:` docs only ·
+`refactor:` code change without behaviour change · `test:` tests only · `chore:` tooling, deps, config.
+One logical change per commit; subject in imperative mood, ≤ 72 chars (e.g. `fix: ignore <% %> outside PHP pages`).
 
 ## Scope
 

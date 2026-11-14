@@ -7,19 +7,24 @@ from datetime import date, datetime, timezone
 from pathlib import Path
 from typing import Optional
 
-from . import cache, detect, eol, registry
+from . import cache, detect, eol, registry, signals
 from .detect import Mention
 from .models import Analysis, Citation, Finding, Lifecycle, Provenance, SourceInfo, Summary, Upgrade
-from .pdf import extract_pages, file_sha256, find_snippet_bbox
+from .pdf import Page, extract_pages, file_sha256, find_snippet_bbox
 from .score import compute, status_for
 
-PIPELINE_VERSION = "0.1.0"
+PIPELINE_VERSION = "0.2.0"  # 0.2.0: scoring Option C
 MAX_CITATIONS = 5  # per finding; prominence still counts every page
 
 
-def _finding_for_entry(entry: registry.Entry, mentions: list[Mention], pdf_path: Path, today: date,
-                       eol_data: dict[str, str]) -> Finding:
+def _finding_for_entry(entry: registry.Entry, mentions: list[Mention], pages_by_no: dict[int, Page], pdf_path: Path,
+                       today: date, eol_data: dict[str, str]) -> Finding:
     pages = sorted({m.page for m in mentions})
+    # Teaching signals: every line on those pages that mentions the item, and whether any page is hands-on.
+    pats = entry.compiled()
+    lines = [l for n in pages for l in pages_by_no[n].text.splitlines() if any(p.search(l) for p in pats)]
+    depth = signals.teaching_depth(lines)
+    hands_on = any(signals.is_hands_on(pages_by_no[n].text) for n in pages)
     citations = [
         Citation(page=m.page, snippet=m.snippet, bbox=find_snippet_bbox(pdf_path, m.page, m.snippet))
         for m in sorted(mentions, key=lambda m: m.page)[:MAX_CITATIONS]
@@ -31,7 +36,7 @@ def _finding_for_entry(entry: registry.Entry, mentions: list[Mention], pdf_path:
         f = entry.fact
         lifecycle = Lifecycle(product=f.product, cycle=f.cycle, eol_date=f.eol_date, source_url=f.source_url,
                               source_name=f.source_name, source_quote=f.source_quote)
-        deprecated, cycles_behind, version = f.stage == "deprecated", None, f.cycle
+        deprecated, version = f.stage == "deprecated", f.cycle
     else:
         ref = entry.eol
         try:
@@ -45,10 +50,10 @@ def _finding_for_entry(entry: registry.Entry, mentions: list[Mention], pdf_path:
         lifecycle = Lifecycle(product=data.product, cycle=rel.label, eol_date=rel.eol_from,
                               latest_cycle=eol.latest_label(data), source_url=data.html_url,
                               source_name="endoflife.date")
-        deprecated, cycles_behind, version = False, eol.majors_behind(data, rel), rel.label
+        deprecated, version = False, rel.label
 
     status = status_for(lifecycle.eol_date, deprecated, today)
-    score = compute(lifecycle.eol_date, deprecated, cycles_behind, len(pages), today)
+    score = compute(lifecycle.eol_date, deprecated, depth, len(pages), hands_on, today)
     return Finding(**base, version=version, status=status, lifecycle=lifecycle, score=score)
 
 
@@ -58,7 +63,8 @@ def analyze(pdf_path: Path, filename: str, kind: str = "upload", today: Optional
     reg = registry.get()
     file_hash = file_sha256(pdf_path)
     detector = "registry"  # becomes "registry+<model>" once LLM detection is enabled
-    cache_key = cache.key(file_hash, reg.version, PIPELINE_VERSION, detector, today.isoformat())
+    rules_version = signals.rules().version
+    cache_key = cache.key(file_hash, reg.version, rules_version, PIPELINE_VERSION, detector, today.isoformat())
     if use_cache and (hit := cache.get(cache_key)):
         return hit
 
@@ -69,7 +75,9 @@ def analyze(pdf_path: Path, filename: str, kind: str = "upload", today: Optional
 
     eol_data: dict[str, str] = {}
     entries = {e.id: e for e in reg.entries}
-    findings = [_finding_for_entry(entries[eid], ms, pdf_path, today, eol_data) for eid, ms in by_entry.items()]
+    pages_by_no = {p.number: p for p in pages}
+    findings = [_finding_for_entry(entries[eid], ms, pages_by_no, pdf_path, today, eol_data)
+                for eid, ms in by_entry.items()]
 
     # LLM-proposed technologies the registry does not know: never scored, always "unverified".
     for m in detect.detect_technologies(pages):
@@ -85,7 +93,8 @@ def analyze(pdf_path: Path, filename: str, kind: str = "upload", today: Optional
         summary=summary,
         findings=findings,
         provenance=Provenance(file_sha256=file_hash, registry_version=reg.version, pipeline_version=PIPELINE_VERSION,
-                              detector=detector, eol_data=eol_data, analysis_date=today.isoformat()),
+                              detector=detector, rules_version=rules_version, eol_data=eol_data,
+                              analysis_date=today.isoformat()),
     )
     if use_cache:
         cache.put(cache_key, analysis)

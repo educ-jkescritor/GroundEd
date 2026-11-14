@@ -26,14 +26,16 @@ UPLOAD_RETENTION_HOURS = int(os.getenv("UPLOAD_RETENTION_HOURS", "24"))
 
 CORS_ORIGINS = os.getenv("CORS_ORIGINS", "http://localhost:5173").split(",")
 
-# Transparent 100-point priority score. Keep in sync with README "Priority score".
+# Transparent 100-point priority score — Option C (stress-tested 2026-11-14). Fixed rules in code, never AI.
+# Keep in sync with README "Priority score". Teaching signals (code / lab patterns) live in rules/teaching.yaml.
 SCORE_WEIGHTS = {
-    "lifecycle_status": 50,  # EOL already = 50, EOL <=12 months = 35, <=24 months = 15, supported = 0
-    "time_past_eol": 20,     # +5 per full year past EOL, capped
-    "version_lag": 15,       # +5 per major cycle behind latest supported, capped
-    "prominence": 15,        # how often / how centrally the syllabus uses it
+    "lifecycle": 40,   # how outdated: see LIFECYCLE_POINTS
+    "teaching": 30,    # how it is taught: see TEACHING_POINTS
+    "frequency": 20,   # FREQUENCY_POINTS_PER_PAGE per page where it appears, capped
+    "hands_on": 10,    # appears on a lab / exercise / activity page
 }
-# Points for a vendor-deprecated item with no removal date yet (counts like "EOL within 24 months").
-DEPRECATED_LIFECYCLE_POINTS = 15
-PROMINENCE_POINTS_PER_PAGE = 5
+LIFECYCLE_POINTS = {"eol": 40, "deprecated": 25, "eol_within_12m": 20, "eol_within_24m": 10}
+TEACHING_POINTS = {"code": 30, "explained": 15, "listed": 5}
+FREQUENCY_POINTS_PER_PAGE = 4
+PRIORITY_THRESHOLDS = {"high": 80, "medium": 50}  # else "low"
 NEARING_EOL_MONTHS = 12  # supported items whose EOL is this close get status "nearing_eol"

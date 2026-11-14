@@ -72,16 +72,43 @@ def test_status_rules():
     assert status_for(None, False, TODAY) == "supported"
 
 
-def test_score_is_deterministic_and_capped():
-    s = compute("2015-12-03", False, None, 9, TODAY)
-    parts = {p.key: p.points for p in s.breakdown}
-    assert parts == {"lifecycle_status": 50, "time_past_eol": 20, "version_lag": 0, "prominence": 15}
-    assert s.total == 85 and s == compute("2015-12-03", False, None, 9, TODAY)
+def test_option_c_ranks_by_impact_not_age():
+    """Stress-test finding: removed code taught on many pages must outrank an old tool that is only listed."""
+    from app.score import compute
+    code_heavy = compute("2015-12-03", False, "code", 9, False, TODAY)
+    listed_once = compute("2020-01-14", False, "listed", 1, False, TODAY)
+    assert code_heavy.total == 40 + 30 + 20 + 0 == 90 and code_heavy.priority == "high"
+    assert listed_once.total == 40 + 5 + 4 + 0 == 49 and listed_once.priority == "low"
 
 
-def test_deprecated_score():
-    s = compute(None, True, None, 1, TODAY)
-    assert s.total == config.DEPRECATED_LIFECYCLE_POINTS + config.PROMINENCE_POINTS_PER_PAGE
+def test_option_c_parts_sum_and_are_deterministic():
+    from app.score import compute
+    s = compute("2015-12-03", False, "explained", 2, True, TODAY)
+    assert {p.key: p.points for p in s.breakdown} == {"lifecycle": 40, "teaching": 15, "frequency": 8, "hands_on": 10}
+    assert s.total == sum(p.points for p in s.breakdown) == 73 and s.priority == "medium"
+    assert s == compute("2015-12-03", False, "explained", 2, True, TODAY)
+
+
+def test_supported_items_are_not_scored():
+    from app.score import compute
+    assert compute("2031-01-01", False, "code", 10, True, TODAY) is None
+    assert compute(None, False, "code", 10, True, TODAY) is None
+
+
+def test_deprecated_and_ending_soon():
+    from app.score import compute
+    assert compute(None, True, "code", 1, False, TODAY).total == 25 + 30 + 4
+    assert compute("2027-06-01", False, "code", 1, False, TODAY).breakdown[0].points == 20
+
+
+def test_teaching_signals():
+    from app.signals import is_hands_on, teaching_depth
+    assert teaching_depth(['$q = mysql_query("SELECT 1");']) == "code"
+    assert teaching_depth(["mysql> CREATE TABLE t(id int(5));"]) == "code"
+    assert teaching_depth(["mysql_result() retrieves the contents of one cell from a MySQL result set"]) == "explained"
+    assert teaching_depth(["Windows 7 / Windows 8"]) == "listed"
+    assert is_hands_on("Laboratory Exercise 3: connect to MySQL")
+    assert not is_hands_on("Assignment Operator: $a = 5;")  # 'assignment' operator is not an activity
 
 
 # ---------- PDF ----------
