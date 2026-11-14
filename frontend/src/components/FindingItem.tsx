@@ -26,6 +26,21 @@ interface Props {
 
 const LABEL = "text-[11px] font-semibold uppercase tracking-[0.07em] text-ink-subtle";
 
+/** Review-state pill: Updated = solid blue, Kept = solid slate, Dismissed = grey. */
+const STATE_PILL: Record<Decision["kind"], string> = {
+  update: "bg-lapis text-white",
+  keep: "bg-unverified text-white",
+  dismiss: "bg-panel-strong text-ink-muted",
+};
+
+export function StatePill({ decision }: { decision: Decision }) {
+  return (
+    <span className={`inline-flex shrink-0 items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold ${STATE_PILL[decision.kind]}`}>
+      <Check size={12} strokeWidth={3} aria-hidden /> {DECISION_DONE[decision.kind]}
+    </span>
+  );
+}
+
 /**
  * One finding (DESIGN.md §10). Hierarchy, so it can be understood without reading everything:
  *   collapsed: name + priority tag → bold status · what to use instead → pages and decision state
@@ -61,29 +76,29 @@ export default function FindingItem({ analysisId, finding: f, decision, open, ai
       {/* Collapsed: what, how urgent, what to do. The text area toggles; the tag cluster sits beside it. */}
       <div className="flex items-start gap-2 p-4">
         <button type="button" onClick={onToggle} aria-expanded={open} aria-controls={panelId} className="grid min-w-0 flex-1 gap-1.5 text-left">
-          <span className="text-[15.5px] font-semibold leading-snug text-ink">
+          <span className={`text-[15.5px] font-semibold leading-snug ${decision?.kind === "dismiss" && !open ? "text-ink-muted line-through decoration-ink-subtle" : "text-ink"}`}>
             {f.technology}
             {f.version && <span className="ml-1 font-mono text-sm font-medium text-ink-muted">{f.version}</span>}
           </span>
-          <span className="text-sm leading-snug">
+          {(!decision || open) && <span className="text-sm leading-snug">
             <span className="font-medium text-ink">{statusShort(f)}</span>
             {replacement && (
               <span className="text-ink-muted"> · Use <span className="font-semibold text-ink">{replacement}</span> instead</span>
             )}
-          </span>
-          <span className="flex flex-wrap items-center gap-x-2 text-xs text-ink-subtle">
-            <span>{pages.length > 1 ? "Pages" : "Page"} {pages.join(", ")}</span>
-            <span aria-hidden>·</span>
-            {decision ? (
-              <span className="inline-flex items-center gap-1 font-semibold text-lapis-deep"><Check size={13} aria-hidden /> {DECISION_DONE[decision.kind]}</span>
-            ) : (
-              <span>To review</span>
-            )}
-          </span>
+          </span>}
+          {(!decision || open) && (
+            <span className="text-xs text-ink-subtle">{pages.length > 1 ? "Pages" : "Page"} {pages.join(", ")}</span>
+          )}
         </button>
         <span className="flex shrink-0 items-center gap-0.5">
-          <PriorityBadge priority={tone} short />
-          <PriorityInfo score={f.score} tone={tone} />
+          {decision && !open ? (
+            <StatePill decision={decision} />
+          ) : (
+            <>
+              <PriorityBadge priority={tone} short />
+              <PriorityInfo score={f.score} tone={tone} />
+            </>
+          )}
           <button type="button" onClick={onToggle} aria-label={open ? "Collapse" : "Expand"} className="flex h-6 w-6 items-center justify-center rounded-full text-ink-subtle hover:bg-panel">
             <ChevronDown size={16} className={`transition-transform ${open ? "rotate-180" : ""}`} aria-hidden />
           </button>

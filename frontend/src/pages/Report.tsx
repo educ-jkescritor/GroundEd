@@ -41,6 +41,7 @@ export default function Report() {
   const [focus, setFocus] = useState<Focus | null>(null); // where the document pane should scroll
   const [tab, setTab] = useState<"findings" | "sources">("findings");
   const [tone, setTone] = useState<Tone | "all">("all");
+  const [showReviewed, setShowReviewed] = useState(false);
   const [mobilePane, setMobilePane] = useState<"document" | "findings">("findings");
   const [pdfFailed, setPdfFailed] = useState<string | null>(null);
   const [showDetails, setShowDetails] = useState(false);
@@ -83,6 +84,10 @@ export default function Report() {
 
   const ranked = useMemo(() => (analysis ? rankFindings(analysis.findings).filter(needsReview) : []), [analysis]);
   const visible = ranked.filter((f) => tone === "all" || toneOf(f) === tone);
+  const toReview = visible.filter((f) => !decisions[f.id]);
+  const reviewed = visible.filter((f) => decisions[f.id]);
+  // The Reviewed section opens on request, or automatically when the selected finding is in it.
+  const reviewedOpen = showReviewed || reviewed.some((f) => f.id === selectedId);
 
   const scrollCardIntoView = (fid: string) =>
     setTimeout(() => document.getElementById(`card-${fid}`)?.scrollIntoView({ behavior: "smooth", block: "nearest" }), 60);
@@ -151,6 +156,22 @@ export default function Report() {
       scrollCardIntoView(next.id);
     }
   }
+
+  const renderCard = (f: (typeof ranked)[number]) => (
+    <li key={f.id} id={`card-${f.id}`} className="scroll-mt-14">
+      <FindingItem
+        analysisId={analysis.id}
+        finding={f}
+        decision={decisions[f.id]}
+        open={selectedId === f.id}
+        aiAvailable={aiAvailable}
+        onToggle={() => (selectedId === f.id ? setSelectedId(null) : openFinding(f.id))}
+        onDecide={(d) => decideAndAdvance(f.id, d)}
+        onUndo={() => undo(f.id)}
+        onShowInDocument={(cite) => { setMobilePane("document"); openFinding(f.id, cite); }}
+      />
+    </li>
+  );
 
   function dismissNudge() {
     setNudgeDismissed(true);
@@ -294,23 +315,31 @@ export default function Report() {
                         {visible.length === 0 && ranked.length > 0 && (
                           <p className="rounded-[var(--radius-card)] bg-panel p-4 text-sm text-ink-muted">No findings match. <button type="button" className="font-semibold text-lapis-deep" onClick={() => setTone("all")}>Show all</button></p>
                         )}
-                        <ol className="space-y-2.5">
-                          {visible.map((f) => (
-                            <li key={f.id} id={`card-${f.id}`} className="scroll-mt-14">
-                              <FindingItem
-                                analysisId={analysis.id}
-                                finding={f}
-                                decision={decisions[f.id]}
-                                open={selectedId === f.id}
-                                aiAvailable={aiAvailable}
-                                onToggle={() => (selectedId === f.id ? setSelectedId(null) : openFinding(f.id))}
-                                onDecide={(d) => decideAndAdvance(f.id, d)}
-                                onUndo={() => undo(f.id)}
-                                onShowInDocument={(cite) => { setMobilePane("document"); openFinding(f.id, cite); }}
-                              />
-                            </li>
-                          ))}
-                        </ol>
+                        {/* Grouped by review state: what's left first; reviewed items fold away below. */}
+                        {toReview.length > 0 && (
+                          <section aria-label="To review" className="space-y-2.5">
+                            <h3 className="font-sans text-[11px] font-semibold uppercase tracking-[0.07em] text-ink-subtle [-webkit-text-stroke:0]">To review · {toReview.length}</h3>
+                            <ol className="space-y-2.5">{toReview.map(renderCard)}</ol>
+                          </section>
+                        )}
+                        {toReview.length === 0 && reviewed.length > 0 && (
+                          <p className="rounded-[var(--radius-card)] bg-panel p-4 text-sm text-ink-muted">Nothing left to review here.</p>
+                        )}
+                        {reviewed.length > 0 && (
+                          <section aria-label="Reviewed" className="mt-5 space-y-2.5">
+                            <button
+                              type="button"
+                              aria-expanded={reviewedOpen}
+                              onClick={() => setShowReviewed(!reviewedOpen)}
+                              className="flex w-full items-center gap-1.5 text-left text-[11px] font-semibold uppercase tracking-[0.07em] text-ink-subtle hover:text-ink"
+                            >
+                              <ChevronDown size={14} className={`transition-transform ${reviewedOpen ? "" : "-rotate-90"}`} aria-hidden />
+                              Reviewed · {reviewed.length}
+                              {!reviewedOpen && <span className="font-normal normal-case tracking-normal">(show)</span>}
+                            </button>
+                            {reviewedOpen && <ol className="space-y-2">{reviewed.map(renderCard)}</ol>}
+                          </section>
+                        )}
                         {ranked.length > 0 && <p className="mt-4 text-center text-xs text-ink-subtle">Tip: press J / K to move between findings.</p>}
                       </>
                     )}
