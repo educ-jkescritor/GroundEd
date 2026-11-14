@@ -22,6 +22,9 @@ class Lifecycle(BaseModel):
     eol_date: Optional[str] = None  # ISO date, or None if no EOL announced
     latest_cycle: Optional[str] = None
     source_url: str  # e.g. https://endoflife.date/python
+    # Additive (registry facts): who published the fact and the exact sentence that proves it.
+    source_name: Optional[str] = None  # e.g. "PHP Manual (php.net)" or "endoflife.date"
+    source_quote: Optional[str] = None  # verbatim passage from source_url
 
 
 class ScorePart(BaseModel):
@@ -68,12 +71,23 @@ class Summary(BaseModel):
     unverified: int = 0
 
 
+class Provenance(BaseModel):
+    """Set by code, never by the LLM. Same stamp => same result (served from cache)."""
+    file_sha256: str
+    registry_version: str  # hash of backend/registry/*.yaml
+    pipeline_version: str
+    detector: str  # e.g. "registry" or "registry+gemini-2.5-flash"
+    eol_data: dict[str, str] = {}  # endoflife.date product -> last_modified of the data used
+    analysis_date: str  # ISO date used for "time past EOL" and status
+
+
 class Analysis(BaseModel):
     id: str
     created_at: datetime
     source: SourceInfo
     summary: Summary
     findings: list[Finding]
+    provenance: Optional[Provenance] = None  # additive
 
 
 class Draft(BaseModel):

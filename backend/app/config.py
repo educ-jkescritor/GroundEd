@@ -12,7 +12,7 @@ DB_PATH = Path(os.getenv("DB_PATH", DATA_DIR / "grounded.db"))
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
 GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")  # TODO: confirm current free-tier model name
 
-EOL_API_BASE = os.getenv("EOL_API_BASE", "https://endoflife.date/api")
+EOL_API_BASE = os.getenv("EOL_API_BASE", "https://endoflife.date/api/v1")
 EOL_CACHE_HOURS = int(os.getenv("EOL_CACHE_HOURS", "24"))
 
 MAX_UPLOAD_MB = int(os.getenv("MAX_UPLOAD_MB", "10"))
@@ -27,3 +27,7 @@ SCORE_WEIGHTS = {
     "version_lag": 15,       # +5 per major cycle behind latest supported, capped
     "prominence": 15,        # how often / how centrally the syllabus uses it
 }
+# Points for a vendor-deprecated item with no removal date yet (counts like "EOL within 24 months").
+DEPRECATED_LIFECYCLE_POINTS = 15
+PROMINENCE_POINTS_PER_PAGE = 5
+NEARING_EOL_MONTHS = 12  # supported items whose EOL is this close get status "nearing_eol"

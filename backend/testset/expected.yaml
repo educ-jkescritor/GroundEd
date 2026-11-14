@@ -1,0 +1,19 @@
+# Fact-checked ground truth for the private test modules (PDFs live in git-ignored private/modules/).
+# How it was built: (1) list every technology/function/version visible in the module text, with no judgement;
+# (2) keep only items an official source says are removed, deprecated or end-of-life (see registry/ for the quotes).
+# Limitation: this measures "did we find and cite what the sources prove", not teacher agreement.
+# `page` = first page where the item appears (1-based). No quotes from the modules are stored here.
+modules:
+  m01-web-architecture-tools-intro-php.pdf:
+    - {item: windows-7, page: 18}
+    - {item: windows-8, page: 18}
+    - {item: internet-explorer, page: 12}
+    - {item: php-asp-script-tags, page: 20}
+  m02-php-operators-control-structures.pdf: []  # basic syntax: must produce no findings
+  m03-php-arrays-user-defined-functions.pdf: []
+  m04-php-predefined-functions.pdf: []         # mktime $is_dst is suspected but unsourced (registry/FLAGGED.md)
+  m05-php-web-forms-validation.pdf: []
+  m06-mysql-database.pdf:
+    - {item: mysql-int-display-width, page: 27}
+  m07-php-application-mysql.pdf:
+    - {item: php-ext-mysql, page: 3}

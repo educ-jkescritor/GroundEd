@@ -1,0 +1,19 @@
+# Facts Registry — products whose lifecycle comes live from endoflife.date (v1 API).
+# `eol.product` / `eol.cycle` name the endoflife.date product and release; dates are never written here.
+- id: windows-7
+  technology: Windows 7
+  patterns: ['\bWindows\s*7\b']
+  eol: {product: windows, cycle: "7"}
+  upgrade: {target: Windows 11, source_url: "https://endoflife.date/windows"}
+
+- id: windows-8
+  technology: Windows 8
+  patterns: ['\bWindows\s*8(?!\.\d)\b']
+  eol: {product: windows, cycle: "8"}
+  upgrade: {target: Windows 11, source_url: "https://endoflife.date/windows"}
+
+- id: internet-explorer
+  technology: Internet Explorer
+  patterns: ['\bInternet\s+Explorer\b']
+  eol: {product: internet-explorer, cycle: "11"}  # last consumer release; earlier versions ended sooner
+  upgrade: {target: Microsoft Edge, source_url: "https://learn.microsoft.com/lifecycle/faq/internet-explorer-microsoft-edge"}

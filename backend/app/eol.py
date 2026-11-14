@@ -1,26 +1,111 @@
-"""endoflife.date lookups, cached on disk. This is the ONLY source of lifecycle facts.
+"""endoflife.date v1 API lookups, cached on disk. The ONLY live source of product lifecycle facts.
 
-API notes (verify before building):
-- Product list:  GET {EOL_API_BASE}/all.json
-- Product cycles: GET {EOL_API_BASE}/{product}.json  -> [{cycle, eol, latest, releaseDate, lts, ...}]
-  `eol` can be a date string or a boolean.
-- A newer v1 API also exists (https://endoflife.date/docs/api/v1/); pick one and stick with it.
+GET {EOL_API_BASE}/products/{product}/ -> {"result": {"releases": [{name, label, isEol, eolFrom, isMaintained, ...}]}}
+If the API is unreachable, a stale cached copy is used; with no cache, the item becomes "unverified".
 """
-from .models import Lifecycle
+from __future__ import annotations
+
+import json
+import re
+import time
+from dataclasses import dataclass
+from typing import Optional
+
+import httpx
+
+from .config import CACHE_DIR, EOL_API_BASE, EOL_CACHE_HOURS
 
 
-def load_products() -> list[str]:
-    """TODO: fetch all.json (cache to data/cache/, refresh after EOL_CACHE_HOURS)."""
-    raise NotImplementedError
+class EolError(RuntimeError):
+    """Lifecycle data could not be fetched; message says what failed."""
 
 
-def match_product(technology: str) -> str | None:
-    """TODO: normalise the name (lowercase, strip punctuation) and map it to a slug using
-    data/aliases.json first, then exact slug matches from load_products(). Return None if no match => unverified."""
-    raise NotImplementedError
+@dataclass
+class Release:
+    name: str
+    label: str
+    eol_from: Optional[str]
+    is_eol: bool
+    maintained: bool
 
 
-def resolve(product: str, version: str | None) -> Lifecycle:
-    """TODO: fetch the product's cycles, pick the cycle matching `version` (e.g. "2.7", or major "8"),
-    and fill eol_date / latest_cycle. source_url = f"https://endoflife.date/{product}"."""
-    raise NotImplementedError
+@dataclass
+class ProductData:
+    product: str
+    label: str
+    last_modified: str
+    html_url: str
+    releases: list[Release]  # newest first, as returned by the API
+
+
+def _cache_path(product: str):
+    return CACHE_DIR / f"eol-{product}.json"
+
+
+def _fetch(product: str) -> dict:
+    url = f"{EOL_API_BASE}/products/{product}/"
+    try:
+        r = httpx.get(url, timeout=15, follow_redirects=True)
+    except httpx.HTTPError as e:
+        raise EolError(f"endoflife.date unreachable for '{product}': {e.__class__.__name__}") from e
+    if r.status_code == 404:
+        raise EolError(f"endoflife.date has no product '{product}' (404)")
+    if r.status_code != 200:
+        raise EolError(f"endoflife.date returned HTTP {r.status_code} for '{product}'")
+    return r.json()
+
+
+def get_product(product: str) -> ProductData:
+    path = _cache_path(product)
+    fresh = path.exists() and (time.time() - path.stat().st_mtime) < EOL_CACHE_HOURS * 3600
+    if fresh:
+        data = json.loads(path.read_text())
+    else:
+        try:
+            data = _fetch(product)
+            CACHE_DIR.mkdir(parents=True, exist_ok=True)
+            path.write_text(json.dumps(data))
+        except EolError:
+            if not path.exists():
+                raise
+            data = json.loads(path.read_text())  # stale cache beats no answer; last_modified is recorded
+    res = data["result"]
+    return ProductData(
+        product=res["name"],
+        label=res.get("label") or res["name"],
+        last_modified=data.get("last_modified", ""),
+        html_url=res.get("links", {}).get("html") or f"https://endoflife.date/{product}",
+        releases=[
+            Release(name=r["name"], label=r.get("label") or r["name"], eol_from=r.get("eolFrom"),
+                    is_eol=bool(r.get("isEol")), maintained=bool(r.get("isMaintained")))
+            for r in res.get("releases", [])
+        ],
+    )
+
+
+def find_release(data: ProductData, cycle: str) -> Optional[Release]:
+    """Exact name match first, then prefix ("7" -> "7-sp1")."""
+    for r in data.releases:
+        if r.name == cycle:
+            return r
+    for r in data.releases:
+        if r.name.startswith(cycle + "-"):
+            return r
+    return None
+
+
+def _major(name: str) -> Optional[int]:
+    m = re.match(r"(\d+)", name)
+    return int(m.group(1)) if m else None
+
+
+def majors_behind(data: ProductData, release: Release) -> int:
+    """Number of distinct newer major versions listed for the product."""
+    mine = _major(release.name)
+    if mine is None:
+        return 0
+    return len({m for r in data.releases if (m := _major(r.name)) is not None and m > mine})
+
+
+def latest_label(data: ProductData) -> Optional[str]:
+    return data.releases[0].label if data.releases else None
