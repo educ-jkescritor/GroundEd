@@ -1,0 +1,300 @@
+{
+ "last_modified": "2026-11-11T22:12:42+00:00",
+ "result": {
+  "name": "mssqlserver",
+  "label": "Microsoft SQL Server",
+  "links": {
+   "html": "https://endoflife.date/mssqlserver"
+  },
+  "releases": [
+   {
+    "name": "17.0",
+    "label": "2025",
+    "releaseDate": "2025-11-18",
+    "isEol": false,
+    "eolFrom": "2036-01-06",
+    "isMaintained": true
+   },
+   {
+    "name": "16.0",
+    "label": "2022 'Dallas'",
+    "releaseDate": "2022-11-16",
+    "isEol": false,
+    "eolFrom": "2033-01-11",
+    "isMaintained": true
+   },
+   {
+    "name": "13.0-sp3-acp",
+    "label": "2016 SP3 Azure Connect Pack",
+    "releaseDate": "2022-05-19",
+    "isEol": true,
+    "eolFrom": "2026-07-14",
+    "isMaintained": true
+   },
+   {
+    "name": "13.0-sp3",
+    "label": "2016 SP3",
+    "releaseDate": "2021-09-15",
+    "isEol": true,
+    "eolFrom": "2026-07-14",
+    "isMaintained": true
+   },
+   {
+    "name": "15.0",
+    "label": "2019 'Aris/Seattle'",
+    "releaseDate": "2019-11-04",
+    "isEol": false,
+    "eolFrom": "2030-01-08",
+    "isMaintained": true
+   },
+   {
+    "name": "12.0-sp3",
+    "label": "2014 'Hekaton' SP3",
+    "releaseDate": "2018-10-30",
+    "isEol": true,
+    "eolFrom": "2024-07-09",
+    "isMaintained": true
+   },
+   {
+    "name": "13.0-sp2",
+    "label": "2016 SP2",
+    "releaseDate": "2018-04-24",
+    "isEol": true,
+    "eolFrom": "2022-10-11",
+    "isMaintained": false
+   },
+   {
+    "name": "11.0-sp4",
+    "label": "2012 'Denali' SP4",
+    "releaseDate": "2017-10-05",
+    "isEol": true,
+    "eolFrom": "2022-07-12",
+    "isMaintained": false
+   },
+   {
+    "name": "14.0",
+    "label": "2017 'Helsinki'",
+    "releaseDate": "2017-09-29",
+    "isEol": false,
+    "eolFrom": "2027-10-12",
+    "isMaintained": true
+   },
+   {
+    "name": "13.0-sp1",
+    "label": "2016 SP1",
+    "releaseDate": "2016-11-16",
+    "isEol": true,
+    "eolFrom": "2019-07-09",
+    "isMaintained": false
+   },
+   {
+    "name": "12.0-sp2",
+    "label": "2014 'Hekaton' SP2",
+    "releaseDate": "2016-07-14",
+    "isEol": true,
+    "eolFrom": "2020-01-14",
+    "isMaintained": false
+   },
+   {
+    "name": "13.0",
+    "label": "2016",
+    "releaseDate": "2016-06-01",
+    "isEol": true,
+    "eolFrom": "2018-01-09",
+    "isMaintained": false
+   },
+   {
+    "name": "11.0-sp3",
+    "label": "2012 'Denali' SP3",
+    "releaseDate": "2015-12-01",
+    "isEol": true,
+    "eolFrom": "2018-10-09",
+    "isMaintained": false
+   },
+   {
+    "name": "12.0-sp1",
+    "label": "2014 'Hekaton' SP1",
+    "releaseDate": "2015-04-14",
+    "isEol": true,
+    "eolFrom": "2017-10-10",
+    "isMaintained": false
+   },
+   {
+    "name": "10.50-sp3",
+    "label": "2008 R2 'Kilimanjaro' SP3",
+    "releaseDate": "2014-07-07",
+    "isEol": true,
+    "eolFrom": "2019-07-09",
+    "isMaintained": false
+   },
+   {
+    "name": "10.0-sp4",
+    "label": "2008 'Katmai' SP4",
+    "releaseDate": "2014-07-07",
+    "isEol": true,
+    "eolFrom": "2019-07-09",
+    "isMaintained": false
+   },
+   {
+    "name": "11.0-sp2",
+    "label": "2012 'Denali' SP2",
+    "releaseDate": "2014-06-10",
+    "isEol": true,
+    "eolFrom": "2017-01-10",
+    "isMaintained": false
+   },
+   {
+    "name": "12.0",
+    "label": "2014 'Hekaton'",
+    "releaseDate": "2014-06-05",
+    "isEol": true,
+    "eolFrom": "2016-07-12",
+    "isMaintained": false
+   },
+   {
+    "name": "11.0-sp1",
+    "label": "2012 'Denali' SP1",
+    "releaseDate": "2012-11-07",
+    "isEol": true,
+    "eolFrom": "2015-07-14",
+    "isMaintained": false
+   },
+   {
+    "name": "10.50-sp2",
+    "label": "2008 R2 'Kilimanjaro' SP2",
+    "releaseDate": "2012-07-26",
+    "isEol": true,
+    "eolFrom": "2015-10-13",
+    "isMaintained": false
+   },
+   {
+    "name": "11.0",
+    "label": "2012 'Denali'",
+    "releaseDate": "2012-05-20",
+    "isEol": true,
+    "eolFrom": "2014-01-14",
+    "isMaintained": false
+   },
+   {
+    "name": "10.00-sp3",
+    "label": "2008 'Katmai' SP3",
+    "releaseDate": "2011-10-06",
+    "isEol": true,
+    "eolFrom": "2015-10-13",
+    "isMaintained": false
+   },
+   {
+    "name": "10.50-sp1",
+    "label": "2008 R2 'Kilimanjaro' SP1",
+    "releaseDate": "2011-07-12",
+    "isEol": true,
+    "eolFrom": "2013-10-08",
+    "isMaintained": false
+   },
+   {
+    "name": "9.0-sp4",
+    "label": "2005 'Yukon' SP4",
+    "releaseDate": "2010-12-13",
+    "isEol": true,
+    "eolFrom": "2016-04-12",
+    "isMaintained": false
+   },
+   {
+    "name": "10.00-sp2",
+    "label": "2008 'Katmai' SP2",
+    "releaseDate": "2010-09-24",
+    "isEol": true,
+    "eolFrom": "2012-10-09",
+    "isMaintained": false
+   },
+   {
+    "name": "10.50-r2",
+    "label": "2008 'Kilimanjaro' R2",
+    "releaseDate": "2010-07-20",
+    "isEol": true,
+    "eolFrom": "2012-07-10",
+    "isMaintained": false
+   },
+   {
+    "name": "10.00-sp1",
+    "label": "2008 'Katmai' SP1",
+    "releaseDate": "2009-03-31",
+    "isEol": true,
+    "eolFrom": "2011-10-11",
+    "isMaintained": false
+   },
+   {
+    "name": "9.00-sp3",
+    "label": "2005 'Yukon' SP3",
+    "releaseDate": "2008-12-15",
+    "isEol": true,
+    "eolFrom": "2012-01-10",
+    "isMaintained": false
+   },
+   {
+    "name": "10.00",
+    "label": "2008 'Katmai'",
+    "releaseDate": "2008-11-06",
+    "isEol": true,
+    "eolFrom": "2010-04-13",
+    "isMaintained": false
+   },
+   {
+    "name": "9.00-sp2",
+    "label": "2005 'Yukon' SP2",
+    "releaseDate": "2007-02-19",
+    "isEol": true,
+    "eolFrom": "2010-01-12",
+    "isMaintained": false
+   },
+   {
+    "name": "9.0-sp1",
+    "label": "2005 'Yukon' SP1",
+    "releaseDate": "2006-04-18",
+    "isEol": true,
+    "eolFrom": "2008-04-08",
+    "isMaintained": false
+   },
+   {
+    "name": "9.0",
+    "label": "2005 'Yukon'",
+    "releaseDate": "2006-01-14",
+    "isEol": true,
+    "eolFrom": "2007-07-10",
+    "isMaintained": false
+   },
+   {
+    "name": "8.0-sp4",
+    "label": "2000 'Shiloh' SP4",
+    "releaseDate": "2005-05-06",
+    "isEol": true,
+    "eolFrom": "2013-04-09",
+    "isMaintained": false
+   },
+   {
+    "name": "7.0-sp4",
+    "label": "7.0 'Sphinx' SP4",
+    "releaseDate": "2002-04-26",
+    "isEol": true,
+    "eolFrom": "2011-01-11",
+    "isMaintained": false
+   },
+   {
+    "name": "6.50-sp5a",
+    "label": "6.5 'Hydra' SP5a",
+    "releaseDate": "1998-12-24",
+    "isEol": true,
+    "eolFrom": "2002-01-01",
+    "isMaintained": false
+   },
+   {
+    "name": "6.0-sp3",
+    "label": "6.0 'SQL95' SP3",
+    "releaseDate": "1995-06-13",
+    "isEol": true,
+    "eolFrom": "1999-03-31",
+    "isMaintained": false
+   }
+  ]
+ }
+}
