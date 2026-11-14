@@ -254,7 +254,7 @@ export default function Report() {
                     <div className="flex items-start gap-4">
                       <div className="min-w-0 flex-1">
                         <h2 className="text-[28px] leading-[1.1]">
-                          {ranked.length === 0 ? "Nothing to review" : allDone ? `All ${ranked.length} findings reviewed` : `${ranked.length} finding${ranked.length === 1 ? "" : "s"} to be reviewed`}
+                          {ranked.length === 0 ? "Nothing to review" : allDone ? `All ${ranked.length} findings reviewed` : `${ranked.length - decided} finding${ranked.length - decided === 1 ? "" : "s"} to be reviewed`}
                         </h2>
                         <p className="mt-1 text-sm text-ink-muted">
                           {ranked.length === 0 ? "We didn't find tools or practices that may be outdated." : "Most important first."}
