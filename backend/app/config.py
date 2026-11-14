@@ -3,6 +3,11 @@ import os
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Local dev: read backend/.env (Docker passes the same file via env_file). Real env vars win.
+from dotenv import load_dotenv  # noqa: E402
+
+load_dotenv(BASE_DIR / ".env", override=False)
 DATA_DIR = BASE_DIR / "data"
 SAMPLES_DIR = DATA_DIR / "samples"
 CACHE_DIR = DATA_DIR / "cache"
@@ -10,7 +15,8 @@ UPLOAD_DIR = DATA_DIR / "uploads"
 DB_PATH = Path(os.getenv("DB_PATH", DATA_DIR / "grounded.db"))
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
-GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")  # TODO: confirm current free-tier model name
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.5-flash")  # pinned: answered reliably in tests 2026-11-14 (3.7/3.8 were overloaded)
+GEMINI_FALLBACK_MODEL = os.getenv("GEMINI_FALLBACK_MODEL", "gemini-3.5-flash-lite")  # one fallback only
 
 EOL_API_BASE = os.getenv("EOL_API_BASE", "https://endoflife.date/api/v1")
 EOL_CACHE_HOURS = int(os.getenv("EOL_CACHE_HOURS", "24"))

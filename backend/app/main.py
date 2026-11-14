@@ -8,7 +8,7 @@ from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.concurrency import run_in_threadpool
 from fastapi.middleware.cors import CORSMiddleware
 
-from . import config, db
+from . import cache, config, db, detect
 from .models import Analysis, Draft, FeedbackIn, FeedbackOut, Sample
 from .pdf import PdfError
 from .pipeline import analyze as run_pipeline
@@ -87,8 +87,31 @@ def get_analysis(analysis_id: str) -> Analysis:
 
 @app.post("/api/analysis/{analysis_id}/findings/{finding_id}/draft", response_model=Draft)
 def draft_update(analysis_id: str, finding_id: str) -> Draft:
-    # TODO: detect.draft_section(finding, page_text) via the LLM, once a key is configured.
-    raise HTTPException(503, "AI drafts are not available yet: no LLM provider is configured on the server.")
+    analysis = db.get_analysis(analysis_id)
+    if not analysis:
+        raise HTTPException(404, "Analysis not found.")
+    finding = next((f for f in analysis.findings if f.id == finding_id), None)
+    if not finding:
+        raise HTTPException(404, "Finding not found in this analysis.")
+    lc = finding.lifecycle
+    if not lc:
+        raise HTTPException(409, "Drafts are only made for findings with a verified source.")
+    fact = lc.source_quote or (
+        f"{lc.source_name or 'endoflife.date'}: {finding.technology} {lc.cycle or ''} end of life {lc.eol_date or 'not announced'}"
+    )
+    file_hash = analysis.provenance.file_sha256 if analysis.provenance else analysis.id
+    key = cache.key(file_hash, finding.id, config.GEMINI_MODEL, config.GEMINI_FALLBACK_MODEL, detect.DRAFT_PROMPT_VERSION)
+    if hit := cache.get_draft(key):
+        text, model = hit
+    else:
+        try:
+            text, model = detect.draft_section(finding.technology, [c.snippet for c in finding.citations], fact,
+                                               finding.upgrade.target_cycle if finding.upgrade else None)
+        except detect.LlmError as e:
+            status = e.status if e.status in (429, 503, 504) else 502
+            raise HTTPException(status, f"AI draft failed: {e}") from e
+        cache.put_draft(key, text, model)
+    return Draft(finding_id=finding.id, text=text, model=model)
 
 
 @app.post("/api/feedback", response_model=FeedbackOut)

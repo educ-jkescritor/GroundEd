@@ -133,3 +133,35 @@ def test_upload_validation(client):
     assert r.status_code == 415
     r = client.post("/api/analyze", data={"sample_id": "nope"})
     assert r.status_code == 404
+
+
+# ---------- drafts (Gemini mocked: tests never spend credits) ----------
+
+def test_draft_is_cached_and_labelled(client, monkeypatch):
+    from app import detect
+    calls = []
+
+    def fake(technology, snippets, fact, hint):
+        calls.append(technology)
+        assert snippets and "removed" in fact  # only verified evidence is sent
+        return "Use PDO.", "fake-model"
+
+    monkeypatch.setattr(detect, "draft_section", fake)
+    a = client.post("/api/analyze", data={"sample_id": "legacy-php-lab"}).json()
+    url = f"/api/analysis/{a['id']}/findings/php-ext-mysql/draft"
+    d1, d2 = client.post(url).json(), client.post(url).json()
+    assert d1 == d2 and d1["label"] == "ai_suggestion" and d1["model"] == "fake-model"
+    assert len(calls) == 1  # second click served from cache
+
+
+def test_draft_errors_are_specific(client, monkeypatch):
+    from app import detect
+
+    def busy(*_):
+        raise detect.LlmError(503, "m1: HTTP 503 UNAVAILABLE busy | m2: HTTP 503 UNAVAILABLE busy")
+
+    monkeypatch.setattr(detect, "draft_section", busy)
+    a = client.post("/api/analyze", data={"sample_id": "legacy-php-lab"}).json()
+    r = client.post(f"/api/analysis/{a['id']}/findings/windows-7/draft")
+    assert r.status_code == 503 and "m1" in r.json()["detail"] and "m2" in r.json()["detail"]
+    assert client.post(f"/api/analysis/{a['id']}/findings/nope/draft").status_code == 404
