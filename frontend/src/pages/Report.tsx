@@ -7,7 +7,7 @@ import DetailsDialog from "../components/DetailsDialog";
 import FindingItem from "../components/FindingItem";
 import ModuleView from "../components/ModuleView";
 import type { Focus, PdfSource } from "../components/PdfViewer";
-import { PrintReport, buildMarkdown } from "../components/ReportExport";
+import { PrintReport, buildMarkdown, printReport } from "../components/ReportExport";
 import SourcesList from "../components/SourcesList";
 import { Button, ButtonLink, buttonClass } from "../components/ui/Button";
 import { HorizonMark } from "../components/ui/Logo";
@@ -455,7 +455,7 @@ function DownloadMenu({ analysis, decisions }: { analysis: Analysis; decisions: 
       </button>
       {open && (
         <div role="menu" className="absolute right-0 top-11 z-50 w-60 rounded-[var(--radius-card)] border border-line bg-surface p-1.5 shadow-[var(--shadow-float)]">
-          <button role="menuitem" type="button" className={item} onClick={() => { setOpen(false); setTimeout(() => window.print(), 50); }}>
+          <button role="menuitem" type="button" className={item} onClick={() => { setOpen(false); void printReport(); }}>
             <Printer size={15} aria-hidden /> Report as PDF
           </button>
           <button role="menuitem" type="button" className={item} onClick={copy}>
