@@ -413,7 +413,7 @@ export default function Report() {
       </div>
 
       {showDetails && <DetailsDialog analysis={analysis} onClose={() => setShowDetails(false)} />}
-      <PrintReport analysis={analysis} decisions={decisions} />
+      <PrintReport analysis={analysis} decisions={decisions} pdfSource={pdfSource} title={title} userName={user?.name} />
     </>
   );
 }

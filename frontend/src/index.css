@@ -104,14 +104,28 @@
   }
 }
 
+@page {
+  size: letter portrait;
+  margin: 0;
+}
+
 @media print {
+  html,
+  html.workspace,
   body {
-    background: white;
+    overflow: visible !important;
+    height: auto !important;
+    background: white !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
   a[href^="http"]::after {
     content: " (" attr(href) ")";
     font-size: 0.8em;
     color: #4f5a6e;
+  }
+  .turnitin-report a[href^="http"]::after {
+    content: none;
   }
 }
 
