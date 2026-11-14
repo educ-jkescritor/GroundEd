@@ -48,6 +48,20 @@ class Upgrade(BaseModel):
     source_url: str
 
 
+class SourcePassage(BaseModel):
+    """A passage retrieved from the source library (RAG). Additive: frontend may ignore it."""
+    role: Literal["fact", "replacement"]  # fact = context around the registry quote; replacement = what to use instead
+    doc_id: str
+    title: str
+    publisher: str
+    url: str
+    heading: str
+    text: str
+    fetched_at: str  # when the library saved this document
+    license: str
+    contains_fact_quote: bool = False  # code-checked: the registry's quote appears in this passage
+
+
 class Finding(BaseModel):
     id: str
     technology: str  # as written in the syllabus
@@ -57,6 +71,7 @@ class Finding(BaseModel):
     lifecycle: Optional[Lifecycle] = None  # None => unverified
     score: Optional[Score] = None  # None => unverified, "needs manual check"
     upgrade: Optional[Upgrade] = None
+    passages: Optional[list[SourcePassage]] = None  # additive: supporting passages from the source library
 
 
 class SourceInfo(BaseModel):
@@ -79,6 +94,7 @@ class Provenance(BaseModel):
     pipeline_version: str
     detector: str  # e.g. "registry" or "registry+gemini-2.5-flash"
     rules_version: Optional[str] = None  # hash of backend/rules/teaching.yaml (scoring signals)
+    library_version: Optional[str] = None  # hash of the source library snapshot (documents + lifecycle data)
     eol_data: dict[str, str] = {}  # endoflife.date product -> last_modified of the data used
     analysis_date: str  # ISO date used for "time past EOL" and status
 

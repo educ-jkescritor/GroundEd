@@ -32,12 +32,14 @@ def _print_analysis(a) -> None:
                 print(f"    says: “{lc.source_quote}”")
         if f.upgrade:
             print(f"    upgrade: {f.upgrade.target_cycle}")
+        for p in f.passages or []:
+            print(f"    library [{p.role}] {p.publisher} › {p.heading}: {p.text[:140]}…")
         if f.score:
             print("    score: " + " · ".join(f"{p.label} {p.points}/{p.max}" for p in f.score.breakdown))
     p = a.provenance
     if p:
         print(f"\nprovenance: file {p.file_sha256[:12]} · registry {p.registry_version} · pipeline {p.pipeline_version}"
-              f" · detector {p.detector} · as of {p.analysis_date}")
+              f" · library {p.library_version} · detector {p.detector} · as of {p.analysis_date}")
 
 
 def main(argv: list[str] | None = None) -> int:

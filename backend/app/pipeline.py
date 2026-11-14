@@ -13,7 +13,7 @@ from .models import Analysis, Citation, Finding, Lifecycle, Provenance, SourceIn
 from .pdf import Page, extract_pages, file_sha256, find_snippet_bbox
 from .score import compute, status_for
 
-PIPELINE_VERSION = "0.2.0"  # 0.2.0: scoring Option C
+PIPELINE_VERSION = "0.3.0"  # 0.3.0: library-backed facts + retrieved passages
 MAX_CITATIONS = 5  # per finding; prominence still counts every page
 
 
@@ -72,9 +72,14 @@ def _finding_for_entry(entry: registry.Entry, mentions: list[Mention], pages_by_
                               source_name="endoflife.date")
         deprecated, version = False, rel.label
 
+    passages = library.passages_for(
+        entry.technology,
+        entry.fact.doc if entry.fact else None, entry.fact.quote if entry.fact else None,
+        entry.upgrade.source_url if entry.upgrade else None, entry.upgrade.target if entry.upgrade else None,
+    ) or None
     status = status_for(lifecycle.eol_date, deprecated, today)
     score = compute(lifecycle.eol_date, deprecated, depth, len(pages), hands_on, today)
-    return Finding(**base, version=version, status=status, lifecycle=lifecycle, score=score)
+    return Finding(**base, version=version, status=status, lifecycle=lifecycle, score=score, passages=passages)
 
 
 def analyze(pdf_path: Path, filename: str, kind: str = "upload", today: Optional[date] = None,
@@ -83,8 +88,9 @@ def analyze(pdf_path: Path, filename: str, kind: str = "upload", today: Optional
     reg = registry.get()
     file_hash = file_sha256(pdf_path)
     detector = "registry"  # becomes "registry+<model>" once LLM detection is enabled
-    rules_version = signals.rules().version
-    cache_key = cache.key(file_hash, reg.version, rules_version, PIPELINE_VERSION, detector, today.isoformat())
+    rules_version, library_version = signals.rules().version, library.version()
+    cache_key = cache.key(file_hash, reg.version, rules_version, library_version, PIPELINE_VERSION, detector,
+                          today.isoformat())
     if use_cache and (hit := cache.get(cache_key)):
         return hit
 
@@ -113,7 +119,8 @@ def analyze(pdf_path: Path, filename: str, kind: str = "upload", today: Optional
         summary=summary,
         findings=findings,
         provenance=Provenance(file_sha256=file_hash, registry_version=reg.version, pipeline_version=PIPELINE_VERSION,
-                              detector=detector, rules_version=rules_version, eol_data=eol_data,
+                              detector=detector, rules_version=rules_version, library_version=library_version,
+                              eol_data=eol_data,
                               analysis_date=today.isoformat()),
     )
     if use_cache:
