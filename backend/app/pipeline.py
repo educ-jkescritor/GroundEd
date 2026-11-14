@@ -43,7 +43,7 @@ def _finding_for_entry(entry: registry.Entry, mentions: list[Mention], pages_by_
             data = eol.get_product(ref.product)
         except eol.EolError:
             return Finding(**base, version=ref.cycle, status="unverified")
-        eol_data[data.product] = data.last_modified
+        eol_data[data.product] = f"{data.last_modified} ({data.origin})"  # e.g. "2026-05-01T09:58:42+00:00 (snapshot)"
         rel = eol.find_release(data, ref.cycle)
         if rel is None:
             return Finding(**base, version=ref.cycle, status="unverified")

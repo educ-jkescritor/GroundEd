@@ -241,6 +241,8 @@ def version() -> str:
     h = hashlib.sha256()
     for d in load_documents():
         h.update(f"{d.id}:{d.content_sha256}\n".encode())
+    for p in sorted((SNAPSHOT_DIR / "eol").glob("*.json")):  # lifecycle data is part of the library too
+        h.update(p.name.encode() + b":" + hashlib.sha256(p.read_bytes()).digest())
     return h.hexdigest()[:12]
 
 

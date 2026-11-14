@@ -95,3 +95,39 @@ def test_search_is_safe_with_empty_or_fts_syntax_queries():
     assert library.search("") == [] and library.search('"*)(:^') == []
     # FTS5 operators/quotes in user text must not break the query; real words in it still match.
     assert all(h.doc_id for h in library.search('mysql" NEAR(* OR "removed'))
+
+
+# ---------- endoflife.date snapshot ----------
+
+def test_eol_reads_committed_snapshot_without_network(monkeypatch):
+    from app import eol
+
+    def no_network(product):
+        raise AssertionError("network must not be used in snapshot mode")
+
+    monkeypatch.setattr(eol, "_fetch", no_network)
+    php = eol.get_product("php")
+    assert php.origin == "snapshot" and eol.find_release(php, "7.0").release_date == "2015-12-03"
+    win = eol.get_product("windows")
+    assert eol.find_release(win, "7").eol_from == "2020-01-14"
+    assert eol.latest_label(win) == "11"  # no edition suffix like "26H2 (E)"
+
+
+def test_eol_live_mode_falls_back_to_snapshot_when_api_is_down(monkeypatch, tmp_path):
+    from app import eol
+
+    def down(product):
+        raise eol.EolError(f"endoflife.date unreachable for '{product}': ConnectError")
+
+    monkeypatch.setattr(eol, "EOL_SOURCE", "live")
+    monkeypatch.setattr(eol, "CACHE_DIR", tmp_path)
+    monkeypatch.setattr(eol, "_fetch", down)
+    assert eol.get_product("internet-explorer").origin == "snapshot"
+    with pytest.raises(eol.EolError, match="unreachable"):
+        eol.get_product("no-such-product")
+
+
+def test_registry_products_are_all_snapshotted():
+    from app import eol, registry
+    for product in registry.eol_products():
+        assert (eol.SNAPSHOT_DIR / f"{product}.json").exists(), f"run 'library build' to snapshot {product}"

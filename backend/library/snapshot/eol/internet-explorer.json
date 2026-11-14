@@ -1,0 +1,84 @@
+{
+ "last_modified": "2026-05-01T09:58:42+00:00",
+ "result": {
+  "name": "internet-explorer",
+  "label": "Internet Explorer",
+  "links": {
+   "html": "https://endoflife.date/internet-explorer"
+  },
+  "releases": [
+   {
+    "name": "11",
+    "label": "11",
+    "releaseDate": "2013-11-13",
+    "isEol": true,
+    "eolFrom": "2022-06-14",
+    "isMaintained": false
+   },
+   {
+    "name": "11-ltsb",
+    "label": "11 LTSB",
+    "releaseDate": "2013-11-13",
+    "isEol": false,
+    "eolFrom": "2031-10-14",
+    "isMaintained": true
+   },
+   {
+    "name": "11-ltsc",
+    "label": "11 LTSC",
+    "releaseDate": "2013-11-13",
+    "isEol": false,
+    "eolFrom": "2031-10-14",
+    "isMaintained": true
+   },
+   {
+    "name": "11-server",
+    "label": "11 Server",
+    "releaseDate": "2013-11-13",
+    "isEol": false,
+    "eolFrom": "2031-10-14",
+    "isMaintained": true
+   },
+   {
+    "name": "11-embedded",
+    "label": "11 Embedded",
+    "releaseDate": "2013-11-13",
+    "isEol": false,
+    "eolFrom": "2031-10-14",
+    "isMaintained": true
+   },
+   {
+    "name": "10",
+    "label": "10",
+    "releaseDate": "2012-10-30",
+    "isEol": true,
+    "eolFrom": "2020-01-31",
+    "isMaintained": false
+   },
+   {
+    "name": "9",
+    "label": "9",
+    "releaseDate": "2011-03-15",
+    "isEol": true,
+    "eolFrom": "2016-01-12",
+    "isMaintained": false
+   },
+   {
+    "name": "8",
+    "label": "8",
+    "releaseDate": "2009-06-17",
+    "isEol": true,
+    "eolFrom": "2016-01-12",
+    "isMaintained": false
+   },
+   {
+    "name": "7",
+    "label": "7",
+    "releaseDate": "2006-10-18",
+    "isEol": true,
+    "eolFrom": "2023-10-10",
+    "isMaintained": false
+   }
+  ]
+ }
+}
