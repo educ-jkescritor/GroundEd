@@ -176,17 +176,19 @@ Thresholds come from the backend (`score.priority`: High ≥ 80, Medium ≥ 50, 
 - **App shell:**
   - **Floating pill header:** sticky, 12 px from the top, `full` radius, white at 85% with a backdrop blur, elevation 2. It holds: logo · How it works · Reports · Feedback, then Sign in · **Analyze a module** (the only filled button).
   - White canvas; footer with Methodology, Sources, GitHub, Feedback.
-- **Report:**
-  - Header band: module name, "as of" date, headline, priority counts, Export.
-  - Tabs: **Findings | Document**.
-- **Finding detail:**
-  - Wide screens: two columns, *In your module* (quote, page, open in document) and *Source* (tier, publisher, passage, dates, link).
-  - Below them: Why this priority (score), Help (upgrade / AI draft), Decision.
+- **Report (side by side, the originality-checker pattern):**
+  - Header band (`panel`): module name, "as of" date, headline, priority counts, Export.
+  - **Left (≈ 60%): the module.** Pages scroll, with findings highlighted where they appear.
+  - **Right (≈ 40%, min 380 px, sticky): the ranked findings panel.** Filters at top; findings sorted by priority.
+  - **Sync both ways:** clicking a highlight selects and expands that finding on the right; clicking a finding scrolls the module to its highlight.
+  - **Expanded finding (in the panel):** both quotes (module and source), status and priority, decision control, "Open full detail →".
+  - Supported items collapsed at the bottom of the panel.
+  - **Below `lg` (1024 px):** the module column is hidden; the panel becomes a full-width list with "View in module" links.
+  - **Fallback:** if page positions aren't available, the left side shows each page's text with highlights found by matching the quote.
+- **Finding detail (full page, for deep review):**
+  - Wide screens: two columns, *In your module* (quote, page, view in module) and *Source* (tier, publisher, passage, dates, link).
+  - Below them: Why this priority (score), Help (upgrade / AI draft), Decision, with Previous / Next finding.
   - Below `lg`, the columns stack.
-- **Document tab:**
-  - Module pages on the left with highlights.
-  - Findings panel on the right (320 px).
-  - Clicking a highlight selects the finding in the panel.
 - **Print:** header and controls hidden; status label text always present; link URLs printed; the provenance stamp in the footer.
 
 ### Landing page structure (inspired by letters.app; principles only)
@@ -195,7 +197,7 @@ Thresholds come from the backend (`score.priority`: High ≥ 80, Medium ≥ 50, 
 | 1 | **Hero** | Centred short headline + 2–3 line subhead + one primary button (+ "Try a sample" text link) on the **horizon band** | Below the text, a **before → after** pair: a module page with a highlighted quote ("In your module"), overlapped by our finding card with its source ("With GroundEd"). Real UI, not an illustration. |
 | 2 | **Problem** | One short statement + one cited fact | Curricula lag industry (Dobslaw et al., 2023); faculty validation in the Philippines |
 | 3 | **Live mini-UI panels** | 2-column grid of `panel` blocks (24 px), each with a small label chip, a 2-line title and a live UI fragment | Progress steps · Finding card with source · Score breakdown · Decision control (Update / Keep / Dismiss) |
-| 4 | **See it work** | Section title + **tabs** (Findings / Document) above an embedded demo video in a browser frame | Our demo video (a hackathon deliverable); falls back to screenshots if no video yet |
+| 4 | **See it work** | Section title + **tabs** (Review a module / Decide on a finding) above an embedded demo video in a browser frame | Our demo video (a hackathon deliverable); falls back to screenshots if no video yet |
 | 5 | **How it works** | **3 numbered step cards** in a row; the first is highlighted (lapis tint) | Upload a module → Check the evidence → Decide what to update |
 | 6 | **Built to be trusted** | 4 short principles with icons | Cited sources · No guessing · Transparent priority · You decide |
 | 7 | **Voices** | Quote cards | **Only real feedback quotes with consent.** Until we have them, show validation facts instead. Never invent testimonials or signatures. |
@@ -221,7 +223,7 @@ Icons never stand alone for meaning: always with a visible label, or an `aria-la
 
 - **Scores:** `86/100` in mono. Breakdown as bars: points/max per factor (Lifecycle 40, Frequency 30, Labs 20, Activities 10) with one plain-sentence reason each.
 - **Dates:** "1 Jan 2020" (en-GB day-month-year) plus a relative hint when useful: "(6 years ago)". Reports say "As of {date}".
-- **Module evidence:** quote style, "Page 4", and a link "View in module" (opens the Document tab at that highlight).
+- **Module evidence:** quote style, "Page 4", and a link "View in module" (scrolls the module column to that highlight).
 - **Source evidence:**
   - Tier label in words (*Support data*, *Official documentation*, *Curriculum standard*, *Industry trend*)
   - Publisher, then the passage in quote style
@@ -250,7 +252,7 @@ Icons never stand alone for meaning: always with a visible label, or an `aria-la
 | SourceLink | `ui/SourceLink.tsx` | Have | New tab + icon + screen-reader note |
 | **Logo** | `ui/Logo.tsx` | **Must** | Horizon mark + wordmark; `mark` / `full` variants |
 | **Field set** (Input, Select, Textarea, Radio, Checkbox) | `ui/Field.tsx` | **Must** | Label always visible; help text; error text with `role="alert"` |
-| **Tabs** | `ui/Tabs.tsx` | **Must** | Findings / Document; help levels. Keyboard arrows. |
+| **Tabs** | `ui/Tabs.tsx` | **Must** | Help levels; landing video tabs. Keyboard arrows. |
 | **ProgressSteps** | `ui/ProgressSteps.tsx` | **Must** | Reading → Detecting → Checking sources → Scoring; done / current / waiting / failed |
 | **QuoteBlock** | `ui/QuoteBlock.tsx` | **Must** | Serif italic quote + page/source caption |
 | **SourceCard** | `ui/SourceCard.tsx` | **Must** | Tier, publisher, passage, dates, link |
@@ -268,7 +270,7 @@ Icons never stand alone for meaning: always with a visible label, or an `aria-la
 default · hover · focus-visible (2 px lapis outline, 2 px offset) · active · disabled (50% opacity, no pointer) ·
 loading (spinner + label, e.g. "Drafting…") · error (eol text + message).
 
-### FindingCard anatomy (Findings tab)
+### FindingCard anatomy (findings panel)
 ```
 ┌───────────────────────────────────────────────────────────────────────┐
 │ PRACTICE  mysql_connect()      [● End-of-life]   [High]  86/100   ▾  │

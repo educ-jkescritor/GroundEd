@@ -7,7 +7,7 @@
 | Topic | Decision |
 |---|---|
 | Name for the uploaded file | **Module**, everywhere in the UI. The Landing page says "syllabus, module or lesson guide" once, so everyone recognises their document. |
-| Results layout | **Hybrid**: opens on a summary + prioritised **Findings** list; a **Document** tab shows the module pages with highlights. Clicking either opens the same **finding detail** (module quote ⇄ source, side by side). |
+| Results layout | **Side by side** (the originality-checker pattern): the module with highlights on the left, the ranked findings panel on the right, synced both ways. A finding expands in the panel; **Open full detail** goes to the finding detail page. Below 1024 px: list only. *(Changed from the earlier hybrid tabs.)* |
 | Decisions on a finding | **Update** (agree; accept the upgrade or approve a draft) · **Keep intentionally** (taught on purpose) · **Dismiss** (not outdated / incorrect). Each has an optional reason. A finding with no decision is **To review**. |
 | Accounts | **Sign-in exists, but is never required to try GroundEd.** For the hackathon, a **browser-only demo account** gives one-click access to saved reports (see "Accounts" below). |
 | Extra screens | **Methodology**, **Report history**, **Sign in (demo account)**. |
@@ -21,10 +21,10 @@ flowchart TD
     L --> S[Sign in /sign-in]
     A --> P[Progress /analysis/:id/progress]
     P --> R[Report /reports/:id]
-    R --> RF[Findings tab]
-    R --> RD[Document tab]
+    R --> RM[Module with highlights]
+    R --> RF[Ranked findings panel]
+    RM <--> RF
     RF --> FD[Finding detail /reports/:id/findings/:fid]
-    RD --> FD
     R --> X[Export: print / PDF / Markdown]
     R --> F[Feedback /feedback]
     S --> H[Report history /reports]
@@ -49,8 +49,7 @@ Reports (history) · Feedback · **Sign in** or account menu (demo name, Sign ou
 | Landing | Explain value and earn trust in 10 seconds | Analyze a module | Promise → example finding → how it works → trust principles → scope (tech courses) → CTA |
 | Analyze | Get a module in | Upload PDF | Upload zone → scope note (tech courses, PDF with text) → samples → privacy note |
 | Progress | Reassure while it works | (wait) / Cancel | Steps with status → time estimate → what's happening in plain words |
-| Report: Findings | See what matters first | Open the top finding | Headline summary → priority counts → filters → list |
-| Report: Document | See findings in context | Click a highlight | Page view with highlights → findings side panel |
+| Report | See what matters first, in context | Open the top finding | Header: headline + priority counts · Left: module pages with highlights · Right: filters → ranked findings (expandable) |
 | Finding detail | Judge one finding | Record a decision | Module quote + page ⇄ source passage + link → why (score) → help options → decision |
 | Methodology | Explain how results are made | Back to analyze | Sources and tiers → checks → scoring rules → limits → "as of" dates |
 | Report history | Return to past work | Open a report | List: module name, date, counts, decisions done |
@@ -66,7 +65,7 @@ Reports (history) · Feedback · **Sign in** or account menu (demo name, Sign ou
 | **Claim type** | Status badge: End-of-life · Nearing end-of-life · Supported · **Less used in industry** · Unverified | — | **Backend**: "unsupported" vs "less popular" must stay separate |
 | **Use in module** | "Taught in labs" / "In an activity" / "Mentioned" | — | **Backend** (taught vs mentioned) |
 | **Priority** | High / Medium / Low + score | Score breakdown (lifecycle, frequency, labs, activities) | Backend (`score.priority`) |
-| **Module evidence** | Quote + page | Highlight on the page (Document tab), all occurrences | Backend |
+| **Module evidence** | Quote + page | Highlight in the module column, all occurrences | Backend |
 | **Source evidence** | Source name, tier label, date, link | Passage snapshot, publisher, collected date | **Backend** (source fields) |
 | **Confidence** | Only when low: "Limited evidence" note | Percentage + what's missing | **Backend** |
 | **Suggestion** | Sourced upgrade (if any) | AI draft (always labelled) | Backend |
@@ -106,7 +105,7 @@ Example used throughout: the module says *"Lab 3: Connect to the database using 
 
 | Field | Meaning | Values / example | Shown in the UI |
 |---|---|---|---|
-| **Item kind** | What sort of thing was found | Tool/Framework · Language · Practice · Topic (`mysql_connect()` = Practice) | Small grey label before the name; filter on the Findings tab |
+| **Item kind** | What sort of thing was found | Tool/Framework · Language · Practice · Topic (`mysql_connect()` = Practice) | Small grey label before the name; filter in the findings panel |
 | **Claim type** | Why it may warrant review; **unsupported and less popular are never mixed** | Unsupported (removed/unmaintained, official source) · Less popular (still supported, declining; trend source) | Status badge (icon + label): End-of-life · Nearing end-of-life · Supported · **Less used in industry** (informational, never red) · Unverified |
 | **Taught vs mentioned** | How the module uses it | Taught in labs · In an activity · Mentioned | Summary line ("Taught in labs · pages 4, 6"); feeds Labs/Activities in the score |
 | **Source tier** | Strength of the source | 1 Support data · 2 Official documentation · 3 Curriculum standards · 4 Industry trends | Word label on the source ("Official documentation") + tooltip; tier 4 alone never makes something end-of-life |

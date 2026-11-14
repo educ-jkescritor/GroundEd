@@ -19,7 +19,7 @@ flowchart TD
     A[Analyze] -->|Drop / choose PDF| V{Valid? PDF, ≤ size limit}
     V -- no --> E1[Inline error + how to fix]
     V -- yes --> P[Progress page<br/>Reading → Detecting → Checking sources → Scoring]
-    P -->|done| R[Report: Findings tab]
+    P -->|done| R[Report: module + ranked findings]
     P -->|leave page| N[Report keeps processing<br/>Find it in Reports history]
     P -->|failed| E2[Error page: what failed + try again / use a sample]
 ```
