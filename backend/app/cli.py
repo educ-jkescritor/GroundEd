@@ -3,6 +3,8 @@
   uv run python -m app.cli analyze path/to/module.pdf [--json]
   uv run python -m app.cli eval [--runs 3]
   uv run python -m app.cli registry        # validate registry YAML and print entries
+  uv run python -m app.cli library build [--only id,id]   # fetch sources -> library/snapshot/
+  uv run python -m app.cli library status                 # which sources are ok / failed / need manual work
 """
 from __future__ import annotations
 
@@ -10,7 +12,7 @@ import argparse
 import sys
 from pathlib import Path
 
-from . import evaluate, registry
+from . import evaluate, library, registry
 from .pdf import PdfError
 from .pipeline import analyze
 
@@ -46,6 +48,9 @@ def main(argv: list[str] | None = None) -> int:
     e = sub.add_parser("eval")
     e.add_argument("--runs", type=int, default=3)
     sub.add_parser("registry")
+    lib = sub.add_parser("library")
+    lib.add_argument("action", choices=["build", "status"])
+    lib.add_argument("--only", default="", help="comma-separated source ids")
     args = ap.parse_args(argv)
 
     if args.cmd == "analyze":
@@ -64,6 +69,14 @@ def main(argv: list[str] | None = None) -> int:
         print(f"registry version {reg.version}: {len(reg.entries)} entries")
         for en in reg.entries:
             print(f"  {en.id:28} {'static fact' if en.fact else 'endoflife.date'}  {en.technology}")
+    elif args.cmd == "library":
+        rows = (library.build(only=set(filter(None, args.only.split(","))) or None) if args.action == "build"
+                else library.status())
+        icon = {"ok": "OK  ", "failed": "FAIL", "needs_manual": "MANU"}
+        for r in rows:
+            print(f"  {icon[r.status]} {r.id:32} {r.passages:>3} passages  {r.reason}")
+        ok = sum(r.status == "ok" for r in rows)
+        print(f"{ok}/{len(rows)} sources ok · library version {library.version()}")
     return 0
 
 
