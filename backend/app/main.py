@@ -14,9 +14,11 @@ from .models import Analysis, Draft, FeedbackIn, FeedbackOut, Sample
 from .pdf import PdfError
 from .pipeline import analyze as run_pipeline
 
+
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     db.init_db()
+    cache.enable_wal()
     cache.purge_expired()
     yield
 

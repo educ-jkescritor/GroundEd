@@ -59,3 +59,11 @@ def purge_expired(hours: int | None = None) -> int:
         conn.execute("DELETE FROM analysis_cache WHERE analysis_id NOT IN (SELECT id FROM analyses)")
         n += conn.execute("DELETE FROM draft_cache WHERE created_at < ?", (cutoff.strftime("%Y-%m-%d %H:%M:%S"),)).rowcount
     return n
+
+
+def enable_wal() -> str:
+    """Write-ahead logging: readers no longer block on a writer (several users at once). The setting is stored in
+    the database file, so this only needs to run once per database; it is cheap to repeat at startup."""
+    config.DB_PATH.parent.mkdir(parents=True, exist_ok=True)
+    with closing(sqlite3.connect(config.DB_PATH)) as conn:
+        return conn.execute("PRAGMA journal_mode=WAL").fetchone()[0]
