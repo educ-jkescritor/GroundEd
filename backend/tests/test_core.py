@@ -16,18 +16,26 @@ TODAY = date(2026, 11, 14)
 
 # ---------- registry ----------
 
-def test_registry_loads_and_every_static_fact_has_a_quote():
+def test_every_registry_quote_is_found_in_its_library_document():
+    """No source, no claim: each fact's quote must appear verbatim in the saved document."""
+    from app import library
     reg = registry.load()
     assert reg.entries
     for e in reg.entries:
         if e.fact:
-            assert e.fact.source_url.startswith("https://") and len(e.fact.source_quote) > 20
+            assert library.load_document(e.fact.doc), f"{e.id}: unknown library doc {e.fact.doc}"
+            assert library.contains_quote(e.fact.doc, e.fact.quote), f"{e.id}: quote not in {e.fact.doc}"
+
+
+def test_removed_facts_must_name_the_release_that_removed_them():
+    with pytest.raises(ValueError, match="removed_in"):
+        registry.StaticFact(stage="eol", product="php", doc="d", quote="q")
 
 
 def test_registry_rejects_entry_with_both_fact_and_eol():
     with pytest.raises(ValueError):
         registry.Entry(id="x", technology="x", patterns=["x"],
-                       fact={"stage": "eol", "product": "p", "source_name": "s", "source_url": "u", "source_quote": "q"},
+                       fact={"stage": "deprecated", "product": "p", "doc": "d", "quote": "q"},
                        eol={"product": "p", "cycle": "1"})
 
 
@@ -226,3 +234,24 @@ def test_old_reports_are_purged(client):
     assert cache.purge_expired(hours=0) >= 1
     assert db.get_analysis(a["id"]) is None
     assert client.get(f"/api/analysis/{a['id']}").status_code == 404
+
+
+def test_removal_date_comes_from_the_lifecycle_snapshot_not_the_registry(tmp_path):
+    from app.pipeline import analyze
+    a = analyze(config.SAMPLES_DIR / "legacy-php-lab.pdf", "legacy.pdf", today=TODAY, use_cache=False)
+    f = next(x for x in a.findings if x.id == "php-ext-mysql")
+    assert f.lifecycle.eol_date == "2015-12-03"  # PHP 7.0 release date, from library/snapshot/eol/php.json
+    assert f.lifecycle.source_url == "https://www.php.net/manual/en/migration70.incompatible.php"
+    assert "php" in a.provenance.eol_data
+
+
+def test_tampered_quote_makes_the_finding_unverified(monkeypatch):
+    from app import registry as reg_mod
+    from app.pipeline import analyze
+    real = reg_mod.load()
+    bad = real.model_copy(deep=True)
+    next(e for e in bad.entries if e.id == "php-ext-mysql").fact.quote = "mysql_* functions are fine to use."
+    monkeypatch.setattr(reg_mod, "get", lambda: bad)
+    a = analyze(config.SAMPLES_DIR / "legacy-php-lab.pdf", "legacy.pdf", today=TODAY, use_cache=False)
+    f = next(x for x in a.findings if x.id == "php-ext-mysql")
+    assert f.status == "unverified" and f.score is None and f.lifecycle is None
