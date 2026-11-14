@@ -91,5 +91,7 @@ def test_search_can_be_restricted_to_documents_and_is_deterministic():
     assert hits == library.search("mysql functions removed", doc_ids=["php-migration70-incompatible"], k=5)
 
 
-def test_search_ignores_empty_or_symbol_only_queries():
-    assert library.search("") == [] and library.search('"*) OR (') == []
+def test_search_is_safe_with_empty_or_fts_syntax_queries():
+    assert library.search("") == [] and library.search('"*)(:^') == []
+    # FTS5 operators/quotes in user text must not break the query; real words in it still match.
+    assert all(h.doc_id for h in library.search('mysql" NEAR(* OR "removed'))
