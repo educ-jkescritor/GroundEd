@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type DragEvent } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { ArrowRight, Check, FileText, Upload } from "lucide-react";
 import { ApiError, api, errorMessage } from "../api";
 import type { Analysis, Sample } from "../types";
@@ -8,6 +8,8 @@ import { Button } from "../components/ui/Button";
 import { Panel } from "../components/ui/Card";
 import { Notice } from "../components/ui/Notice";
 import { HorizonMark } from "../components/ui/Logo";
+import { formatDate } from "../lib/format";
+import { getDemoUser, listReports, recordReport, useStored } from "../lib/history";
 import { usePageTitle } from "../lib/usePageTitle";
 import { rememberFile } from "../lib/fileStore";
 
@@ -36,6 +38,8 @@ export default function Analyze() {
   usePageTitle("Analyze a module");
   const navigate = useNavigate();
   const inputRef = useRef<HTMLInputElement>(null);
+  const user = useStored(getDemoUser);
+  const reports = useStored(listReports);
   const [samples, setSamples] = useState<Sample[]>([]);
   const [busy, setBusy] = useState<string | null>(null);
   const [message, setMessage] = useState(0);
@@ -53,7 +57,6 @@ export default function Analyze() {
   }, []);
 
   // Rotate the description; after 10 s, reassure that long modules take longer.
-  // TODO (backend): real per-step progress once the API reports job status.
   useEffect(() => {
     if (!busy) return;
     setMessage(0);
@@ -73,6 +76,7 @@ export default function Analyze() {
     const started = Date.now();
     try {
       const analysis = await task();
+      recordReport(analysis); // only persists if the user is logged in
       await new Promise((r) => setTimeout(r, Math.max(0, MIN_LOADING_MS - (Date.now() - started))));
       const n = analysis.findings.filter((f) => f.status !== "supported").length;
       setDone(analysis.coverage === "not_covered" ? "Done" : n === 0 ? "Done: nothing to review" : `Done: ${n} finding${n === 1 ? "" : "s"} to review`);
@@ -175,10 +179,50 @@ export default function Analyze() {
           onChange={(e) => handleFile(e.target.files?.[0])}
         />
         <p className="max-w-lg text-xs text-ink-subtle">
-          GroundEd covers technology courses (IT, computing, web development). Your module's text is processed by
-          Google Gemini to find technologies; uploads are deleted after 24 hours. Please don't upload confidential documents.
+          GroundEd covers technology courses (IT, computing, web development). Uploads are deleted immediately after text
+          extraction. Please don't upload confidential documents.
         </p>
       </div>
+
+      {/* Logged-in only: History of uploads */}
+      {user && (
+        <section aria-labelledby="upload-history-heading" className="space-y-4">
+          <div className="flex items-center justify-between gap-2">
+            <h2 id="upload-history-heading" className="text-xl">History of uploads</h2>
+            <Link to="/reports" className="text-sm font-semibold text-lapis-deep">
+              View all ({reports.length}) →
+            </Link>
+          </div>
+          {reports.length === 0 ? (
+            <Panel className="text-center text-sm text-ink-muted">
+              No uploaded modules yet. Upload a PDF above or pick a sample below and it will be saved here automatically.
+            </Panel>
+          ) : (
+            <ul className="grid gap-3 sm:grid-cols-2">
+              {reports.slice(0, 6).map((r) => (
+                <li key={r.id}>
+                  <Link
+                    to={`/reports/${encodeURIComponent(r.id)}`}
+                    className="group flex h-full items-center gap-3.5 rounded-[var(--radius-card)] border border-line bg-surface p-4 text-ink no-underline shadow-[var(--shadow-card)] transition-colors hover:border-lapis hover:no-underline"
+                  >
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-panel text-lapis-deep">
+                      <FileText size={18} aria-hidden />
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate font-semibold">{r.filename}</span>
+                      <span className="block text-xs text-ink-subtle">
+                        {formatDate(r.created_at)} · {r.findings} finding{r.findings === 1 ? "" : "s"}
+                        {r.sample ? " · Sample" : " · Uploaded PDF"}
+                      </span>
+                    </span>
+                    <span className="text-xs font-semibold text-lapis-deep group-hover:translate-x-0.5">Open →</span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+      )}
 
       <section id="samples" className="scroll-mt-24 space-y-4">
         <h2 className="text-xl">Or try a sample module</h2>
