@@ -13,4 +13,7 @@ explained_min_words: 8
 # A page counts as HANDS-ON if it matches any of these (labs, exercises, activities). "assignment" is left out on
 # purpose: in programming slides it usually means the assignment operator.
 hands_on:
-  - '\b(lab|laboratory|exercise|exercises|hands-on|machine problem|activity|activities|try it yourself)\b'
+  # "Lab" counts only when students do something: "Lab 3", "Laboratory Exercise". Pages that merely name the lab
+  # ("Lab Setup", "Lab Manual", "Lab Requirements", "Lab Computers") do not.
+  - '\b(?:lab|laboratory)\b(?![ \t]*(?:set[- ]?up|manual|requirements?|environment|computers?|rooms?|rules)\b)'
+  - '\b(exercise|exercises|hands-on|machine problem|activity|activities|try it yourself)\b'
