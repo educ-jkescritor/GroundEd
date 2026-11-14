@@ -35,8 +35,11 @@ def _plural(n: int, word: str) -> str:
     return f"{n} {word}{'' if n == 1 else 's'}"
 
 
-def status_for(eol_date: Optional[str], deprecated: bool, today: date) -> str:
+def status_for(eol_date: Optional[str], deprecated: bool, today: date, ended: bool = False) -> str:
+    """`ended`: the source marks the release end-of-life but publishes no date (e.g. jQuery 1 on endoflife.date)."""
     if eol_date and date.fromisoformat(eol_date) <= today:
+        return "eol"
+    if ended and not eol_date:
         return "eol"
     if deprecated:
         return "nearing_eol"
@@ -49,8 +52,10 @@ def priority_for(total: int) -> str:
     return "high" if total >= PRIORITY_THRESHOLDS["high"] else "medium" if total >= PRIORITY_THRESHOLDS["medium"] else "low"
 
 
-def _lifecycle(eol_date: Optional[str], deprecated: bool, today: date) -> tuple[int, str]:
+def _lifecycle(eol_date: Optional[str], deprecated: bool, today: date, ended: bool = False) -> tuple[int, str]:
     eol = date.fromisoformat(eol_date) if eol_date else None
+    if ended and eol is None:
+        return LIFECYCLE_POINTS["eol"], "Marked end-of-life by endoflife.date (no end date published)."
     if eol and eol <= today:
         yrs = _full_years(eol, today)
         ago = f"{_plural(yrs, 'year')} ago" if yrs else "less than a year ago"
@@ -72,12 +77,12 @@ _TEACHING_REASON = {
 
 
 def compute(eol_date: Optional[str], deprecated: bool, depth: Depth, pages_mentioned: int, hands_on: bool,
-            today: date) -> Optional[Score]:
+            today: date, ended: bool = False) -> Optional[Score]:
     """Returns None for supported items: they are not scored and get no priority."""
-    if status_for(eol_date, deprecated, today) == "supported":
+    if status_for(eol_date, deprecated, today, ended) == "supported":
         return None
     W = SCORE_WEIGHTS
-    lc_pts, lc_why = _lifecycle(eol_date, deprecated, today)
+    lc_pts, lc_why = _lifecycle(eol_date, deprecated, today, ended)
     freq = min(W["frequency"], FREQUENCY_POINTS_PER_PAGE * pages_mentioned)
     parts = [
         ScorePart(key="lifecycle", label="Lifecycle", points=lc_pts, max=W["lifecycle"], reason=lc_why),

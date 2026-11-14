@@ -44,22 +44,38 @@ def _snippet(text: str, start: int, end: int) -> str:
     return " ".join(text[ls:le].split())
 
 
+def _line_at(text: str, pos: int) -> str:
+    ls = text.rfind("\n", 0, pos) + 1
+    le = text.find("\n", pos)
+    return text[ls:len(text) if le == -1 else le]
+
+
 def detect_registry(pages: list[Page], entries: list[Entry]) -> list[Mention]:
-    """One mention per (entry, page): the first match on that page."""
+    """One mention per (entry, page, version as written): the first such match on that page.
+    Product-version entries (endoflife.date) skip historical mentions ("PHP 5 (July 13, 2004)")."""
+    from .signals import is_historical
+
     out: list[Mention] = []
     for entry in entries:
         pats, ctx = entry.compiled(), entry.compiled_context()
         for page in pages:
-            hits = [m for p in pats if (m := p.search(page.text))]
-            if not hits:
-                continue
             if ctx and not any(c.search(page.text) for c in ctx):
-                continue  # pattern found, but the page does not look like the right language
-            m = min(hits, key=lambda h: h.start())
-            mention = Mention(technology=entry.technology, version=None, page=page.number,
-                              snippet=_snippet(page.text, m.start(), m.end()), entry_id=entry.id)
-            if snippet_on_page(mention.snippet, page):
-                out.append(mention)
+                continue  # the page does not look like the right language/technology
+            hits = sorted((m for p in pats for m in p.finditer(page.text)), key=lambda m: m.start())
+            seen: set[str | None] = set()
+            for m in hits:
+                version = m.groupdict().get("v")
+                if version is not None:
+                    version = " ".join(version.split())
+                if version in seen:
+                    continue
+                if entry.eol and is_historical(_line_at(page.text, m.start()), page.text):
+                    continue
+                mention = Mention(technology=entry.technology, version=version, page=page.number,
+                                  snippet=_snippet(page.text, m.start(), m.end()), entry_id=entry.id)
+                if snippet_on_page(mention.snippet, page):
+                    seen.add(version)
+                    out.append(mention)
     return out
 
 
