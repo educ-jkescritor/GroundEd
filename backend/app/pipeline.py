@@ -48,7 +48,9 @@ def _finding_for_entry(entry: registry.Entry, mentions: list[Mention], pages_by_
     pats = entry.compiled()
     lines = [l for n in pages for l in pages_by_no[n].text.splitlines() if any(p.search(l) for p in pats)]
     depth = signals.teaching_depth(lines)
-    hands_on = any(signals.is_hands_on(pages_by_no[n].text) for n in pages)
+    # Hands-on: the page itself, or the page just before it ("Lab 3" title slide, then the code slide).
+    # Never forward: the next page may already be a different topic.
+    hands_on = any(signals.is_hands_on(pages_by_no[k].text) for n in pages for k in (n, n - 1) if k in pages_by_no)
     citations = [
         Citation(page=m.page, snippet=m.snippet, bbox=find_snippet_bbox(pdf_doc, m.page, m.snippet))
         for m in sorted(mentions, key=lambda m: m.page)[:MAX_CITATIONS]
