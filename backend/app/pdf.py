@@ -13,6 +13,8 @@ from pathlib import Path
 
 import pymupdf
 
+from .config import MAX_PAGES
+
 
 class PdfError(ValueError):
     """A PDF that cannot be analysed; the message is shown to the user as-is."""
@@ -63,6 +65,9 @@ def extract_pages(path: Path) -> list[Page]:
     with doc:
         if doc.needs_pass:
             raise PdfError("The PDF is password-protected. Please upload an unlocked copy.")
+        if len(doc) > MAX_PAGES:
+            raise PdfError(f"The PDF has {len(doc)} pages; the limit is {MAX_PAGES}. "
+                           "Please upload one module at a time.")
         raw = [p.get_text() for p in doc]
         words = [[w[:5] for w in p.get_text("words")] for p in doc]
     if not raw:

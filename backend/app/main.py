@@ -1,4 +1,5 @@
 """GroundEd API. Response shapes are the contract in models.py / docs/api.md."""
+import asyncio
 import uuid
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -48,9 +49,13 @@ def list_samples() -> list[Sample]:
 
 async def _analyze_path(path: Path, filename: str, kind: str) -> Analysis:
     try:
-        return await run_in_threadpool(run_pipeline, path, filename, kind)
+        return await asyncio.wait_for(run_in_threadpool(run_pipeline, path, filename, kind),
+                                      timeout=config.ANALYSIS_TIMEOUT_SECONDS)
     except PdfError as e:
         raise HTTPException(422, str(e)) from e
+    except asyncio.TimeoutError as e:
+        raise HTTPException(504, f"Analysis took longer than {config.ANALYSIS_TIMEOUT_SECONDS} seconds and was "
+                                 "stopped. Try a shorter PDF.") from e
 
 
 @app.post("/api/analyze", response_model=Analysis)
