@@ -61,7 +61,7 @@ export default function Reports() {
                     {formatDate(r.created_at)} · {r.findings} finding{r.findings === 1 ? "" : "s"} may warrant review{r.sample ? " · Sample" : ""}
                   </span>
                 </span>
-                <span className="text-sm font-semibold text-lapis">Open</span>
+                <span className="text-sm font-semibold text-lapis-deep">Open</span>
               </Link>
             </li>
           ))}

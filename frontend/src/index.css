@@ -18,8 +18,8 @@
   --color-ink-subtle: #5f687b; /* not on sky (4.45:1) */
 
   /* Brand: Palette A, Lapis & Clay */
-  --color-lapis: #2b55a6;
-  --color-lapis-deep: #1f4380;
+  --color-lapis: #3a6fd0; /* fills: buttons, focus, badges, logo. White on it 4.8:1 */
+  --color-lapis-deep: #2b55a6; /* blue TEXT and links, button hover. 7.1:1 on white, 6.5:1 on panel */
   --color-sky: #dce6f6;
   --color-clay: #b9784a; /* decoration only */
   --color-clay-deep: #8a5530;
@@ -67,7 +67,7 @@
     letter-spacing: -0.02em;
   }
   a {
-    @apply text-lapis underline-offset-2 hover:underline;
+    @apply text-lapis-deep underline-offset-2 hover:underline;
   }
   :focus-visible {
     @apply outline-2 outline-offset-2 outline-lapis;

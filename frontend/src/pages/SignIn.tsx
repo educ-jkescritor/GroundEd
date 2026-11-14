@@ -22,13 +22,16 @@ export default function SignIn() {
     setError(null);
     try {
       // Give the demo account a couple of sample reports to explore.
-      const samples = await api.samples();
-      signInDemo();
-      for (const s of samples.slice(0, 2)) recordReport(await api.analyzeSample(s.id));
+      signInDemo(); // the demo account lives only in this browser, so signing in never needs the server
+      try {
+        const samples = await api.samples();
+        for (const s of samples.slice(0, 2)) recordReport(await api.analyzeSample(s.id));
+      } catch {
+        // Couldn't add the sample reports (backend not running). Still signed in; My reports starts empty.
+      }
       navigate("/reports");
     } catch (e) {
-      signOutDemo();
-      setError(`${errorMessage(e)} Is the GroundEd backend running?`);
+      setError(errorMessage(e));
     } finally {
       setBusy(false);
     }

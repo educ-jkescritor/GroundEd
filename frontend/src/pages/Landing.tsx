@@ -63,7 +63,7 @@ export default function Landing() {
                 </p>
               </figure>
               <figure className="space-y-3 rounded-[var(--radius-card)] border border-line bg-surface p-5 shadow-[var(--shadow-float)] sm:translate-y-4">
-                <figcaption className="text-[11px] font-semibold uppercase tracking-[0.06em] text-lapis">With GroundEd</figcaption>
+                <figcaption className="text-[11px] font-semibold uppercase tracking-[0.06em] text-lapis-deep">With GroundEd</figcaption>
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="text-[11px] font-semibold uppercase tracking-[0.06em] text-ink-subtle">Practice</span>
                   <span className="font-semibold">mysql_connect()</span>
@@ -75,7 +75,6 @@ export default function Landing() {
                 </QuoteBlock>
               </figure>
             </div>
-            <p className="mt-10 text-xs text-ink-subtle">Example finding, shown with a real source.</p>
           </div>
         </HorizonBand>
       </section>

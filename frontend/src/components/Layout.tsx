@@ -2,12 +2,12 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { ChevronDown, FileText, LogOut } from "lucide-react";
 import { ButtonLink } from "./ui/Button";
-import { HorizonMark, Logo } from "./ui/Logo";
+import { Logo } from "./ui/Logo";
 import { getDemoUser, signOutDemo, useStored } from "../lib/history";
 
 const linkCls = (active: boolean) =>
-  `rounded-full px-3 py-1.5 text-sm font-medium no-underline hover:no-underline ${
-    active ? "bg-panel text-ink" : "text-ink-muted hover:text-ink"
+  `group inline-grid px-3 py-1.5 text-sm no-underline hover:no-underline ${
+    active ? "font-bold text-ink" : "font-medium text-ink-muted hover:font-bold hover:text-ink"
   }`;
 
 /**
@@ -103,7 +103,9 @@ export default function Layout() {
           <div className="hidden items-center gap-1 md:flex">
             {links.map((l) => (
               <Link key={l.to} to={l.to} className={linkCls(l.active)} aria-current={l.active ? "page" : undefined}>
-                {l.label}
+                {/* Both spans share one grid cell; the invisible bold one fixes the width so hover doesn't shift the bar. */}
+                <span className="col-start-1 row-start-1">{l.label}</span>
+                <span aria-hidden className="invisible col-start-1 row-start-1 h-0 font-bold">{l.label}</span>
               </Link>
             ))}
           </div>
@@ -185,10 +187,7 @@ function Footer({ signedIn }: { signedIn: boolean }) {
         ))}
       </div>
       <div className="border-t border-line">
-        <div className="mx-auto flex max-w-6xl flex-col gap-2 px-4 py-5 text-xs text-ink-subtle sm:flex-row sm:items-center sm:justify-between sm:px-6">
-          <p className="flex items-center gap-2"><HorizonMark size={16} /> © 2026 GroundEd · Built for HackGlobal 2026</p>
-          <p>Lifecycle data from endoflife.date and official documentation.</p>
-        </div>
+        <p className="mx-auto max-w-6xl px-4 py-5 text-center text-xs text-ink-subtle sm:px-6">© 2026 GroundEd · Built for HackGlobal 2026</p>
       </div>
     </footer>
   );
