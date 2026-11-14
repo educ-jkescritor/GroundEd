@@ -1,23 +1,24 @@
 """GroundEd API. Response shapes are the contract in models.py / docs/api.md."""
-import asyncio
 import uuid
 from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Optional
 
 import yaml
-from fastapi import FastAPI, File, Form, HTTPException, UploadFile
+from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile
 from fastapi.concurrency import run_in_threadpool
 from fastapi.middleware.cors import CORSMiddleware
 
-from . import cache, config, db, llm
+from . import cache, config, db, limits, llm
 from .models import Analysis, Draft, FeedbackIn, FeedbackOut, Sample
 from .pdf import PdfError
 from .pipeline import analyze as run_pipeline
 
+
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     db.init_db()
+    cache.enable_wal()
     cache.purge_expired()
     yield
 
@@ -54,13 +55,9 @@ def list_samples() -> list[Sample]:
 
 async def _analyze_path(path: Path, filename: str, kind: str) -> Analysis:
     try:
-        return await asyncio.wait_for(run_in_threadpool(run_pipeline, path, filename, kind),
-                                      timeout=config.ANALYSIS_TIMEOUT_SECONDS)
+        return await limits.run_analysis(lambda: run_in_threadpool(run_pipeline, path, filename, kind))
     except PdfError as e:
         raise HTTPException(422, str(e)) from e
-    except asyncio.TimeoutError as e:
-        raise HTTPException(504, f"Analysis took longer than {config.ANALYSIS_TIMEOUT_SECONDS} seconds and was "
-                                 "stopped. Try a shorter PDF.") from e
 
 
 @app.post("/api/analyze", response_model=Analysis)
@@ -101,7 +98,7 @@ def get_analysis(analysis_id: str) -> Analysis:
 
 
 @app.post("/api/analysis/{analysis_id}/findings/{finding_id}/draft", response_model=Draft)
-def draft_update(analysis_id: str, finding_id: str) -> Draft:
+def draft_update(analysis_id: str, finding_id: str, request: Request) -> Draft:
     analysis = db.get_analysis(analysis_id)
     if not analysis:
         raise HTTPException(404, "Analysis not found.")
@@ -119,6 +116,7 @@ def draft_update(analysis_id: str, finding_id: str) -> Draft:
     if hit := cache.get_draft(key):
         text, model = hit
     else:
+        limits.check_draft_allowed(request.client.host if request.client else "unknown")
         try:
             text, model = llm.draft_section(finding.technology, [c.snippet for c in finding.citations], fact, hint)
         except llm.LlmError as e:

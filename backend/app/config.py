@@ -26,6 +26,10 @@ EOL_SOURCE = os.getenv("EOL_SOURCE", "snapshot")
 MAX_UPLOAD_MB = int(os.getenv("MAX_UPLOAD_MB", "10"))
 MAX_PAGES = int(os.getenv("MAX_PAGES", "300"))  # longer PDFs are rejected with a clear message
 ANALYSIS_TIMEOUT_SECONDS = int(os.getenv("ANALYSIS_TIMEOUT_SECONDS", "90"))
+MAX_CONCURRENT_ANALYSES = int(os.getenv("MAX_CONCURRENT_ANALYSES", "3"))  # CPU-bound; sized for 2 vCPU
+ANALYSIS_QUEUE_SECONDS = int(os.getenv("ANALYSIS_QUEUE_SECONDS", "15"))  # wait for a free slot, then 429 "busy"
+DRAFTS_PER_MINUTE_PER_CLIENT = int(os.getenv("DRAFTS_PER_MINUTE_PER_CLIENT", "5"))  # Gemini calls, not cache hits
+DRAFTS_PER_DAY = int(os.getenv("DRAFTS_PER_DAY", "300"))  # whole server; protects the API credit
 UPLOAD_RETENTION_HOURS = int(os.getenv("UPLOAD_RETENTION_HOURS", "24"))
 
 CORS_ORIGINS = os.getenv("CORS_ORIGINS", "http://localhost:5173").split(",")
