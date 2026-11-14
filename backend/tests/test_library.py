@@ -131,3 +131,24 @@ def test_registry_products_are_all_snapshotted():
     from app import eol, registry
     for product in registry.eol_products():
         assert (eol.SNAPSHOT_DIR / f"{product}.json").exists(), f"run 'library build' to snapshot {product}"
+
+
+# ---------- passages attached to findings ----------
+
+def test_findings_carry_verified_fact_and_replacement_passages():
+    from datetime import date
+    from app import config
+    from app.pipeline import analyze
+    a = analyze(config.SAMPLES_DIR / "legacy-php-lab.pdf", "legacy.pdf", today=date(2026, 11, 14), use_cache=False)
+    f = {x.id: x for x in a.findings}
+    mysql = {p.role: p for p in f["php-ext-mysql"].passages}
+    assert mysql["fact"].contains_fact_quote and mysql["fact"].doc_id == "php-migration70-incompatible"
+    assert mysql["replacement"].doc_id == "php-mysqlinfo-api-choosing"
+    assert f["windows-7"].passages is None  # lifecycle data, no library document: nothing unrelated is attached
+    assert a.provenance.library_version == library.version()
+
+
+def test_passages_only_come_from_documents_the_registry_names():
+    ps = library.passages_for("anything", "php-tags", "no such sentence in this doc", None, None)
+    assert all(p.doc_id == "php-tags" and not p.contains_fact_quote for p in ps)
+    assert library.passages_for("x", None, None, "https://example.com/not-in-library", "y") == []
