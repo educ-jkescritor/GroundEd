@@ -38,6 +38,12 @@ def put(cache_key: str, analysis: Analysis) -> None:
         conn.execute("INSERT OR REPLACE INTO analysis_cache (key, analysis_id) VALUES (?, ?)", (cache_key, analysis.id))
 
 
+def save_report(analysis: Analysis) -> None:
+    """Store a report without changing which report the cache key points to."""
+    db.init_db()
+    db.save_analysis(analysis)
+
+
 def get_draft(cache_key: str) -> Optional[tuple[str, str]]:
     with closing(_connect()) as conn:
         row = conn.execute("SELECT text, model FROM draft_cache WHERE key = ?", (cache_key,)).fetchone()
@@ -59,3 +65,11 @@ def purge_expired(hours: int | None = None) -> int:
         conn.execute("DELETE FROM analysis_cache WHERE analysis_id NOT IN (SELECT id FROM analyses)")
         n += conn.execute("DELETE FROM draft_cache WHERE created_at < ?", (cutoff.strftime("%Y-%m-%d %H:%M:%S"),)).rowcount
     return n
+
+
+def enable_wal() -> str:
+    """Write-ahead logging: readers no longer block on a writer (several users at once). The setting is stored in
+    the database file, so this only needs to run once per database; it is cheap to repeat at startup."""
+    config.DB_PATH.parent.mkdir(parents=True, exist_ok=True)
+    with closing(sqlite3.connect(config.DB_PATH)) as conn:
+        return conn.execute("PRAGMA journal_mode=WAL").fetchone()[0]

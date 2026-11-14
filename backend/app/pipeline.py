@@ -15,7 +15,7 @@ from .models import Analysis, Citation, Finding, Lifecycle, PageText, Provenance
 from .pdf import Page, extract_pages, file_sha256, find_snippet_bbox
 from .score import compute, status_for
 
-PIPELINE_VERSION = "0.5.0"  # 0.5.0: page text, kind, usage and hands_on in the response (frontend Report)
+PIPELINE_VERSION = "0.6.0"  # 0.6.0: supported items listed (unscored) + page text, kind, usage, hands_on (Report)
 MAX_CITATIONS = 5  # per finding; prominence still counts every page
 
 
@@ -62,7 +62,9 @@ def _finding_for_entry(entry: registry.Entry, mentions: list[Mention], pages_by_
     pats = entry.compiled()
     lines = [l for n in pages for l in pages_by_no[n].text.splitlines() if any(p.search(l) for p in pats)]
     depth = signals.teaching_depth(lines)
-    hands_on = any(signals.is_hands_on(pages_by_no[n].text) for n in pages)
+    # Hands-on: the page itself, or the page just before it ("Lab 3" title slide, then the code slide).
+    # Never forward: the next page may already be a different topic.
+    hands_on = any(signals.is_hands_on(pages_by_no[k].text) for n in pages for k in (n, n - 1) if k in pages_by_no)
     citations = [
         Citation(page=m.page, snippet=m.snippet, bbox=find_snippet_bbox(pdf_doc, m.page, m.snippet))
         for m in sorted(mentions, key=lambda m: m.page)[:MAX_CITATIONS]
@@ -86,19 +88,24 @@ def _finding_for_entry(entry: registry.Entry, mentions: list[Mention], pages_by_
         latest = eol.latest_label(product)
         lifecycle = Lifecycle(product=product.product, cycle=rel.label, eol_date=rel.eol_from, latest_cycle=latest,
                               source_url=product.html_url, source_name="endoflife.date")
-        deprecated, version, ended = False, rel.label, rel.is_eol
+        written = {m.version for m in mentions if m.version}
+        # Show the version as the module writes it ("8"); the lifecycle record names the release checked ("8.5").
+        version = written.pop() if len(written) == 1 else rel.label
+        deprecated, ended = False, rel.is_eol
         if upgrade is None and latest:  # product upgrades come from the same lifecycle record
             base["upgrade"] = upgrade = Upgrade(target_cycle=f"{product.label} {latest} (latest)",
                                                 source_url=product.html_url)
 
+    status = status_for(lifecycle.eol_date, deprecated, today, ended)
+    if status == "supported":
+        # Checked and still supported: shown so faculty see what was verified, but no score, priority or upgrade.
+        base["upgrade"] = None
+        return Finding(**base, version=version, status=status, lifecycle=lifecycle, score=None)
     passages = library.passages_for(
         entry.technology,
         entry.fact.doc if entry.fact else None, entry.fact.quote if entry.fact else None,
         entry.upgrade.source_url if entry.upgrade else None, entry.upgrade.target if entry.upgrade else None,
     ) or None
-    status = status_for(lifecycle.eol_date, deprecated, today, ended)
-    if status == "supported":
-        return None  # still supported: not a finding (no claim to make)
     score = compute(lifecycle.eol_date, deprecated, depth, len(pages), hands_on, today, ended)
     return Finding(**base, version=version, status=status, lifecycle=lifecycle, score=score, passages=passages)
 
@@ -113,7 +120,17 @@ def analyze(pdf_path: Path, filename: str, kind: str = "upload", today: Optional
     cache_key = cache.key(file_hash, reg.version, rules_version, library_version, PIPELINE_VERSION, detector,
                           today.isoformat())
     if use_cache and (hit := cache.get(cache_key)):
-        return hit
+        if (hit.source.filename, hit.source.kind) == (filename, kind):
+            return hit  # identical re-upload: same report, so decisions saved for it in the browser reappear
+        # Same content under another name: reuse the findings (instant, deterministic) but give this upload its own
+        # report with its own name, id and time. The cache entry keeps pointing at the original report.
+        report = hit.model_copy(update={
+            "id": uuid.uuid4().hex[:12],
+            "created_at": datetime.now(timezone.utc),
+            "source": hit.source.model_copy(update={"filename": filename, "kind": kind}),
+        })
+        cache.save_report(report)
+        return report
 
     pages = extract_pages(pdf_path)
     entries = {e.id: e for e in reg.entries}

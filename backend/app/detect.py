@@ -7,6 +7,7 @@ LLM calls live in llm.py, not here.
 from __future__ import annotations
 
 import re
+import unicodedata
 from dataclasses import dataclass
 
 from .pdf import Page
@@ -26,7 +27,9 @@ class Mention:
 
 
 def normalise(text: str) -> str:
-    return " ".join(text.translate(_QUOTES).split()).lower()
+    """For comparing quotes: NFKC unfolds ligatures and compatibility forms (ﬁ -> fi), curly quotes become
+    straight, whitespace collapses, case is ignored. Stored quotes and snippets keep their original text."""
+    return " ".join(unicodedata.normalize("NFKC", text).translate(_QUOTES).split()).lower()
 
 
 def snippet_on_page(snippet: str, page: Page) -> bool:

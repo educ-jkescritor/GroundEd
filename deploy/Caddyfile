@@ -2,14 +2,31 @@
 
 encode gzip
 
-# API requests go to FastAPI
+# Safety headers for every response. Deliberately no Content-Security-Policy: a strict one could block the PDF
+# viewer's worker or fonts, and needs testing with the frontend team first.
+header {
+	X-Content-Type-Options "nosniff"             # browsers must not guess file types
+	X-Frame-Options "DENY"                       # other sites cannot embed GroundEd in a frame (clickjacking)
+	Referrer-Policy "strict-origin-when-cross-origin"
+	Permissions-Policy "camera=(), microphone=(), geolocation=()"
+	-Server                                      # do not advertise the server software
+}
+
+# API requests go to FastAPI. Uploads above 12 MB are refused here, before they reach the backend
+# (the backend's own limit is 10 MB; the margin covers the multipart wrapper).
 handle /api/* {
+	request_body {
+		max_size 12MB
+	}
 	reverse_proxy backend:8000
 }
 
-# Everything else is the React app; unknown paths fall back to index.html for client-side routing
+# Everything else is the React app; unknown paths fall back to index.html for client-side routing.
 handle {
 	root * /srv
+	# Built assets have content hashes in their names, so they can be cached for a long time.
+	@assets path /assets/*
+	header @assets Cache-Control "public, max-age=31536000, immutable"
 	try_files {path} /index.html
 	file_server
 }

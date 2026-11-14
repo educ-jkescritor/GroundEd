@@ -148,6 +148,8 @@ def test_not_a_pdf_gives_clear_error(tmp_path: Path):
 
 @pytest.fixture()
 def client(tmp_path, monkeypatch):
+    from app import limits
+    limits.reset()
     monkeypatch.setattr(config, "DB_PATH", tmp_path / "test.db")
     from app.main import app
     with TestClient(app) as c:
@@ -158,7 +160,8 @@ def test_samples_and_analyze_sample(client):
     ids = [s["id"] for s in client.get("/api/samples").json()]
     assert "legacy-php-lab" in ids
     a = client.post("/api/analyze", data={"sample_id": "modern-php-lab"}).json()
-    assert a["findings"] == [] and a["provenance"]["detector"] == "registry"
+    assert [f for f in a["findings"] if f["status"] != "supported"] == []  # no claims on the modern lab
+    assert a["summary"]["supported"] >= 1 and a["provenance"]["detector"] == "registry"
     a = client.post("/api/analyze", data={"sample_id": "legacy-php-lab"}).json()
     ids = {f["id"] for f in a["findings"]}
     assert {"php-ext-mysql", "php-asp-script-tags", "php-ext-ereg", "mysql-int-display-width"} <= ids
@@ -281,6 +284,8 @@ def test_too_many_pages_is_rejected_with_a_clear_message(tmp_path, monkeypatch):
 def test_slow_analysis_times_out_with_504(client, monkeypatch):
     import time as _time
     from app import main as main_mod
+    from app import limits
+    limits.reset()
     monkeypatch.setattr(config, "ANALYSIS_TIMEOUT_SECONDS", 1)
     monkeypatch.setattr(main_mod, "run_pipeline", lambda *a, **k: _time.sleep(3))
     r = client.post("/api/analyze", data={"sample_id": "legacy-php-lab"})
@@ -298,3 +303,123 @@ def test_upload_is_judged_by_content_not_label(client):
 def test_health_reports_versions(client):
     v = client.get("/api/health").json()["versions"]
     assert set(v) == {"pipeline", "registry", "library", "rules"} and all(v.values())
+
+
+# ---------- load protection ----------
+
+def test_busy_server_answers_429_instead_of_queueing_forever(client, monkeypatch):
+    import threading
+    import time as _time
+    from app import limits
+    from app import main as main_mod
+    monkeypatch.setattr(config, "MAX_CONCURRENT_ANALYSES", 1)
+    monkeypatch.setattr(config, "ANALYSIS_QUEUE_SECONDS", 1)
+    limits.reset()
+    release = threading.Event()
+    real = main_mod.run_pipeline
+    monkeypatch.setattr(main_mod, "run_pipeline", lambda *a, **k: (release.wait(5), real(*a, **k))[1])
+    results = []
+    t = threading.Thread(target=lambda: results.append(
+        client.post("/api/analyze", data={"sample_id": "modern-php-lab"}).status_code))
+    t.start()
+    _time.sleep(0.5)  # first request now holds the only slot
+    r = client.post("/api/analyze", data={"sample_id": "modern-php-lab"})
+    assert r.status_code == 429 and "try again" in r.json()["detail"] and r.headers.get("retry-after")
+    release.set()
+    t.join(10)
+    assert results == [200]
+    assert client.post("/api/analyze", data={"sample_id": "modern-php-lab"}).status_code == 200  # slot freed
+
+
+def test_draft_rate_limit_counts_gemini_calls_not_cache_hits(client, monkeypatch):
+    from app import limits, llm
+    monkeypatch.setattr(config, "DRAFTS_PER_MINUTE_PER_CLIENT", 2)
+    limits.reset()
+    monkeypatch.setattr(llm, "draft_section", lambda *a: ("draft", "fake"))
+    a = client.post("/api/analyze", data={"sample_id": "legacy-php-lab"}).json()
+    ids = [f["id"] for f in a["findings"] if f["lifecycle"]][:3]
+    url = lambda fid: f"/api/analysis/{a['id']}/findings/{fid}/draft"
+    assert client.post(url(ids[0])).status_code == 200
+    assert client.post(url(ids[0])).status_code == 200      # cached: free
+    assert client.post(url(ids[1])).status_code == 200
+    r = client.post(url(ids[2]))                            # third real Gemini call within a minute
+    assert r.status_code == 429 and "per minute" in r.json()["detail"]
+
+
+def test_wal_mode_is_enabled(client):
+    import sqlite3
+    with sqlite3.connect(config.DB_PATH) as conn:
+        assert conn.execute("PRAGMA journal_mode").fetchone()[0] == "wal"
+
+
+def test_no_drafts_for_supported_items(client, monkeypatch):
+    from app import llm
+    monkeypatch.setattr(llm, "draft_section", lambda *a: ("x", "fake"))
+    a = client.post("/api/analyze", data={"sample_id": "modern-php-lab"}).json()
+    sup = next(f for f in a["findings"] if f["status"] == "supported")
+    r = client.post(f"/api/analysis/{a['id']}/findings/{sup['id']}/draft")
+    assert r.status_code == 409 and "still supported" in r.json()["detail"]
+
+
+# ---------- detection details ----------
+
+def test_normalise_unfolds_ligatures_for_quote_checks():
+    assert normalise("Use the con\ufb01g \ufb02ag") == normalise("Use the config flag")
+
+
+def _hands_on_for(tmp_path, page_texts):
+    from app.pipeline import analyze
+    p = tmp_path / "slides.pdf"
+    doc = pymupdf.open()
+    for t in page_texts:
+        doc.new_page().insert_textbox(pymupdf.Rect(50, 50, 550, 800), t + "\n" + "filler words here " * 4, fontsize=11)
+    doc.save(p)
+    a = analyze(p, "slides.pdf", today=TODAY, use_cache=False)
+    f = next(x for x in a.findings if x.id == "php-ext-mysql")
+    return {x.key: x.points for x in f.score.breakdown}["hands_on"]
+
+
+def test_hands_on_looks_one_page_back_but_never_forward(tmp_path):
+    code = '$r = mysql_query("SELECT * FROM t");'
+    assert _hands_on_for(tmp_path, ["Laboratory Exercise 3: PHP and MySQL", code]) == 10
+    assert _hands_on_for(tmp_path, [code, "Laboratory Exercise 4: forms"]) == 0
+    assert _hands_on_for(tmp_path, ["Lecture notes", code]) == 0
+
+
+def test_pages_that_only_name_the_lab_are_not_hands_on():
+    from app.signals import is_hands_on
+    for text in ["Lab Setup\nOperating System: Windows 7", "Web Systems Lab Manual (sample)", "Lab Requirements",
+                 "Lab Computers: Windows 10"]:
+        assert not is_hands_on(text), text
+    for text in ["Lab 3: Connect to MySQL", "Laboratory Exercise 2", "Lab Activity: forms", "Exercise 4"]:
+        assert is_hands_on(text), text
+
+
+# ---------- result cache and file names ----------
+
+def test_cache_uses_content_but_each_name_gets_its_own_report(tmp_path, monkeypatch):
+    """Renamed copy -> same findings, new report under the new name. Different content under an old name ->
+    analysed afresh. Identical re-upload -> the same report (so saved decisions reappear)."""
+    import shutil
+    from app.pipeline import analyze
+    monkeypatch.setattr(config, "DB_PATH", tmp_path / "cache.db")
+    legacy, modern = config.SAMPLES_DIR / "legacy-php-lab.pdf", config.SAMPLES_DIR / "modern-php-lab.pdf"
+    renamed = tmp_path / "renamed.pdf"
+    shutil.copy(legacy, renamed)
+
+    first = analyze(legacy, "lab.pdf", today=TODAY)
+    again = analyze(legacy, "lab.pdf", today=TODAY)
+    assert again.id == first.id  # identical re-upload
+
+    copy = analyze(renamed, "totally-different-name.pdf", today=TODAY)
+    assert copy.id != first.id and copy.source.filename == "totally-different-name.pdf"
+    assert [f.id for f in copy.findings] == [f.id for f in first.findings]
+    assert copy.provenance.file_sha256 == first.provenance.file_sha256
+
+    other = analyze(modern, "lab.pdf", today=TODAY)  # same name, different content
+    assert other.id != first.id and other.provenance.file_sha256 != first.provenance.file_sha256
+    assert {f.id for f in other.findings if f.status != "supported"} == set()
+
+    from app import db
+    assert db.get_analysis(copy.id).source.filename == "totally-different-name.pdf"
+    assert db.get_analysis(first.id).source.filename == "lab.pdf"
