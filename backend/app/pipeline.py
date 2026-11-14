@@ -15,7 +15,7 @@ from .models import Analysis, Citation, Finding, Lifecycle, Provenance, SourceIn
 from .pdf import Page, extract_pages, file_sha256, find_snippet_bbox
 from .score import compute, status_for
 
-PIPELINE_VERSION = "0.4.0"  # 0.4.0: version-aware product entries
+PIPELINE_VERSION = "0.5.0"  # 0.5.0: supported items listed (unscored)
 MAX_CITATIONS = 5  # per finding; prominence still counts every page
 
 
@@ -76,6 +76,11 @@ def _finding_for_entry(entry: registry.Entry, mentions: list[Mention], pages_by_
             base["upgrade"] = upgrade = Upgrade(target_cycle=f"{product.label} {latest} (latest)",
                                                 source_url=product.html_url)
 
+    status = status_for(lifecycle.eol_date, deprecated, today, ended)
+    if status == "supported":
+        # Checked and still supported: shown so faculty see what was verified, but no score, priority or upgrade.
+        base["upgrade"] = None
+        return Finding(**base, version=version, status=status, lifecycle=lifecycle, score=None)
     passages = library.passages_for(
         entry.technology,
         entry.fact.doc if entry.fact else None, entry.fact.quote if entry.fact else None,
