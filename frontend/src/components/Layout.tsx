@@ -5,11 +5,6 @@ import { ButtonLink } from "./ui/Button";
 import { Logo } from "./ui/Logo";
 import { getDemoUser, signOutDemo, useStored } from "../lib/history";
 
-const linkCls = (active: boolean) =>
-  `group inline-grid px-3 py-1.5 text-sm no-underline hover:no-underline ${
-    active ? "font-bold text-ink" : "font-medium text-ink-muted hover:font-bold hover:text-ink"
-  }`;
-
 /**
  * Scroll behaviour on navigation: a new page starts at the top; a link with a #hash scrolls to that section
  * (e.g. /#how-it-works). React Router does neither on its own.
@@ -79,36 +74,18 @@ export function AccountMenu({ name }: { name: string }) {
 
 export default function Layout() {
   const user = useStored(getDemoUser);
-  const { pathname, hash } = useLocation();
-
-  // Centre links. "How it works" is a section of the landing page; Methodology is its own page.
-  const links = [
-    { to: "/#how-it-works", label: "How it works", active: pathname === "/" && hash === "#how-it-works" },
-    { to: "/methodology", label: "Methodology", active: pathname === "/methodology" },
-    { to: "/feedback", label: "Feedback", active: pathname === "/feedback" },
-    ...(user ? [{ to: "/reports", label: "My reports", active: pathname.startsWith("/reports") }] : []),
-  ];
 
   return (
     <div className="flex min-h-screen flex-col">
       <ScrollManager />
 
-      {/* Floating pill header (DESIGN.md §7): logo · centred links · actions */}
+      {/* Floating pill header (DESIGN.md §7): logo · actions */}
       <header className="sticky top-3 z-20 px-3 sm:px-6 print:hidden">
         <nav
           aria-label="Main"
-          className="mx-auto grid max-w-6xl grid-cols-[1fr_auto] items-center gap-4 rounded-full border border-line bg-surface/85 px-2 py-2 shadow-[var(--shadow-float)] backdrop-blur md:grid-cols-[1fr_auto_1fr]"
+          className="mx-auto flex max-w-6xl items-center justify-between gap-4 rounded-full border border-line bg-surface/85 px-2 py-2 shadow-[var(--shadow-float)] backdrop-blur"
         >
           <div className="pl-3"><Logo /></div>
-          <div className="hidden items-center gap-1 md:flex">
-            {links.map((l) => (
-              <Link key={l.to} to={l.to} className={linkCls(l.active)} aria-current={l.active ? "page" : undefined}>
-                {/* Both spans share one grid cell; the invisible bold one fixes the width so hover doesn't shift the bar. */}
-                <span className="col-start-1 row-start-1">{l.label}</span>
-                <span aria-hidden className="invisible col-start-1 row-start-1 h-0 font-bold">{l.label}</span>
-              </Link>
-            ))}
-          </div>
           <div className="flex items-center justify-end gap-1.5">
             {user ? (
               <AccountMenu name={user.name} />
