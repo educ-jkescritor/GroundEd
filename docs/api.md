@@ -56,3 +56,17 @@ Scoring rules: [docs/design-brief.md section 5.2](design-brief.md). The backend 
 }
 ```
 `would_use` is `yes | maybe | no` (optional). `consent_to_quote` defaults to `false`; only quote comments where it is `true`.
+
+## Additions for the side-by-side Report (14 Nov 2026, all optional)
+The frontend works without these, but shows more when the backend sends them. Backend owner: please confirm or adjust.
+
+| Field | Where | Values | Used for |
+|---|---|---|---|
+| `status: "less_used"` | `Finding` | new status: still supported, declining in industry | "Less used in industry" badge (never "end-of-life") |
+| `kind` | `Finding` | `tool` · `language` · `framework` · `practice` · `topic` | Label before the name; filters |
+| `usage` | `Finding` | `lab` · `activity` · `mentioned` | "Taught in labs · pages 4, 6" |
+| `pages` | `Analysis` | `[{ "number": 1, "text": "…" }]` | The module column with highlights. Each citation `snippet` must appear verbatim in its page's `text`. |
+| `summary.less_used` | `Analysis.summary` | count | Header counts |
+
+Still wanted later (see docs/ux/information-architecture.md, "Finding fields explained"): source tier, publisher,
+passage text and dates; confidence; provenance stamp; job status for the progress page.

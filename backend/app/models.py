@@ -5,7 +5,10 @@ from typing import Literal, Optional
 
 from pydantic import BaseModel, Field
 
-FindingStatus = Literal["eol", "nearing_eol", "supported", "unverified"]
+# "less_used" = still supported but declining in industry (separate claim type, never "end-of-life").
+FindingStatus = Literal["eol", "nearing_eol", "less_used", "supported", "unverified"]
+ItemKind = Literal["tool", "language", "framework", "practice", "topic"]
+Usage = Literal["lab", "activity", "mentioned"]
 
 
 class Citation(BaseModel):
@@ -54,6 +57,14 @@ class Finding(BaseModel):
     lifecycle: Optional[Lifecycle] = None  # None => unverified
     score: Optional[Score] = None  # None => unverified, "needs manual check"
     upgrade: Optional[Upgrade] = None
+    kind: Optional[ItemKind] = None  # what sort of item (for labels and filters)
+    usage: Optional[Usage] = None  # taught in labs / in an activity / only mentioned
+
+
+class PageText(BaseModel):
+    """Extracted text of one module page, so the frontend can show the module beside the findings."""
+    number: int  # 1-based
+    text: str
 
 
 class SourceInfo(BaseModel):
@@ -65,6 +76,7 @@ class SourceInfo(BaseModel):
 class Summary(BaseModel):
     eol: int = 0
     nearing_eol: int = 0
+    less_used: int = 0
     supported: int = 0
     unverified: int = 0
 
@@ -75,6 +87,7 @@ class Analysis(BaseModel):
     source: SourceInfo
     summary: Summary
     findings: list[Finding]
+    pages: list[PageText] = []  # optional: module text per page for the side-by-side Report
 
 
 class Draft(BaseModel):

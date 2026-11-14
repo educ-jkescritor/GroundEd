@@ -1,34 +1,52 @@
 @import "tailwindcss";
 
-/* Design tokens. See DESIGN.md (repo root) before changing anything here. */
+/* Design tokens v2. See DESIGN.md (repo root) before changing anything here. */
 @theme {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
-  --font-serif: "Source Serif 4", ui-serif, Georgia, serif;
+  --font-serif: "Source Serif 4", ui-serif, Georgia, serif; /* ONLY for text quoted from a module or source */
   --font-mono: "JetBrains Mono", ui-monospace, monospace;
 
-  /* Neutrals and brand */
-  --color-ink: #16213a;
-  --color-ink-muted: #4a5568;
-  --color-ink-subtle: #718096;
-  --color-canvas: #f7f6f2;
+  /* Neutrals: white canvas with soft grey panels */
+  --color-canvas: #ffffff;
+  --color-panel: #f4f5f8;
+  --color-panel-strong: #eef1f6;
   --color-surface: #ffffff;
-  --color-line: #e3e1da;
-  --color-brand: #0e6e5c;
-  --color-brand-soft: #e3f2ee;
+  --color-line: #e3e6ec;
+  --color-ink: #17213a;
+  --color-ink-muted: #4f5a6e;
+  --color-ink-subtle: #5f687b; /* not on sky (4.45:1) */
 
-  /* Finding status */
+  /* Brand: Palette A, Lapis & Clay */
+  --color-lapis: #2b55a6;
+  --color-lapis-deep: #1f4380;
+  --color-sky: #dce6f6;
+  --color-clay: #b9784a; /* decoration only */
+  --color-clay-deep: #8a5530;
+  --color-moss: #5e7f62; /* sprout only */
+
+  /* Finding status (fixed meaning; always icon + label) */
   --color-eol: #b42318;
   --color-eol-soft: #fef3f2;
   --color-nearing: #b54708;
   --color-nearing-soft: #fffaeb;
   --color-supported: #067647;
   --color-supported-soft: #ecfdf3;
+  --color-declining: #3e5372;
+  --color-declining-soft: #eef2f7;
   --color-unverified: #475467;
   --color-unverified-soft: #f2f4f7;
 
   /* AI-generated (unsourced) content */
   --color-ai: #6941c6;
   --color-ai-soft: #f4f3ff;
+  --color-ai-line: #b9a6ec;
+
+  /* Shape and depth */
+  --radius-control: 10px;
+  --radius-card: 16px;
+  --radius-panel: 24px;
+  --shadow-card: 0 1px 2px rgb(23 33 58 / 0.06);
+  --shadow-float: 0 12px 32px rgb(23 33 58 / 0.1);
 }
 
 @layer base {
@@ -38,16 +56,22 @@
   body {
     @apply bg-canvas font-sans text-ink leading-relaxed;
   }
+  h1,
+  h2,
+  h3 {
+    @apply font-sans font-bold text-balance;
+    letter-spacing: -0.02em;
+  }
   a {
-    @apply text-brand underline-offset-2 hover:underline;
+    @apply text-lapis underline-offset-2 hover:underline;
   }
   :focus-visible {
-    @apply outline-2 outline-offset-2 outline-brand;
+    @apply outline-2 outline-offset-2 outline-lapis;
   }
   input,
   select,
   textarea {
-    @apply rounded-lg border border-line bg-surface px-3 py-2 text-ink placeholder:text-ink-subtle;
+    @apply rounded-[var(--radius-control)] border border-line bg-surface px-3 py-2 text-ink placeholder:text-ink-subtle;
   }
 }
 
@@ -55,6 +79,7 @@
   * {
     transition: none !important;
     animation: none !important;
+    scroll-behavior: auto !important;
   }
 }
 
@@ -65,6 +90,6 @@
   a[href^="http"]::after {
     content: " (" attr(href) ")";
     font-size: 0.8em;
-    color: #4a5568;
+    color: #4f5a6e;
   }
 }

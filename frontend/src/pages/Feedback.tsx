@@ -58,7 +58,7 @@ export default function Feedback() {
       <Page narrow>
         <Card className="space-y-4 p-8 text-center">
           <CircleCheck size={40} className="mx-auto text-supported" aria-hidden />
-          <h1 className="font-serif text-2xl font-semibold">Thank you!</h1>
+          <h1 className="text-2xl">Thank you!</h1>
           <p className="text-ink-muted">Your feedback was recorded and will help us make GroundEd more useful for faculty.</p>
           <ButtonLink to="/analyze" variant="secondary">Analyze another syllabus</ButtonLink>
         </Card>
@@ -69,7 +69,7 @@ export default function Feedback() {
   return (
     <Page narrow>
       <div className="space-y-2">
-        <h1 className="font-serif text-3xl font-semibold">Help us improve GroundEd</h1>
+        <h1 className="text-3xl">Help us improve GroundEd</h1>
         <p className="text-ink-muted">Two minutes. We're especially keen to hear from faculty and curriculum reviewers in any country.</p>
       </div>
 

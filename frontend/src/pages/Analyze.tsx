@@ -46,7 +46,7 @@ export default function Analyze() {
     setError(null);
     try {
       const analysis = await task();
-      navigate(`/results/${analysis.id}`);
+      navigate(`/reports/${analysis.id}`);
     } catch (e) {
       setError(errorMessage(e));
       setBusy(null);
@@ -78,7 +78,7 @@ export default function Analyze() {
         <Card className="space-y-6 p-8" aria-live="polite">
           <div>
             <p className="text-sm text-ink-subtle">Analyzing</p>
-            <h1 className="font-serif text-2xl font-semibold break-words">{busy}</h1>
+            <h1 className="text-2xl break-words">{busy}</h1>
           </div>
           <ol className="space-y-3">
             {STEPS.map((s, i) => (
@@ -86,7 +86,7 @@ export default function Analyze() {
                 {i < step ? (
                   <Check size={18} className="text-supported" aria-hidden />
                 ) : i === step ? (
-                  <Loader2 size={18} className="animate-spin text-brand" aria-hidden />
+                  <Loader2 size={18} className="animate-spin text-lapis" aria-hidden />
                 ) : (
                   <span className="h-[18px] w-[18px] rounded-full border border-line" aria-hidden />
                 )}
@@ -103,7 +103,7 @@ export default function Analyze() {
   return (
     <Page>
       <div className="space-y-2">
-        <h1 className="font-serif text-3xl font-semibold">Analyze a syllabus</h1>
+        <h1 className="text-3xl">Analyze a module</h1>
         <p className="text-ink-muted">Upload a PDF or start with a sample. You'll see every finding with its sources.</p>
       </div>
 
@@ -117,10 +117,10 @@ export default function Analyze() {
         onDragLeave={() => setDragging(false)}
         onDrop={onDrop}
         className={`flex flex-col items-center gap-4 rounded-xl border-2 border-dashed p-10 text-center transition-colors ${
-          dragging ? "border-brand bg-brand-soft" : "border-line bg-surface"
+          dragging ? "border-lapis bg-sky" : "border-line bg-surface"
         }`}
       >
-        <span className="flex h-12 w-12 items-center justify-center rounded-full bg-brand-soft text-brand">
+        <span className="flex h-12 w-12 items-center justify-center rounded-full bg-sky text-lapis">
           <Upload size={22} aria-hidden />
         </span>
         <div>
@@ -158,7 +158,7 @@ export default function Analyze() {
                 onClick={() => run(s.title, () => api.analyzeSample(s.id))}
                 className="flex h-full w-full gap-4 rounded-xl border border-line bg-surface p-5 text-left shadow-sm transition-colors hover:border-ink/30"
               >
-                <FileText size={22} className="mt-0.5 shrink-0 text-brand" aria-hidden />
+                <FileText size={22} className="mt-0.5 shrink-0 text-lapis" aria-hidden />
                 <span>
                   <span className="block font-semibold">{s.title}</span>
                   <span className="block text-sm text-ink-muted">{s.description}</span>

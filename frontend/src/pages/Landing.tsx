@@ -33,10 +33,10 @@ export default function Landing() {
       {/* Hero */}
       <section className="mx-auto grid max-w-6xl items-center gap-12 px-4 py-16 sm:px-6 lg:grid-cols-2 lg:py-24">
         <div className="space-y-6">
-          <p className="inline-flex items-center gap-2 rounded-full bg-brand-soft px-3 py-1 text-sm font-medium text-brand">
+          <p className="inline-flex items-center gap-2 rounded-full bg-sky px-3 py-1 text-sm font-medium text-lapis">
             <BookOpenCheck size={16} aria-hidden /> For web development courses
           </p>
-          <h1 className="font-serif text-4xl font-semibold leading-tight sm:text-5xl">
+          <h1 className="text-4xl leading-tight sm:text-5xl">
             Keep your syllabus current, with sources you can check.
           </h1>
           <p className="max-w-xl text-lg text-ink-muted">
@@ -73,7 +73,7 @@ export default function Landing() {
       {/* Problem */}
       <section className="border-y border-line bg-surface">
         <div className="mx-auto grid max-w-6xl gap-10 px-4 py-16 sm:px-6 lg:grid-cols-3">
-          <h2 className="font-serif text-3xl font-semibold lg:col-span-1">Technology moves faster than curricula.</h2>
+          <h2 className="text-3xl lg:col-span-1">Technology moves faster than curricula.</h2>
           <div className="space-y-4 text-ink-muted lg:col-span-2">
             <p>
               A 2023 study comparing university syllabi with six years of software job ads found rising industry
@@ -91,13 +91,13 @@ export default function Landing() {
 
       {/* How it works */}
       <section id="how-it-works" className="mx-auto max-w-6xl scroll-mt-20 space-y-10 px-4 py-16 sm:px-6">
-        <h2 className="font-serif text-3xl font-semibold">How it works</h2>
+        <h2 className="text-3xl">How it works</h2>
         <ol className="grid gap-6 md:grid-cols-3">
           {steps.map((s, i) => (
             <li key={s.title}>
               <Card className="h-full space-y-3">
                 <div className="flex items-center gap-3">
-                  <span className="flex h-9 w-9 items-center justify-center rounded-full bg-brand-soft text-brand">
+                  <span className="flex h-9 w-9 items-center justify-center rounded-full bg-sky text-lapis">
                     <s.icon size={18} aria-hidden />
                   </span>
                   <span className="font-mono text-sm text-ink-subtle">0{i + 1}</span>
@@ -113,11 +113,11 @@ export default function Landing() {
       {/* Principles */}
       <section className="border-y border-line bg-surface">
         <div className="mx-auto max-w-6xl space-y-10 px-4 py-16 sm:px-6">
-          <h2 className="font-serif text-3xl font-semibold">Built to be trusted</h2>
+          <h2 className="text-3xl">Built to be trusted</h2>
           <ul className="grid gap-8 sm:grid-cols-2">
             {principles.map((p) => (
               <li key={p.title} className="flex gap-4">
-                <p.icon size={22} className="mt-1 shrink-0 text-brand" aria-hidden />
+                <p.icon size={22} className="mt-1 shrink-0 text-lapis" aria-hidden />
                 <div>
                   <h3 className="font-semibold">{p.title}</h3>
                   <p className="text-ink-muted">{p.body}</p>
@@ -130,7 +130,7 @@ export default function Landing() {
 
       {/* Scoring */}
       <section id="scoring" className="mx-auto max-w-3xl scroll-mt-20 space-y-6 px-4 py-16 sm:px-6">
-        <h2 className="font-serif text-3xl font-semibold">How the priority score works</h2>
+        <h2 className="text-3xl">How the priority score works</h2>
         <p className="text-ink-muted">
           Each verified item gets up to 100 points from fixed rules in code, never from AI, so the same syllabus
           always gets the same score. Unverified items are not scored; they are flagged for a manual check.
@@ -157,7 +157,7 @@ export default function Landing() {
       <section className="mx-auto max-w-6xl px-4 pb-20 sm:px-6">
         <Card className="flex flex-col items-start gap-4 bg-ink p-8 text-white sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h2 className="font-serif text-2xl font-semibold">See it on a real syllabus</h2>
+            <h2 className="text-2xl">See it on a real syllabus</h2>
             <p className="text-white/75">Takes under a minute. No account required.</p>
           </div>
           <ButtonLink to="/analyze" variant="secondary">Analyze a syllabus</ButtonLink>

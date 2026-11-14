@@ -1,6 +1,9 @@
 // Mirrors backend/app/models.py. Change both (and docs/api.md) together.
 
-export type FindingStatus = "eol" | "nearing_eol" | "supported" | "unverified";
+// "less_used" = still supported but declining in industry (separate claim type, never "end-of-life").
+export type FindingStatus = "eol" | "nearing_eol" | "less_used" | "supported" | "unverified";
+export type ItemKind = "tool" | "language" | "framework" | "practice" | "topic";
+export type Usage = "lab" | "activity" | "mentioned";
 
 export interface Citation {
   page: number; // 1-based
@@ -49,14 +52,22 @@ export interface Finding {
   lifecycle: Lifecycle | null; // null => unverified
   score: Score | null;
   upgrade: Upgrade | null;
+  kind?: ItemKind; // optional until the backend sends it
+  usage?: Usage; // taught in labs / in an activity / only mentioned
+}
+
+export interface PageText {
+  number: number; // 1-based
+  text: string; // extracted page text; citations' snippets appear in it verbatim
 }
 
 export interface Analysis {
   id: string;
   created_at: string;
   source: { kind: "upload" | "sample"; filename: string; pages: number };
-  summary: Record<FindingStatus, number>;
+  summary: Partial<Record<FindingStatus, number>>;
   findings: Finding[];
+  pages?: PageText[]; // module text per page, for the side-by-side Report (optional)
 }
 
 export interface Draft {

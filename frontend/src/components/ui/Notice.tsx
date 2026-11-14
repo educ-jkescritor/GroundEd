@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 type Tone = "info" | "warning" | "error";
 
 const tones = {
-  info: { icon: Info, cls: "border-brand/30 bg-brand-soft text-ink" },
+  info: { icon: Info, cls: "border-lapis/30 bg-sky text-ink" },
   warning: { icon: TriangleAlert, cls: "border-nearing/30 bg-nearing-soft text-ink" },
   error: { icon: CircleAlert, cls: "border-eol/30 bg-eol-soft text-ink" },
 };
