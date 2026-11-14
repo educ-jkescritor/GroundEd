@@ -29,6 +29,37 @@ const MATCH_PALETTE = [
 
 const paletteFor = (index: number) => MATCH_PALETTE[index % MATCH_PALETTE.length];
 
+/* Print readiness: module pages render to images asynchronously, so printing waits for them (with a time limit). */
+let markPrintReady: () => void = () => undefined;
+let printReady: Promise<void> = Promise.resolve();
+function resetPrintReady() {
+  printReady = new Promise<void>((resolve) => {
+    markPrintReady = resolve;
+  });
+}
+
+/** Open the browser's print dialog once the annotated module pages are ready (at most `maxWaitMs`). */
+export async function printReport(maxWaitMs = 15000): Promise<void> {
+  await Promise.race([printReady, new Promise((r) => setTimeout(r, maxWaitMs))]);
+  // Let React commit the rendered pages before the dialog snapshots the document.
+  await new Promise((r) => requestAnimationFrame(() => setTimeout(r, 50)));
+  window.print();
+}
+
+/** One line on what the faculty decided, for the report. */
+function decisionLine(d: Decisions[string] | undefined): { label: string; detail: string | null; tone: "done" | "kept" | "pending" } {
+  if (!d) return { label: "Not yet reviewed", detail: null, tone: "pending" };
+  if (d.kind === "update") return { label: "Updated", detail: d.target ? `Now teaches ${d.target}` : null, tone: "done" };
+  if (d.kind === "keep") return { label: "Kept intentionally", detail: d.reason ?? null, tone: "kept" };
+  return { label: "Dismissed", detail: d.reason ?? null, tone: "kept" };
+}
+
+const DECISION_TONE_CLASS = {
+  done: "bg-lapis/15 text-lapis-deep",
+  kept: "bg-panel text-ink",
+  pending: "border border-dashed border-line text-ink-muted",
+} as const;
+
 function decisionText(d: Decisions[string]): string {
   let s = DECISION_DONE[d.kind];
   if (d.target) s += ` → ${d.target}`;
@@ -107,7 +138,7 @@ export function ExportButtons({ analysis, decisions }: { analysis: Analysis; dec
         {copied ? <Check size={16} aria-hidden /> : <Copy size={16} aria-hidden />}
         {copied ? "Copied" : "Copy as Markdown"}
       </Button>
-      <Button size="sm" variant="secondary" onClick={() => window.print()}>
+      <Button size="sm" variant="secondary" onClick={() => void printReport()}>
         <Printer size={16} aria-hidden /> Print / Save PDF
       </Button>
     </div>
@@ -122,6 +153,7 @@ interface RenderedPdfPage {
 }
 
 const ITEMS_PER_OVERVIEW_PAGE = 9;
+const FINDINGS_PER_DETAIL_PAGE = 3;
 
 /**
  * Turnitin-formatted multi-page PDF report shown when printing / saving as PDF:
@@ -153,8 +185,10 @@ export function PrintReport({
   useEffect(() => {
     if (!pdfSource) {
       setRenderedPages([]);
+      markPrintReady();
       return;
     }
+    resetPrintReady();
     let cancelled = false;
     (async () => {
       try {
@@ -175,7 +209,7 @@ export function PrintReport({
           if (cancelled) break;
           const p = await doc.getPage(i);
           const baseVp = p.getViewport({ scale: 1 });
-          const renderVp = p.getViewport({ scale: 1.75 });
+          const renderVp = p.getViewport({ scale: 2 });
           const canvas = document.createElement("canvas");
           canvas.width = Math.floor(renderVp.width);
           canvas.height = Math.floor(renderVp.height);
@@ -192,8 +226,12 @@ export function PrintReport({
         }
         await doc.destroy();
         if (!cancelled) setRenderedPages(out);
-      } catch {
+      } catch (e) {
+        // The report still prints, with the extracted text of each page instead of its image.
+        console.error("Report export: could not render the module pages", e);
         if (!cancelled) setRenderedPages([]);
+      } finally {
+        if (!cancelled) markPrintReady();
       }
     })();
     return () => {
@@ -265,9 +303,20 @@ export function PrintReport({
     return chunks;
   }, [ranked]);
 
-  const submissionPageCount = renderedPages.length || analysis.pages?.length || analysis.source.pages || 0;
-  // Total pages = 1 (Cover) + 1 (Overview summary) + findingChunks.length (Overview numbered list) + submissionPageCount
-  const totalPages = 2 + findingChunks.length + submissionPageCount;
+  // Findings & decisions: evidence, source, recommended update and the faculty decision, a few findings per page
+  const detailChunks = useMemo(() => {
+    const chunks: { finding: Finding; rank: number }[][] = [];
+    for (let i = 0; i < ranked.length; i += FINDINGS_PER_DETAIL_PAGE) {
+      chunks.push(ranked.slice(i, i + FINDINGS_PER_DETAIL_PAGE).map((finding, j) => ({ finding, rank: i + j + 1 })));
+    }
+    return chunks;
+  }, [ranked]);
+
+  const submissionPageCount = renderedPages.length || analysis.pages?.length || 0;
+  // Cover + overview summary + numbered overview list + findings & decisions + annotated module pages
+  const firstDetailPage = 3 + findingChunks.length;
+  const firstSubmissionPage = firstDetailPage + detailChunks.length;
+  const totalPages = firstSubmissionPage - 1 + submissionPageCount;
   const submissionId = `grd:oid:::${analysis.id}`;
   const sizeLabel =
     formatByteSize(fileBytes) ??
@@ -508,36 +557,68 @@ export function PrintReport({
       ))}
 
       {/* =====================================================================
+          FINDINGS & DECISIONS: EVIDENCE, SOURCE, RECOMMENDED UPDATE, FACULTY DECISION
+         ===================================================================== */}
+      {detailChunks.map((chunk, chunkIdx) => (
+        <TurnitinPageShell
+          key={`detail-${chunkIdx}`}
+          pageNumber={firstDetailPage + chunkIdx}
+          totalPages={totalPages}
+          sectionTitle="Findings & Decisions"
+          submissionId={submissionId}
+        >
+          <div className="py-2">
+            {chunkIdx === 0 && (
+              <div className="mb-4">
+                <h2 className="font-sans text-[18px] font-bold text-ink [-webkit-text-stroke:0]">Findings &amp; Decisions</h2>
+                <p className="mt-1 text-xs text-ink-muted">
+                  Each finding with the module's own words, the official source, the sourced update and what faculty
+                  decided. Approved wording was drafted by AI and edited and approved by faculty.
+                </p>
+              </div>
+            )}
+            <div className="space-y-4">
+              {chunk.map(({ finding, rank }) => (
+                <FindingDecisionCard key={finding.id} finding={finding} rank={rank} decision={decisions[finding.id]} />
+              ))}
+            </div>
+          </div>
+        </TurnitinPageShell>
+      ))}
+
+      {/* =====================================================================
           SUBMISSION PAGES: ANNOTATED MODULE PAGES WITH HIGHLIGHTS & MARGIN BADGES
          ===================================================================== */}
       {renderedPages.length > 0
         ? renderedPages.map((pg, idx) => (
             <TurnitinPageShell
               key={`sub-pdf-${pg.page}`}
-              pageNumber={2 + findingChunks.length + idx + 1}
+              pageNumber={firstSubmissionPage + idx}
               totalPages={totalPages}
-              sectionTitle="Integrity Submission"
+              sectionTitle={`Module page ${pg.page} of ${renderedPages.length}`}
               submissionId={submissionId}
             >
               <AnnotatedPdfSubmissionPage
                 page={pg}
                 findings={ranked}
                 findingNumberById={findingNumberById}
+                decisions={decisions}
               />
             </TurnitinPageShell>
           ))
         : (analysis.pages ?? []).map((pg, idx) => (
             <TurnitinPageShell
               key={`sub-text-${pg.number}`}
-              pageNumber={2 + findingChunks.length + idx + 1}
+              pageNumber={firstSubmissionPage + idx}
               totalPages={totalPages}
-              sectionTitle="Integrity Submission"
+              sectionTitle={`Module page ${pg.number} (text)`}
               submissionId={submissionId}
             >
               <AnnotatedTextSubmissionPage
                 page={pg}
                 findings={ranked}
                 findingNumberById={findingNumberById}
+                decisions={decisions}
               />
             </TurnitinPageShell>
           ))}
@@ -710,118 +791,286 @@ function OverviewGroupsAndSources({
   );
 }
 
+type Rect = [number, number, number, number];
+
+interface PageMark {
+  finding: Finding;
+  rank: number;
+  rect: Rect;
+}
+
+/** Marks whose boxes share a text line; their badges sit side by side in the margin beside that line. */
+interface MarkLine {
+  rect: Rect;
+  marks: PageMark[];
+}
+
+const sameRect = (a: Rect, b: Rect) => a.every((v, i) => Math.abs(v - b[i]) < 1);
+
+function groupByLine(marks: PageMark[]): MarkLine[] {
+  const sorted = [...marks].sort((a, b) => a.rect[1] - b.rect[1] || a.rect[0] - b.rect[0] || a.rank - b.rank);
+  const lines: MarkLine[] = [];
+  for (const m of sorted) {
+    const line = lines.find((l) => {
+      const overlap = Math.min(l.rect[3], m.rect[3]) - Math.max(l.rect[1], m.rect[1]);
+      return overlap > 0.5 * Math.min(l.rect[3] - l.rect[1], m.rect[3] - m.rect[1]);
+    });
+    if (line) {
+      line.marks.push(m);
+      line.rect = [
+        Math.min(line.rect[0], m.rect[0]),
+        Math.min(line.rect[1], m.rect[1]),
+        Math.max(line.rect[2], m.rect[2]),
+        Math.max(line.rect[3], m.rect[3]),
+      ];
+    } else {
+      lines.push({ rect: [...m.rect] as Rect, marks: [m] });
+    }
+  }
+  return lines;
+}
+
+/** The findings that appear on one module page, in rank order. */
+function findingsOnPage(findings: Finding[], findingNumberById: Map<string, number>, pageNumber: number) {
+  return findings
+    .filter((f) => f.citations.some((c) => c.page === pageNumber))
+    .map((finding) => ({ finding, rank: findingNumberById.get(finding.id) ?? 1 }))
+    .sort((a, b) => a.rank - b.rank);
+}
+
+/** Numbered badge used in the margin and the legends; a check mark when faculty updated the item. */
+function MatchBadge({ rank, updated = false }: { rank: number; updated?: boolean }) {
+  const pal = paletteFor(rank - 1);
+  return (
+    <span
+      className="inline-flex h-[18px] min-w-[26px] shrink-0 items-center justify-center gap-0.5 rounded-[4px] px-1.5 text-[10.5px] font-bold tabular-nums text-white [print-color-adjust:exact]"
+      style={{ backgroundColor: pal.solid }}
+    >
+      {updated && <Check size={10} strokeWidth={3} aria-label="updated" />}
+      {rank}
+    </span>
+  );
+}
+
 /**
- * Renders one PDF page inside the Turnitin submission frame with colored bbox overlays
- * and left-margin numbered callout badges (`[icon | #]`).
+ * One module page as a framed sheet (portrait pages and landscape slides keep their proportions), with each
+ * finding's quote highlighted in its colour, numbered badges in the left margin beside the highlighted line,
+ * and an "On this page" legend that carries the update and faculty decision.
  */
 function AnnotatedPdfSubmissionPage({
   page,
   findings,
   findingNumberById,
+  decisions,
 }: {
   page: RenderedPdfPage;
   findings: Finding[];
   findingNumberById: Map<string, number>;
+  decisions: Decisions;
 }) {
-  const annotations = useMemo(() => {
-    const raw: {
-      finding: Finding;
-      rank: number;
-      rect: [number, number, number, number];
-      topPct: number;
-      badgeTopPct: number;
-    }[] = [];
-
+  const lines = useMemo(() => {
+    const marks: PageMark[] = [];
     for (const f of findings) {
       const rank = findingNumberById.get(f.id) ?? 1;
       for (const c of f.citations) {
-        if (c.page === page.page && c.bbox && c.bbox.length === 4) {
-          const topPct = Math.max(0, Math.min(96, (c.bbox[1] / page.h) * 100));
-          raw.push({
-            finding: f,
-            rank,
-            rect: c.bbox,
-            topPct,
-            badgeTopPct: topPct,
-          });
-        }
+        if (c.page === page.page && c.bbox && c.bbox.length === 4) marks.push({ finding: f, rank, rect: c.bbox });
       }
     }
-
-    // Sort by vertical position and de-collide left-margin badges so adjacent lines stack cleanly
-    raw.sort((a, b) => a.topPct - b.topPct);
-    const MIN_GAP_PCT = 3.6;
-    for (let i = 1; i < raw.length; i++) {
-      if (raw[i].badgeTopPct < raw[i - 1].badgeTopPct + MIN_GAP_PCT) {
-        raw[i].badgeTopPct = Math.min(96, raw[i - 1].badgeTopPct + MIN_GAP_PCT);
-      }
-    }
-    return raw;
+    return groupByLine(marks);
   }, [findings, findingNumberById, page]);
 
+  const onPage = useMemo(() => findingsOnPage(findings, findingNumberById, page.page), [findings, findingNumberById, page.page]);
+  const pct = (v: number, of: number) => (v / of) * 100;
+
   return (
-    <div className="flex flex-1 items-center justify-center overflow-hidden">
-      <div className="relative flex h-full max-h-full items-center justify-center pl-14 pr-4">
-        <div
-          className="relative h-full max-h-[calc(100vh-120px)] w-auto max-w-full"
-          style={{ aspectRatio: `${page.w} / ${page.h}` }}
-        >
-          {/* Left-margin callout badges (Turnitin style `[ icon | # ]`) */}
-          <div className="pointer-events-none absolute inset-y-0 -left-14 w-12" aria-hidden>
-            {annotations.map((a, idx) => {
-              const pal = paletteFor(a.rank - 1);
-              return (
-                <div
-                  key={`badge-${idx}`}
-                  className=" absolute left-0 inline-flex h-[20px] min-w-[42px] items-center justify-between rounded-[4px] px-1 text-[10.5px] font-bold tabular-nums text-white shadow-xs"
-                  style={{
-                    top: `${a.badgeTopPct}%`,
-                    backgroundColor: pal.solid,
-                    transform: "translateY(-15%)",
-                  }}
-                >
-                  <span className="flex h-3.5 w-3.5 items-center justify-center rounded-full bg-black/25">
-                    <FileText size={9} />
-                  </span>
-                  <span className="px-1">{a.rank}</span>
-                </div>
-              );
-            })}
-          </div>
-
-          {/* Rendered PDF page image */}
-          <img
-            src={page.dataUrl}
-            alt={`Module page ${page.page}`}
-            className="block h-full w-full select-none object-contain"
-          />
-
-          {/* Highlighted match boxes overlaid on the PDF page */}
-          {annotations.map((a, idx) => {
-            const [x0, y0, x1, y1] = a.rect;
-            const pal = paletteFor(a.rank - 1);
-            const left = Math.max(0, (x0 / page.w) * 100 - 0.3);
-            const top = Math.max(0, (y0 / page.h) * 100 - 0.2);
-            const width = Math.min(100 - left, ((x1 - x0) / page.w) * 100 + 0.6);
-            const height = Math.min(100 - top, ((y1 - y0) / page.h) * 100 + 0.4);
-            return (
-              <div
-                key={`hl-${idx}`}
-                className="pointer-events-none absolute rounded-[2px] mix-blend-multiply"
-                style={{
-                  left: `${left}%`,
-                  top: `${top}%`,
-                  width: `${width}%`,
-                  height: `${height}%`,
-                  backgroundColor: pal.highlight,
-                  borderBottom: `2px solid ${pal.solid}`,
-                }}
+    <div className="flex min-h-0 flex-1 flex-col gap-3">
+      <div className="flex min-h-0 flex-1 pl-12">
+        <div className="min-h-0 flex-1 [container-type:size]">
+          <div className="flex h-full w-full items-center justify-center">
+            <div
+              className="relative"
+              style={{ width: `min(100cqw, calc(100cqh * ${page.w / page.h}))`, aspectRatio: `${page.w} / ${page.h}` }}
+            >
+              {/* The module page itself, framed so it reads as a page */}
+              <img
+                src={page.dataUrl}
+                alt={`Module page ${page.page}`}
+                className="absolute inset-0 block h-full w-full select-none border border-ink/25 bg-white shadow-[0_1px_4px_rgba(23,33,58,0.18)]"
               />
-            );
-          })}
+
+              {/* Highlights: tinted fill once per box, a solid outline per finding (stacked outward when boxes coincide) */}
+              {lines.flatMap((line, li) =>
+                line.marks.map((m, mi) => {
+                  const pal = paletteFor(m.rank - 1);
+                  const [x0, y0, x1, y1] = m.rect;
+                  const stack = line.marks.slice(0, mi).filter((o) => sameRect(o.rect, m.rect)).length;
+                  const pad = 1.5 + stack * 2.5;
+                  return (
+                    <div
+                      key={`hl-${li}-${mi}`}
+                      className="pointer-events-none absolute rounded-[2px] [print-color-adjust:exact]"
+                      style={{
+                        left: `calc(${pct(x0, page.w)}% - ${pad}px)`,
+                        top: `calc(${pct(y0, page.h)}% - ${pad}px)`,
+                        width: `calc(${pct(x1 - x0, page.w)}% + ${pad * 2}px)`,
+                        height: `calc(${pct(y1 - y0, page.h)}% + ${pad * 2}px)`,
+                        backgroundColor: stack === 0 ? pal.highlight : "transparent",
+                        border: `1.5px solid ${pal.solid}`,
+                      }}
+                    />
+                  );
+                }),
+              )}
+
+              {/* Margin badges, centred on the highlighted line */}
+              {lines.map((line, li) => (
+                <div
+                  key={`badges-${li}`}
+                  aria-hidden
+                  className="absolute right-[calc(100%+6px)] flex -translate-y-1/2 gap-0.5"
+                  style={{ top: `${pct((line.rect[1] + line.rect[3]) / 2, page.h)}%` }}
+                >
+                  {[...new Map(line.marks.map((m) => [m.rank, m])).values()].map((m) => (
+                    <MatchBadge key={m.rank} rank={m.rank} updated={decisions[m.finding.id]?.kind === "update"} />
+                  ))}
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
+
+      <PageLegend items={onPage} decisions={decisions} />
     </div>
+  );
+}
+
+/** "On this page": what each highlight is, the sourced update, and what faculty decided. */
+function PageLegend({ items, decisions }: { items: { finding: Finding; rank: number }[]; decisions: Decisions }) {
+  if (items.length === 0) {
+    return <p className="shrink-0 border-t border-line pt-2 text-[10.5px] text-ink-muted">No findings on this page.</p>;
+  }
+  return (
+    <div className="shrink-0 border-t border-line pt-2">
+      <p className="mb-1.5 text-[10px] font-bold uppercase tracking-[0.06em] text-ink-muted">On this page</p>
+      <ul className="grid grid-cols-2 gap-x-6 gap-y-1.5">
+        {items.map(({ finding: f, rank }) => {
+          const d = decisions[f.id];
+          const dl = decisionLine(d);
+          return (
+            <li key={f.id} className="flex min-w-0 items-start gap-2 text-[10.5px] leading-snug">
+              <MatchBadge rank={rank} updated={d?.kind === "update"} />
+              <div className="min-w-0">
+                <p className="text-ink">
+                  <span className="font-bold">
+                    {f.technology}
+                    {f.version ? ` ${f.version}` : ""}
+                  </span>
+                  <span className="text-ink-muted"> · {statusShort(f)}</span>
+                  {f.upgrade && <span className="text-ink"> → use {f.upgrade.target_cycle}</span>}
+                </p>
+                <p className="text-ink-muted">
+                  <span className="font-semibold text-ink">{dl.label}</span>
+                  {dl.detail ? ` · ${dl.detail}` : ""}
+                </p>
+                {d?.text && <p className="line-clamp-2 italic text-ink">Updated wording: “{d.text}”</p>}
+              </div>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  );
+}
+
+/** Full record of one finding: module quote, official source, sourced update and the faculty decision. */
+function FindingDecisionCard({ finding: f, rank, decision }: { finding: Finding; rank: number; decision?: Decisions[string] }) {
+  const pal = paletteFor(rank - 1);
+  const pr = priorityOf(f.score);
+  const lc = f.lifecycle;
+  const dl = decisionLine(decision);
+  const replacement = f.passages?.find((p) => p.role === "replacement");
+  const quotes = f.citations.slice(0, 2);
+
+  return (
+    <article
+      className="break-inside-avoid rounded-[6px] border border-line p-3.5 [print-color-adjust:exact]"
+      style={{ borderLeft: `4px solid ${pal.solid}` }}
+    >
+      <header className="flex flex-wrap items-center gap-2">
+        <MatchBadge rank={rank} updated={decision?.kind === "update"} />
+        <h3 className="font-sans text-[13px] font-bold text-ink [-webkit-text-stroke:0]">
+          {f.technology}
+          {f.version ? ` ${f.version}` : ""}
+        </h3>
+        <span className="text-[11px] text-ink-muted">
+          {STATUS_META[f.status].label}
+          {pr && f.score ? ` · ${PRIORITY_LABEL[pr]} ${f.score.total}/100` : " · Not scored (no trusted source)"}
+        </span>
+        <span className={`ml-auto rounded-full px-2.5 py-0.5 text-[10.5px] font-semibold ${DECISION_TONE_CLASS[dl.tone]}`}>
+          {dl.label}
+        </span>
+      </header>
+
+      <div className="mt-2.5 grid grid-cols-2 gap-4 text-[10.5px] leading-snug">
+        <section>
+          <p className="mb-1 font-bold uppercase tracking-[0.05em] text-ink-muted">In the module</p>
+          {quotes.map((c, i) => (
+            <p key={i} className="mb-1 line-clamp-3 border-l-2 pl-2 font-mono text-ink" style={{ borderColor: pal.solid }}>
+              <span className="font-sans font-semibold text-ink-muted">p. {c.page} </span>“{c.snippet}”
+            </p>
+          ))}
+          {f.citations.length > quotes.length && (
+            <p className="text-ink-muted">+ {f.citations.length - quotes.length} more ({pagesLabel(f)})</p>
+          )}
+        </section>
+        <section>
+          <p className="mb-1 font-bold uppercase tracking-[0.05em] text-ink-muted">Official source</p>
+          {lc ? (
+            <>
+              {lc.source_quote && <p className="mb-1 line-clamp-3 border-l-2 border-lapis pl-2 text-ink">“{lc.source_quote}”</p>}
+              <p className="text-ink-muted">
+                {sourceShortName(f)} · <span className="break-all">{lc.source_url}</span>
+              </p>
+            </>
+          ) : (
+            <p className="text-ink-muted">No trusted source found. Needs a manual check; GroundEd does not guess.</p>
+          )}
+        </section>
+      </div>
+
+      <div className="mt-2.5 grid grid-cols-2 gap-4 border-t border-line pt-2 text-[10.5px] leading-snug">
+        <section>
+          <p className="mb-1 font-bold uppercase tracking-[0.05em] text-ink-muted">Recommended update</p>
+          {f.upgrade ? (
+            <>
+              <p className="font-semibold text-ink">Use {f.upgrade.target_cycle}</p>
+              {replacement && (
+                <p className="line-clamp-2 text-ink-muted">
+                  {replacement.publisher}: {replacement.heading || replacement.title}
+                </p>
+              )}
+              <p className="break-all text-ink-muted">{f.upgrade.source_url}</p>
+            </>
+          ) : (
+            <p className="text-ink-muted">No sourced replacement on record.</p>
+          )}
+        </section>
+        <section>
+          <p className="mb-1 font-bold uppercase tracking-[0.05em] text-ink-muted">Faculty decision</p>
+          <p className="text-ink">
+            <span className="font-semibold">{dl.label}</span>
+            {dl.detail ? ` · ${dl.detail}` : ""}
+          </p>
+          {decision?.text && (
+            <div className="mt-1 rounded-[4px] border border-dashed border-ai/40 bg-ai-soft/40 p-1.5">
+              <p className="text-[9.5px] font-semibold text-ai">Updated wording · AI-drafted, edited and approved by faculty</p>
+              <p className="mt-0.5 line-clamp-4 text-ink">{decision.text}</p>
+            </div>
+          )}
+        </section>
+      </div>
+    </article>
   );
 }
 
@@ -856,11 +1105,14 @@ function AnnotatedTextSubmissionPage({
   page,
   findings,
   findingNumberById,
+  decisions,
 }: {
   page: PageText;
   findings: Finding[];
   findingNumberById: Map<string, number>;
+  decisions: Decisions;
 }) {
+  const onPage = useMemo(() => findingsOnPage(findings, findingNumberById, page.number), [findings, findingNumberById, page.number]);
   const marks = useMemo(() => {
     const { norm, map } = normaliseText(page.text);
     const found: { start: number; end: number; finding: Finding; rank: number }[] = [];
@@ -916,30 +1168,15 @@ function AnnotatedTextSubmissionPage({
   if (cursor < page.text.length) segments.push(page.text.slice(cursor));
 
   return (
-    <div className="flex flex-1 items-start gap-4 overflow-hidden py-2">
-      {/* Left margin badges */}
-      <div className="flex w-12 shrink-0 flex-col gap-2 pt-4" aria-hidden>
-        {marks.map((m, idx) => {
-          const pal = paletteFor(m.rank - 1);
-          return (
-            <div
-              key={`txt-badge-${idx}`}
-              className="inline-flex h-[20px] min-w-[42px] items-center justify-between rounded-[4px] px-1 text-[10.5px] font-bold tabular-nums text-white"
-              style={{ backgroundColor: pal.solid }}
-            >
-              <span className="flex h-3.5 w-3.5 items-center justify-center rounded-full bg-black/25">
-                <FileText size={9} />
-              </span>
-              <span className="px-1">{m.rank}</span>
-            </div>
-          );
-        })}
-      </div>
-
-      {/* Document text sheet */}
-      <div className="flex-1 rounded-[4px] border border-line bg-white p-6 text-xs leading-relaxed whitespace-pre-line text-ink">
+    <div className="flex min-h-0 flex-1 flex-col gap-3">
+      <p className="text-[10.5px] text-ink-muted">
+        The original PDF isn't available in this browser, so this page shows the module's extracted text.
+      </p>
+      {/* Document text sheet; numbered badges sit inline at each highlighted quote */}
+      <div className="min-h-0 flex-1 overflow-hidden rounded-[4px] border border-ink/25 bg-white p-6 text-xs leading-relaxed whitespace-pre-line text-ink shadow-[0_1px_4px_rgba(23,33,58,0.18)]">
         {segments}
       </div>
+      <PageLegend items={onPage} decisions={decisions} />
     </div>
   );
 }
