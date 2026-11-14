@@ -148,6 +148,8 @@ def test_not_a_pdf_gives_clear_error(tmp_path: Path):
 
 @pytest.fixture()
 def client(tmp_path, monkeypatch):
+    from app import limits
+    limits.reset()
     monkeypatch.setattr(config, "DB_PATH", tmp_path / "test.db")
     from app.main import app
     with TestClient(app) as c:
@@ -281,6 +283,8 @@ def test_too_many_pages_is_rejected_with_a_clear_message(tmp_path, monkeypatch):
 def test_slow_analysis_times_out_with_504(client, monkeypatch):
     import time as _time
     from app import main as main_mod
+    from app import limits
+    limits.reset()
     monkeypatch.setattr(config, "ANALYSIS_TIMEOUT_SECONDS", 1)
     monkeypatch.setattr(main_mod, "run_pipeline", lambda *a, **k: _time.sleep(3))
     r = client.post("/api/analyze", data={"sample_id": "legacy-php-lab"})
@@ -298,3 +302,50 @@ def test_upload_is_judged_by_content_not_label(client):
 def test_health_reports_versions(client):
     v = client.get("/api/health").json()["versions"]
     assert set(v) == {"pipeline", "registry", "library", "rules"} and all(v.values())
+
+
+# ---------- load protection ----------
+
+def test_busy_server_answers_429_instead_of_queueing_forever(client, monkeypatch):
+    import threading
+    import time as _time
+    from app import limits
+    from app import main as main_mod
+    monkeypatch.setattr(config, "MAX_CONCURRENT_ANALYSES", 1)
+    monkeypatch.setattr(config, "ANALYSIS_QUEUE_SECONDS", 1)
+    limits.reset()
+    release = threading.Event()
+    real = main_mod.run_pipeline
+    monkeypatch.setattr(main_mod, "run_pipeline", lambda *a, **k: (release.wait(5), real(*a, **k))[1])
+    results = []
+    t = threading.Thread(target=lambda: results.append(
+        client.post("/api/analyze", data={"sample_id": "modern-php-lab"}).status_code))
+    t.start()
+    _time.sleep(0.5)  # first request now holds the only slot
+    r = client.post("/api/analyze", data={"sample_id": "modern-php-lab"})
+    assert r.status_code == 429 and "try again" in r.json()["detail"] and r.headers.get("retry-after")
+    release.set()
+    t.join(10)
+    assert results == [200]
+    assert client.post("/api/analyze", data={"sample_id": "modern-php-lab"}).status_code == 200  # slot freed
+
+
+def test_draft_rate_limit_counts_gemini_calls_not_cache_hits(client, monkeypatch):
+    from app import limits, llm
+    monkeypatch.setattr(config, "DRAFTS_PER_MINUTE_PER_CLIENT", 2)
+    limits.reset()
+    monkeypatch.setattr(llm, "draft_section", lambda *a: ("draft", "fake"))
+    a = client.post("/api/analyze", data={"sample_id": "legacy-php-lab"}).json()
+    ids = [f["id"] for f in a["findings"] if f["lifecycle"]][:3]
+    url = lambda fid: f"/api/analysis/{a['id']}/findings/{fid}/draft"
+    assert client.post(url(ids[0])).status_code == 200
+    assert client.post(url(ids[0])).status_code == 200      # cached: free
+    assert client.post(url(ids[1])).status_code == 200
+    r = client.post(url(ids[2]))                            # third real Gemini call within a minute
+    assert r.status_code == 429 and "per minute" in r.json()["detail"]
+
+
+def test_wal_mode_is_enabled(client):
+    import sqlite3
+    with sqlite3.connect(config.DB_PATH) as conn:
+        assert conn.execute("PRAGMA journal_mode").fetchone()[0] == "wal"
