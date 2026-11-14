@@ -3,22 +3,21 @@ import { Link, useParams } from "react-router-dom";
 import { Check, ChevronDown, CircleSlash, Copy, Download, FileText, Info, Loader2, Plus, Printer, X } from "lucide-react";
 import { ApiError, api, errorMessage } from "../api";
 import type { Analysis } from "../types";
-import { AccountMenu } from "../components/Layout";
 import DetailsDialog from "../components/DetailsDialog";
 import FindingItem from "../components/FindingItem";
 import ModuleView from "../components/ModuleView";
 import type { Focus, PdfSource } from "../components/PdfViewer";
-import { PrintReport, buildMarkdown } from "../components/ReportExport";
+import { PrintReport, buildMarkdown, printReport } from "../components/ReportExport";
 import SourcesList from "../components/SourcesList";
-import { ButtonLink, buttonClass } from "../components/ui/Button";
+import { Button, ButtonLink, buttonClass } from "../components/ui/Button";
 import { HorizonMark } from "../components/ui/Logo";
 import { Notice } from "../components/ui/Notice";
-import { PRIORITY_STYLE } from "../components/ui/PriorityBadge";
+import { PRIORITY_STYLE, PRIORITY_TAG_BASE, PriorityIcon } from "../components/ui/PriorityBadge";
 import { Sprout } from "../components/ui/Sprout";
 import { useDecisions, type Decision } from "../lib/decisions";
 import { recallFile } from "../lib/fileStore";
 import { needsReview, rankFindings, toneOf, type Tone } from "../lib/findings";
-import { getDemoUser, recordReport, useStored } from "../lib/history";
+import { getDemoUser, recordReport, signOutDemo, useStored } from "../lib/history";
 import { usePageTitle } from "../lib/usePageTitle";
 import NotFound from "./NotFound";
 
@@ -144,7 +143,14 @@ export default function Report() {
   const counts = Object.fromEntries(TONES.map((t) => [t, ranked.filter((f) => toneOf(f) === t).length])) as Record<Tone, number>;
   const decided = ranked.filter((f) => decisions[f.id]).length;
   const allDone = ranked.length > 0 && decided === ranked.length;
-  const pct = ranked.length ? Math.round((decided / ranked.length) * 100) : 100;
+  const findingWeight = (f: (typeof ranked)[number]) => f.score?.total ?? 30;
+  const remainingOutdated = ranked.reduce((sum, f) => {
+    const d = decisions[f.id];
+    if (d?.kind === "update" || d?.kind === "dismiss") return sum;
+    return sum + findingWeight(f);
+  }, 0);
+  const outdatedPct = ranked.length ? Math.round(remainingOutdated / ranked.length) : 0;
+  const outdatedColor = outdatedPct === 0 ? "text-supported" : outdatedPct >= 50 ? "text-high" : "text-medium";
   const notCovered = analysis.coverage === "not_covered";
   const showNudge = !user && !nudgeDismissed && decided > 0;
 
@@ -183,16 +189,38 @@ export default function Report() {
   return (
     <>
       <div className="flex h-dvh flex-col overflow-hidden print:hidden">
-        {/* Workspace top bar */}
-        <header className="flex items-center gap-3 border-b border-line bg-surface px-3 py-2.5 sm:px-4">
-          <Link to="/" aria-label="GroundEd home" className="shrink-0"><HorizonMark size={30} /></Link>
-          <h1 className="min-w-0 flex-1 truncate text-[24px] leading-tight">{title}</h1>
-          <ButtonLink to="/analyze" variant="secondary" size="sm" className="hidden md:inline-flex"><Plus size={15} aria-hidden /> New analysis</ButtonLink>
-          <DownloadMenu analysis={analysis} decisions={decisions} primary={allDone} />
-          <button type="button" onClick={() => setShowDetails(true)} className={buttonClass("secondary", "sm")}>
-            <Info size={15} aria-hidden /> <span className="hidden sm:inline">Details</span>
-          </button>
-          {user ? <AccountMenu name={user.name} /> : <ButtonLink to="/sign-in" variant="ghost" size="sm" className="hidden sm:inline-flex">Sign in</ButtonLink>}
+        {/* Workspace top bar: Left = document identity & metadata; Right = secondary nav, primary export CTA, session */}
+        <header className="flex items-center justify-between gap-3 border-b border-line bg-surface px-3 py-2.5 sm:px-4">
+          <div className="flex min-w-0 flex-1 items-center gap-2.5">
+            <Link to="/" aria-label="GroundEd home" className="shrink-0"><HorizonMark size={30} /></Link>
+            <h1 className="truncate text-[24px] leading-tight text-ink">{title}</h1>
+            <button
+              type="button"
+              onClick={() => setShowDetails(true)}
+              title="View report metadata & methodology"
+              className="inline-flex h-7 shrink-0 items-center gap-1.5 rounded-full border border-line bg-panel px-2.5 text-xs font-semibold text-ink-muted transition-colors hover:border-ink/30 hover:bg-panel-strong hover:text-ink"
+            >
+              <Info size={13.5} aria-hidden />
+              <span className="hidden sm:inline">Report info</span>
+            </button>
+          </div>
+
+          <div className="flex shrink-0 items-center gap-2">
+            <ButtonLink to="/analyze" variant="secondary" size="sm" className="hidden md:inline-flex">
+              <Plus size={15} aria-hidden /> New analysis
+            </ButtonLink>
+            <DownloadMenu analysis={analysis} decisions={decisions} />
+            <span aria-hidden className="mx-1 hidden h-5 w-px bg-line sm:inline-block" />
+            {user ? (
+              <Button variant="ghost" size="sm" onClick={() => signOutDemo()} className="hidden text-ink-muted hover:text-ink sm:inline-flex">
+                Log out
+              </Button>
+            ) : (
+              <ButtonLink to="/sign-in" variant="ghost" size="sm" className="hidden text-ink-muted hover:text-ink sm:inline-flex">
+                Log in
+              </ButtonLink>
+            )}
+          </div>
         </header>
 
         <div className="flex gap-1 border-b border-line bg-panel p-1.5 lg:hidden" role="tablist" aria-label="View">
@@ -260,12 +288,12 @@ export default function Report() {
                           {ranked.length === 0 ? "We didn't find tools or practices that may be outdated." : "Most important first."}
                         </p>
                       </div>
-                      {ranked.length > 0 && (
-                        <div className="shrink-0 text-right" aria-label={`${pct}% reviewed`}>
-                          <p className={`font-display text-[40px] leading-none [-webkit-text-stroke:0.02em_currentColor] ${allDone ? "text-supported" : "text-lapis-deep"}`}>{pct}%</p>
-                          <p className="mt-1 text-xs font-semibold uppercase tracking-[0.06em] text-ink-subtle">reviewed</p>
-                        </div>
-                      )}
+                      <div className="shrink-0 text-right" aria-label={`${outdatedPct}% outdated`}>
+                        <p className={`font-display text-[40px] leading-none [-webkit-text-stroke:0.02em_currentColor] transition-colors ${outdatedColor}`}>
+                          {outdatedPct}%
+                        </p>
+                        <p className="mt-1 text-xs font-semibold uppercase tracking-[0.06em] text-ink-subtle">outdated</p>
+                      </div>
                     </div>
 
                     {/* Summary by priority = the filters: identical pills */}
@@ -273,23 +301,37 @@ export default function Report() {
                       <div className="flex flex-wrap gap-2" role="group" aria-label="Show findings by priority">
                         <FilterPill active={tone === "all"} onClick={() => setTone("all")} label="All" count={ranked.length} />
                         {TONES.filter((t) => counts[t] > 0).map((t) => (
-                          <FilterPill key={t} tone={t} active={tone === t} onClick={() => setTone(tone === t ? "all" : t)} label={PRIORITY_STYLE[t].short} count={counts[t]} />
+                          <FilterPill
+                            key={t}
+                            tone={t}
+                            active={tone === t}
+                            dimmed={tone !== "all" && tone !== t}
+                            onClick={() => setTone(tone === t ? "all" : t)}
+                            label={PRIORITY_STYLE[t].short}
+                            count={counts[t]}
+                          />
                         ))}
                       </div>
                     )}
 
                     {allDone && (
-                      <div className="flex items-center gap-3 rounded-[var(--radius-card)] bg-panel p-3 text-sm">
-                        <Sprout size={36} />
-                        <p className="flex-1">Your module is ready for next term. Download the report to share it.</p>
+                      <div
+                        role="status"
+                        className="flex flex-col items-center justify-center gap-1.5 rounded-[var(--radius-card)] border border-low-line bg-low-soft px-4 py-3.5 text-center shadow-[var(--shadow-card)]"
+                      >
+                        <span className="mb-0.5 flex h-11 w-11 items-center justify-center rounded-full border border-low-line/70 bg-surface shadow-[var(--shadow-card)]">
+                          <Sprout size={30} />
+                        </span>
+                        <p className="text-sm font-bold text-supported">Your module is ready for next term.</p>
+                        <p className="text-xs font-medium text-supported/85">Export the report above to share it.</p>
                       </div>
                     )}
 
-                    {/* Sign-in note: only after the first decision, once; dismissible */}
+                    {/* Log-in note: only after the first decision when logged out, once; dismissible */}
                     {showNudge && (
                       <div className="flex items-start gap-3 rounded-[var(--radius-card)] border border-line bg-sky/40 p-3 text-sm" role="status">
                         <p className="flex-1 text-ink">
-                          Your decisions are saved in this browser only. <Link to="/sign-in" className="font-semibold">Sign in</Link> to keep this report in My reports.
+                          Browsing as guest — upload history isn't saved. <Link to="/sign-in" className="font-semibold">Log in</Link> to keep this report in your History of uploads.
                         </p>
                         <button type="button" onClick={dismissNudge} aria-label="Dismiss" className="rounded-full p-1 text-ink-muted hover:bg-surface"><X size={15} /></button>
                       </div>
@@ -317,8 +359,16 @@ export default function Report() {
                         )}
                         {/* Grouped by review state: what's left first; reviewed items fold away below. */}
                         {toReview.length > 0 && (
-                          <section aria-label="To review" className="space-y-2.5">
-                            <h3 className="font-sans text-[11px] font-semibold uppercase tracking-[0.07em] text-ink-subtle [-webkit-text-stroke:0]">To review · {toReview.length}</h3>
+                          <section aria-label="To review" className="space-y-3">
+                            <div className="flex items-center gap-2.5">
+                              <h3 className="font-sans text-[13px] font-bold uppercase tracking-[0.06em] text-ink [-webkit-text-stroke:0]">
+                                To review
+                              </h3>
+                              <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-lapis/12 px-2 font-mono text-xs font-bold tabular-nums text-lapis-deep">
+                                {toReview.length}
+                              </span>
+                              <span aria-hidden className="h-px flex-1 bg-line" />
+                            </div>
                             <ol className="space-y-2.5">{toReview.map(renderCard)}</ol>
                           </section>
                         )}
@@ -326,18 +376,30 @@ export default function Report() {
                           <p className="rounded-[var(--radius-card)] bg-panel p-4 text-sm text-ink-muted">Nothing left to review here.</p>
                         )}
                         {reviewed.length > 0 && (
-                          <section aria-label="Reviewed" className="mt-5 space-y-2.5">
+                          <section aria-label="Reviewed" className="mt-6 space-y-3">
                             <button
                               type="button"
                               aria-expanded={reviewedOpen}
                               onClick={() => setShowReviewed(!reviewedOpen)}
-                              className="flex w-full items-center gap-1.5 text-left text-[11px] font-semibold uppercase tracking-[0.07em] text-ink-subtle hover:text-ink"
+                              className="group -mx-2 flex w-[calc(100%+1rem)] items-center gap-2.5 rounded-[var(--radius-control)] px-2 py-1.5 text-left transition-colors hover:bg-panel"
                             >
-                              <ChevronDown size={14} className={`transition-transform ${reviewedOpen ? "" : "-rotate-90"}`} aria-hidden />
-                              Reviewed · {reviewed.length}
-                              {!reviewedOpen && <span className="font-normal normal-case tracking-normal">(show)</span>}
+                              <ChevronDown
+                                size={16}
+                                className={` text-ink-muted transition-transform group-hover:text-ink ${reviewedOpen ? "" : "-rotate-90"}`}
+                                aria-hidden
+                              />
+                              <span className="font-sans text-[13px] font-bold uppercase tracking-[0.06em] text-ink [-webkit-text-stroke:0]">
+                                Reviewed
+                              </span>
+                              <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-panel-strong px-2 font-mono text-xs font-bold tabular-nums text-ink-muted">
+                                {reviewed.length}
+                              </span>
+                              <span aria-hidden className="h-px flex-1 bg-line" />
+                              <span className="text-xs font-semibold text-ink-subtle group-hover:text-ink">
+                                {reviewedOpen ? "Hide" : "Show"}
+                              </span>
                             </button>
-                            {reviewedOpen && <ol className="space-y-2">{reviewed.map(renderCard)}</ol>}
+                            {reviewedOpen && <ol className="space-y-2.5">{reviewed.map(renderCard)}</ol>}
                           </section>
                         )}
                         {ranked.length > 0 && <p className="mt-4 text-center text-xs text-ink-subtle">Tip: press J / K to move between findings.</p>}
@@ -351,13 +413,13 @@ export default function Report() {
       </div>
 
       {showDetails && <DetailsDialog analysis={analysis} onClose={() => setShowDetails(false)} />}
-      <PrintReport analysis={analysis} decisions={decisions} />
+      <PrintReport analysis={analysis} decisions={decisions} pdfSource={pdfSource} title={title} userName={user?.name} />
     </>
   );
 }
 
-/** Download ▾: secondary while reviewing, primary once everything is decided. */
-function DownloadMenu({ analysis, decisions, primary }: { analysis: Analysis; decisions: Parameters<typeof buildMarkdown>[1]; primary: boolean }) {
+/** Primary export CTA in the workspace header. */
+function DownloadMenu({ analysis, decisions }: { analysis: Analysis; decisions: Parameters<typeof buildMarkdown>[1] }) {
   const [open, setOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -388,12 +450,12 @@ function DownloadMenu({ analysis, decisions, primary }: { analysis: Analysis; de
   const item = "flex w-full items-center gap-2 rounded-[var(--radius-control)] px-3 py-2 text-left text-sm text-ink hover:bg-panel";
   return (
     <div ref={ref} className="relative">
-      <button type="button" aria-haspopup="menu" aria-expanded={open} onClick={() => setOpen(!open)} className={buttonClass(primary ? "primary" : "secondary", "sm")}>
-        <Download size={15} aria-hidden /> <span className="hidden sm:inline">Download</span> <ChevronDown size={14} aria-hidden />
+      <button type="button" aria-haspopup="menu" aria-expanded={open} onClick={() => setOpen(!open)} className={buttonClass("primary", "sm")}>
+        <Download size={15} aria-hidden /> <span className="hidden sm:inline">Export report</span> <ChevronDown size={14} aria-hidden />
       </button>
       {open && (
         <div role="menu" className="absolute right-0 top-11 z-50 w-60 rounded-[var(--radius-card)] border border-line bg-surface p-1.5 shadow-[var(--shadow-float)]">
-          <button role="menuitem" type="button" className={item} onClick={() => { setOpen(false); setTimeout(() => window.print(), 50); }}>
+          <button role="menuitem" type="button" className={item} onClick={() => { setOpen(false); void printReport(); }}>
             <Printer size={15} aria-hidden /> Report as PDF
           </button>
           <button role="menuitem" type="button" className={item} onClick={copy}>
@@ -406,20 +468,44 @@ function DownloadMenu({ analysis, decisions, primary }: { analysis: Analysis; de
   );
 }
 
-/** Filter pill: every option has the same size; priority options carry their colour dot. */
-function FilterPill({ label, count, active, onClick, tone }: { label: string; count: number; active: boolean; onClick: () => void; tone?: Tone }) {
+/** Filter pill: shares the exact priority tag UI, icon, and size as the findings list. */
+function FilterPill({
+  label,
+  count,
+  active,
+  dimmed = false,
+  onClick,
+  tone,
+}: {
+  label: string;
+  count: number;
+  active: boolean;
+  dimmed?: boolean;
+  onClick: () => void;
+  tone?: Tone;
+}) {
+  const toneCls = tone
+    ? `${PRIORITY_STYLE[tone].cls} ${
+        active
+          ? "ring-2 ring-current/35 shadow-[var(--shadow-card)]"
+          : dimmed
+            ? "opacity-55 hover:opacity-100"
+            : "hover:brightness-95"
+      }`
+    : active
+      ? "border-ink bg-ink text-white"
+      : "border-line bg-panel text-ink-muted hover:border-ink/40 hover:text-ink";
+
   return (
     <button
       type="button"
       aria-pressed={active}
       onClick={onClick}
-      className={`inline-flex h-8 min-w-[92px] items-center justify-center gap-2 rounded-full border px-3 text-xs font-semibold transition-colors ${
-        active ? "border-ink bg-ink text-white" : "border-line bg-surface text-ink hover:border-ink/40"
-      }`}
+      className={`${PRIORITY_TAG_BASE} transition-all ${toneCls}`}
     >
-      {tone && <span aria-hidden className={`h-2 w-2 rounded-full ${PRIORITY_STYLE[tone].bar}`} />}
-      {label}
-      <span className={`tabular-nums ${active ? "text-white/80" : "text-ink-subtle"}`}>{count}</span>
+      {tone && <PriorityIcon p={tone} />}
+      <span>{label}</span>
+      <span className="tabular-nums opacity-75">{count}</span>
     </button>
   );
 }

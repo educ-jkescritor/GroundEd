@@ -1,51 +1,69 @@
-# Use cases
+# Use Cases & Problem Statement
 
-## Who it's for
+## 1. The Problem: Silent Curriculum Drift vs. Untrustworthy AI
 
-**Primary persona: the course faculty member.**
-Teaches 3–5 courses a term, revises syllabi once a year or less, often by copying last year's document.
-Knows the subject but has no time to track the release and support status of every tool. Will only act on
-output they can verify themselves.
+University technology courses face a persistent tension:
+1. **Technology moves faster than curriculum review cycles:** Languages, frameworks, and functions reach end-of-life (`PHP 5.6`, `Python 2.7`, `AngularJS`, `Bootstrap 3`) or are removed from modern runtimes (`mysql_connect()`, `<font>` tags) while still appearing in inherited lecture notes and lab guides (Dobslaw et al., 2023).
+2. **Manual verification does not scale:** A faculty member teaching 3–5 courses per term—or a department chair reviewing 20 modules before accreditation—rarely has time to cross-check every tool, function, and version against official release schedules and migration guides.
+3. **Generic AI chatbots hallucinate and overstep:** Asking a standard LLM *"Is my syllabus outdated?"* produces confident, unsourced opinions, invented EOL dates, or wholesale rewrites that strip faculty ownership. Educators will only act on claims they can **verify and defend** to a curriculum committee.
 
-**Secondary persona: the curriculum reviewer / department chair.**
-Reviews many syllabi before accreditation or a curriculum update. Needs a shareable, evidence-backed summary
-to discuss with faculty.
+---
 
-## Problem
-- Technology changes faster than syllabi are reviewed (Dobslaw et al., 2023).
-- Tools named in a syllabus reach end-of-life, so students practise on unsupported software.
-- Checking every tool by hand is slow; generic AI chatbots answer confidently without sources, which faculty can't trust.
+## 2. Who GroundEd Is For
 
-## User stories
-1. As a professor, I upload my syllabus and see which tools are outdated, with proof.
-2. As a professor, I see *why* an item is flagged: the page and quote from my syllabus, the lifecycle record and a score breakdown.
-3. As a professor, I choose how much help I want (review only, accept a sourced upgrade, or get an AI draft) and approve every change myself.
-4. As a reviewer, I export a report to share with the department.
-5. As a visitor, I try GroundEd on a sample syllabus without uploading anything.
+| Persona | Role & Context | Core Job to Be Done | What Earns Their Trust |
+|---|---|---|---|
+| **Primary: Course Instructor**<br/>*(e.g., Prof. Ana Reyes, IT Faculty)* | Teaches 3–4 sections a term; revises modules 1–3 weeks before term starts. Strong in fundamentals, pressed for time. | *"Show me which tools or practices in my module may warrant review, with proof I can check in 30 seconds, while keeping me in control of every change."* | • Exact quote + page number from their own PDF<br/>• Official source (`php.net`, `endoflife.date`, MDN) with date<br/>• Ability to mark **Keep intentionally** when teaching legacy tech on purpose |
+| **Secondary: Curriculum Reviewer / Chair**<br/>*(e.g., Dr. Daniel Okafor, Program Chair)* | Reviews 10–30 course modules per year for department updates or accreditation. | *"Give me a consistent, evidence-backed summary I can export and attach to curriculum review minutes."* | • Deterministic 100-point priority score (same PDF = same score)<br/>• Cryptographic provenance stamp ("as of" date, registry & library versions)<br/>• Printable PDF / Markdown report export |
+| **Tertiary: Instructional Designer / New Adjunct**<br/>*(e.g., Mx. Jamie Cruz)* | Inherited an older course module they did not write; needs a starting point for updates. | *"Help me understand why an inherited lab is dated and give me a starting replacement draft I can edit."* | • Side-by-side comparison of module quote vs. migration guide passage<br/>• Clearly separated, editable **AI suggestion** grounded in the verified source |
+| **Students & Self-Learners** | Checking whether a course guide or self-study module still reflects current industry practice. | *"Understand in plain language whether the tools in my lab guide are still supported."* | • Plain-English explanations and tooltips for terms like *End-of-life* and *Hands-on* |
 
-## Main use case: review a syllabus
+> **Interaction Pattern:** *Side-by-side document and evidence review.* Upload a module → get a prioritized report → inspect highlights in the document alongside the authoritative sources behind them.
 
-| Step | Faculty does | GroundEd does |
+---
+
+## 3. Core User Stories
+
+1. **Source-backed detection:** *As an instructor, I want to upload my course module PDF (or try a built-in sample) and see every outdated language, framework, database, or coding practice with its exact PDF page/quote and an official lifecycle or documentation record.*
+2. **Transparent prioritization:** *As an instructor, I want to see why a finding is ranked High, Medium, or Low priority via a deterministic 100-point score breakdown (Lifecycle, How it's taught, Frequency, Hands-on).*
+3. **Side-by-side verification:** *As an instructor, I want to view my PDF module with highlighted mentions right next to the ranked findings and retrieved source passages so I can verify context immediately.*
+4. **Faculty-in-the-loop decisions:** *As an instructor, I want to record a decision on each finding—**Update** (with an optional AI-drafted rewrite), **Keep intentionally** (e.g., taught for historical context), or **Dismiss** (with an optional reason)—and undo at any time.*
+5. **Shareable evidence report:** *As a curriculum reviewer, I want to export the reviewed report (including provenance metadata, citations, and faculty decisions) as Markdown or a printable PDF.*
+
+---
+
+## 4. Main Use Case: Reviewing a Course Module
+
+| Step | User Action | GroundEd System Action |
 |---|---|---|
-| 1 | Opens GroundEd, clicks **Analyze a syllabus** | Shows upload area and sample syllabi |
-| 2 | Uploads a PDF | Extracts the text of each page |
-| 3 | Waits (under a minute) | Detects technology mentions; keeps only those whose quote is found on the page |
-| 4 | | Looks each one up on endoflife.date; anything not found becomes **Unverified** |
-| 5 | | Calculates a 100-point priority score per verified item |
-| 6 | Reads the summary (end-of-life / nearing / supported / unverified) | Lists findings, highest priority first |
-| 7 | Opens a finding | Shows syllabus quote + page, lifecycle record + link, score breakdown |
-| 8 | Chooses a help level | Review: nothing more. Upgrade: shows the newer version from the same record. Draft: AI writes a suggested section, clearly labelled |
-| 9 | Edits and approves (or undoes) | Records the decision |
-| 10 | Exports the report | Markdown or printable PDF with evidence, decisions and approved text |
-| 11 | Leaves feedback | Saves role, country, rating and comments |
+| **1. Start** | Opens GroundEd and clicks **Analyze a module** | Displays the upload dropzone, scope guidance (technology courses, text-based PDFs up to 10 MB), and one-click sample modules. |
+| **2. Input** | Uploads a syllabus/module PDF (or selects a sample such as *Web Systems — Legacy PHP & MySQL*) | Validates the `%PDF` file header and size limit; extracts per-page text and word bounding boxes via PyMuPDF; deletes the uploaded file from disk once extracted. |
+| **3. Detect & Verify** | Observes progress steps (*Reading → Detecting → Checking sources → Scoring*) | Matches text against the Facts Registry (`backend/registry/*.yaml`), filters out historical/changelog mentions (`rules/mentions.yaml`), and verifies every snippet exists verbatim on the page. |
+| **4. Ground Evidence** | | Resolves product versions against `endoflife.date` and verifies practice quotes against the committed Source Library (`backend/library/snapshot/`). Retrieves supporting and replacement passages via SQLite FTS5. Anything without a verified source is marked **Unverified**. |
+| **5. Score & Rank** | | Computes the deterministic 100-point priority score (`score.py`) based on lifecycle stage (40), teaching depth (30), page frequency (20), and hands-on lab presence (10). Stamps provenance metadata. |
+| **6. Inspect Report** | Reviews the **Report workspace** (`/reports/:id`) | Shows the module viewer (PDF with highlighted bounding boxes or extracted text) on the left and findings grouped/ranked by priority on the right. |
+| **7. Examine Evidence** | Expands a finding or opens **Finding detail** (`/reports/:id/findings/:fid`) | Displays the verbatim module quote + page number alongside the official source quote (`php.net`, `endoflife.date`, MDN), publisher, link, retrieved RAG passages, and 100-point score breakdown. |
+| **8. Optional AI Draft** | Clicks **Generate AI draft** under the Update flow | Sends only the verified module quote and verified source fact to Gemini (`llm.py`) to draft updated wording, displayed inside a dashed violet **"AI suggestion — not sourced"** container for user editing. |
+| **9. Decide** | Chooses **Update**, **Keep intentionally**, or **Dismiss** (with optional reason) | Saves the decision badge in the browser; once all findings are reviewed, displays the completion state (*"All findings reviewed. Your module is ready for next term"*). |
+| **10. Export & Feedback** | Clicks **Export** (Copy Markdown or Print / Save PDF) and optionally submits **Feedback** | Generates a clean, shareable curriculum review report with citations, decisions, and provenance receipt. |
 
-## Alternative and error paths
-- **Scanned PDF (no text):** GroundEd says the PDF appears to be scanned and suggests a text-based PDF.
-- **Tool not in endoflife.date:** marked Unverified, with a link to search manually. Never guessed.
-- **AI service busy:** friendly message, plus a suggestion to use a sample (which is pre-analysed).
+---
 
-## What GroundEd deliberately does not do
-- It does not change the syllabus file; it produces suggestions and a report.
-- It does not state lifecycle facts from AI; those come only from endoflife.date.
-- It does not judge teaching quality or pedagogy, only tool currency.
-- It does not keep uploads: they are deleted after 24 hours.
+## 5. Edge Cases & Alternative Paths
+
+| Scenario | How GroundEd Handles It |
+|---|---|
+| **Out-of-scope / non-tech module (e.g., Ethics in Society GED sample)** | Does not invent findings. Displays a calm **"No findings / Outside technology scope"** state explaining that GroundEd currently covers IT, computing, and web development modules. |
+| **Scanned PDF (image-only, no selectable text)** | Returns HTTP `422` and informs the user: *"This PDF looks scanned, so we can't read its text yet. Try a text-based PDF or explore a sample."* |
+| **Technology not in Registry / `endoflife.date`** | Marked **Unverified** (*"No trusted source found. GroundEd does not guess. Please check this one yourself"*) and excluded from priority scoring. |
+| **Currently supported technology (e.g., PHP 8.3)** | Recognized and resolved against `endoflife.date`, confirmed as supported, and omitted from outdated findings so faculty are never nagged about current tools. |
+| **AI draft service busy or unconfigured** | Core analysis, evidence retrieval, and scoring still succeed 100% deterministically (zero LLM dependency). Only the optional draft button displays a friendly retry notice. |
+
+---
+
+## 6. What GroundEd Deliberately Does Not Do
+
+- **Never modifies the instructor's original file automatically:** It produces advisory evidence, optional drafts, and an exportable review report.
+- **Never uses AI to decide whether something is outdated or to calculate scores:** Facts come strictly from the curated Registry, Source Library, and `endoflife.date`; scores come strictly from fixed code rules.
+- **Never judges teaching quality or pedagogy:** It checks technical currency and always provides a first-class **Keep intentionally** decision for instructors teaching legacy systems on purpose.
+- **Never retains uploaded PDFs on disk:** Uploaded files are unlinked immediately after analysis (`backend/app/main.py`).

@@ -7,9 +7,9 @@ import { getDemoUser, listReports, useStored } from "../lib/history";
 import { formatDate } from "../lib/format";
 import { usePageTitle } from "../lib/usePageTitle";
 
-/** Report history, kept in this browser (hackathon scope). */
+/** Upload & report history, kept in this browser while logged in (hackathon scope). */
 export default function Reports() {
-  usePageTitle("Reports");
+  usePageTitle("Upload history");
   const reports = useStored(listReports);
   const user = useStored(getDemoUser);
 
@@ -17,14 +17,14 @@ export default function Reports() {
     return (
       <Page narrow>
         <Panel className="space-y-4 text-center">
-          <h1 className="text-2xl">Sign in to see your reports</h1>
+          <h1 className="text-2xl">Log in to see your history of uploads</h1>
           <p className="text-ink-muted">
-            You don't need an account to analyze a module. Signing in keeps a list of the reports you open, so you can
-            come back to them.
+            You can upload and analyze modules anytime as a guest. Logging in keeps a history of the modules you upload
+            and the reports you open so you can return to them.
           </p>
           <div className="flex flex-wrap justify-center gap-3">
-            <ButtonLink to="/sign-in">Sign in</ButtonLink>
-            <ButtonLink to="/analyze" variant="secondary">Analyze a module</ButtonLink>
+            <ButtonLink to="/sign-in">Log in</ButtonLink>
+            <ButtonLink to="/analyze" variant="secondary">Analyze as guest</ButtonLink>
           </div>
         </Panel>
       </Page>
@@ -33,17 +33,20 @@ export default function Reports() {
 
   return (
     <Page narrow>
-      <div className="space-y-2">
-        <h1 className="text-[32px]">My reports</h1>
-        <p className="text-ink-muted">
-          Signed in as {user.name} (demo account). Reports you open are saved in this browser.
-        </p>
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div className="space-y-2">
+          <h1 className="text-[32px]">History of uploads</h1>
+          <p className="text-ink-muted">
+            Logged in as {user.name} (demo account). Uploaded modules and reports are saved in this browser.
+          </p>
+        </div>
+        <ButtonLink to="/analyze" size="sm">Upload another module</ButtonLink>
       </div>
 
       {reports.length === 0 ? (
         <Panel className="space-y-4 text-center">
-          <p className="font-semibold">No reports yet</p>
-          <p className="text-ink-muted">Analyze a module or try a sample, and it will appear here.</p>
+          <p className="font-semibold">No uploads in history yet</p>
+          <p className="text-ink-muted">Analyze a module PDF or try a sample, and it will appear here automatically.</p>
           <ButtonLink to="/analyze">Analyze a module</ButtonLink>
         </Panel>
       ) : (
@@ -58,10 +61,10 @@ export default function Reports() {
                 <span className="min-w-0 flex-1">
                   <span className="block truncate font-semibold">{r.filename}</span>
                   <span className="block text-sm text-ink-subtle">
-                    {formatDate(r.created_at)} · {r.findings} finding{r.findings === 1 ? "" : "s"} may warrant review{r.sample ? " · Sample" : ""}
+                    {formatDate(r.created_at)} · {r.findings} finding{r.findings === 1 ? "" : "s"} may warrant review{r.sample ? " · Sample" : " · Uploaded PDF"}
                   </span>
                 </span>
-                <span className="text-sm font-semibold text-lapis-deep">Open</span>
+                <span className="text-sm font-semibold text-lapis-deep">Open →</span>
               </Link>
             </li>
           ))}

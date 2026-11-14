@@ -72,7 +72,8 @@
   }
   h1,
   h2,
-  h3 {
+  h3,
+  .heading-serif {
     /* Instrument Serif has a single weight; a thin stroke in the text colour makes it slightly bolder
        without the smeared look of browser-synthesised bold. */
     font-family: var(--font-display);
@@ -103,14 +104,28 @@
   }
 }
 
+@page {
+  size: letter portrait;
+  margin: 0;
+}
+
 @media print {
+  html,
+  html.workspace,
   body {
-    background: white;
+    overflow: visible !important;
+    height: auto !important;
+    background: white !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
   a[href^="http"]::after {
     content: " (" attr(href) ")";
     font-size: 0.8em;
     color: #4f5a6e;
+  }
+  .turnitin-report a[href^="http"]::after {
+    content: none;
   }
 }
 
@@ -120,10 +135,10 @@ html.workspace {
   overflow: hidden;
 }
 
-/* "Show in document": the quoted text pulses once so the eye finds it. */
+/* "Show in document": the quoted text pulses once in its priority colour so the eye finds it. */
 @keyframes focus-pulse {
-  0% { box-shadow: 0 0 0 0 rgb(58 111 208 / 0.55); }
-  100% { box-shadow: 0 0 0 14px rgb(58 111 208 / 0); }
+  0% { box-shadow: 0 0 0 0 currentColor; }
+  100% { box-shadow: 0 0 0 14px transparent; }
 }
 .focus-pulse {
   animation: focus-pulse 0.9s ease-out 2;

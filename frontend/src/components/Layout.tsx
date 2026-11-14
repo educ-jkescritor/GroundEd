@@ -1,14 +1,9 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
-import { ChevronDown, FileText, LogOut } from "lucide-react";
-import { ButtonLink } from "./ui/Button";
+import { ArrowRight, ChevronDown, FileText, LogOut } from "lucide-react";
+import { Button, ButtonLink } from "./ui/Button";
 import { Logo } from "./ui/Logo";
 import { getDemoUser, signOutDemo, useStored } from "../lib/history";
-
-const linkCls = (active: boolean) =>
-  `group inline-grid px-3 py-1.5 text-sm no-underline hover:no-underline ${
-    active ? "font-bold text-ink" : "font-medium text-ink-muted hover:font-bold hover:text-ink"
-  }`;
 
 /**
  * Scroll behaviour on navigation: a new page starts at the top; a link with a #hash scrolls to that section
@@ -28,7 +23,7 @@ function ScrollManager() {
   return null;
 }
 
-/** Signed-in account menu: name ▾ → My reports, Sign out. */
+/** Account dropdown (used if a compact menu is needed). */
 export function AccountMenu({ name }: { name: string }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -64,12 +59,12 @@ export function AccountMenu({ name }: { name: string }) {
       </button>
       {open && (
         <div role="menu" className="absolute right-0 top-11 z-50 w-52 rounded-[var(--radius-card)] border border-line bg-surface p-1.5 shadow-[var(--shadow-float)]">
-          <p className="px-3 py-2 text-xs text-ink-subtle">Signed in as {name} (demo)</p>
+          <p className="px-3 py-2 text-xs text-ink-subtle">Logged in as {name} (demo)</p>
           <button role="menuitem" type="button" onClick={() => { setOpen(false); navigate("/reports"); }} className="flex w-full items-center gap-2 rounded-[var(--radius-control)] px-3 py-2 text-left text-sm text-ink hover:bg-panel">
-            <FileText size={15} aria-hidden /> My reports
+            <FileText size={15} aria-hidden /> Upload history
           </button>
           <button role="menuitem" type="button" onClick={() => { setOpen(false); signOutDemo(); navigate("/"); }} className="flex w-full items-center gap-2 rounded-[var(--radius-control)] px-3 py-2 text-left text-sm text-ink hover:bg-panel">
-            <LogOut size={15} aria-hidden /> Sign out
+            <LogOut size={15} aria-hidden /> Log out
           </button>
         </div>
       )}
@@ -79,43 +74,46 @@ export function AccountMenu({ name }: { name: string }) {
 
 export default function Layout() {
   const user = useStored(getDemoUser);
-  const { pathname, hash } = useLocation();
-
-  // Centre links. "How it works" is a section of the landing page; Methodology is its own page.
-  const links = [
-    { to: "/#how-it-works", label: "How it works", active: pathname === "/" && hash === "#how-it-works" },
-    { to: "/methodology", label: "Methodology", active: pathname === "/methodology" },
-    { to: "/feedback", label: "Feedback", active: pathname === "/feedback" },
-    ...(user ? [{ to: "/reports", label: "My reports", active: pathname.startsWith("/reports") }] : []),
-  ];
 
   return (
     <div className="flex min-h-screen flex-col">
       <ScrollManager />
 
-      {/* Floating pill header (DESIGN.md §7): logo · centred links · actions */}
+      {/* Floating pill header: Notion-inspired auth state (Log in / Log out) + divider + primary CTA */}
       <header className="sticky top-3 z-20 px-3 sm:px-6 print:hidden">
         <nav
           aria-label="Main"
-          className="mx-auto grid max-w-6xl grid-cols-[1fr_auto] items-center gap-4 rounded-full border border-line bg-surface/85 px-2 py-2 shadow-[var(--shadow-float)] backdrop-blur md:grid-cols-[1fr_auto_1fr]"
+          className="mx-auto flex max-w-6xl items-center justify-between gap-4 rounded-full border border-line bg-surface/85 px-2 py-2 shadow-[var(--shadow-float)] backdrop-blur"
         >
           <div className="pl-3"><Logo /></div>
-          <div className="hidden items-center gap-1 md:flex">
-            {links.map((l) => (
-              <Link key={l.to} to={l.to} className={linkCls(l.active)} aria-current={l.active ? "page" : undefined}>
-                {/* Both spans share one grid cell; the invisible bold one fixes the width so hover doesn't shift the bar. */}
-                <span className="col-start-1 row-start-1">{l.label}</span>
-                <span aria-hidden className="invisible col-start-1 row-start-1 h-0 font-bold">{l.label}</span>
-              </Link>
-            ))}
-          </div>
-          <div className="flex items-center justify-end gap-1.5">
+
+          <div className="flex items-center justify-end gap-2">
             {user ? (
-              <AccountMenu name={user.name} />
+              <Button
+                variant="ghost"
+                size="sm"
+                shape="pill"
+                onClick={() => signOutDemo()}
+                className="text-ink hover:bg-panel"
+              >
+                Log out
+              </Button>
             ) : (
-              <ButtonLink to="/sign-in" variant="ghost" size="sm" shape="pill" className="hidden sm:inline-flex">Sign in</ButtonLink>
+              <ButtonLink
+                to="/sign-in"
+                variant="ghost"
+                size="sm"
+                shape="pill"
+                className="text-ink hover:bg-panel"
+              >
+                Log in
+              </ButtonLink>
             )}
-            <ButtonLink to="/analyze" size="sm" shape="pill">Analyze a module</ButtonLink>
+            <span aria-hidden className="hidden h-4 w-px bg-line sm:inline-block" />
+            <ButtonLink to="/analyze" size="sm" shape="pill">
+              <span>Analyze a module</span>
+              {user && <ArrowRight size={14} aria-hidden />}
+            </ButtonLink>
           </div>
         </nav>
       </header>
@@ -129,7 +127,7 @@ export default function Layout() {
   );
 }
 
-/** Conventional multi-column footer: brand + columns + bottom bar. */
+/** Global multi-column footer: brand anchored on the left, navigation columns grouped on the right. */
 function Footer({ signedIn }: { signedIn: boolean }) {
   const columns: { title: string; links: { label: string; to?: string; href?: string }[] }[] = [
     {
@@ -138,7 +136,7 @@ function Footer({ signedIn }: { signedIn: boolean }) {
         { label: "Analyze a module", to: "/analyze" },
         { label: "Try a sample", to: "/analyze#samples" },
         { label: "How it works", to: "/#how-it-works" },
-        signedIn ? { label: "My reports", to: "/reports" } : { label: "Sign in", to: "/sign-in" },
+        signedIn ? { label: "Upload history", to: "/reports" } : { label: "Log in", to: "/sign-in" },
       ],
     },
     {
@@ -153,41 +151,54 @@ function Footer({ signedIn }: { signedIn: boolean }) {
     {
       title: "Project",
       links: [
-        { label: "Give feedback", to: "/feedback" },
         { label: "GitHub", href: "https://github.com/educ-jkescritor/GroundEd" },
-        { label: "endoflife.date", href: "https://endoflife.date" },
+        { label: "Give feedback", to: "/feedback" },
       ],
     },
   ];
 
   return (
     <footer className="mt-24 border-t border-line bg-panel print:hidden">
-      <div className="mx-auto grid max-w-6xl gap-10 px-4 py-14 sm:px-6 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
-        <div className="space-y-3">
+      <div className="mx-auto flex max-w-6xl flex-col justify-between gap-12 px-4 py-14 sm:px-6 md:flex-row md:items-start lg:gap-24">
+        <div className="max-w-xs space-y-3.5">
           <Logo />
-          <p className="max-w-xs text-sm text-ink-muted">
+          <p className="text-sm leading-relaxed text-ink-muted">
             Source-backed reviews for technology course modules. GroundEd advises; you decide what changes.
           </p>
         </div>
-        {columns.map((c) => (
-          <nav key={c.title} aria-label={c.title} className="space-y-3">
-            <p className="text-xs font-semibold uppercase tracking-[0.06em] text-ink-subtle">{c.title}</p>
-            <ul className="space-y-2 text-sm">
-              {c.links.map((l) => (
-                <li key={l.label}>
-                  {l.to ? (
-                    <Link to={l.to} className="text-ink-muted no-underline hover:text-ink hover:no-underline">{l.label}</Link>
-                  ) : (
-                    <a href={l.href} target="_blank" rel="noreferrer" className="text-ink-muted no-underline hover:text-ink hover:no-underline">{l.label}</a>
-                  )}
-                </li>
-              ))}
-            </ul>
-          </nav>
-        ))}
+
+        <div className="grid grid-cols-2 gap-10 sm:grid-cols-3 sm:gap-14 md:ml-auto lg:gap-20">
+          {columns.map((c) => (
+            <nav key={c.title} aria-label={c.title} className="space-y-3.5">
+              <p className="text-xs font-bold uppercase tracking-[0.07em] text-ink">{c.title}</p>
+              <ul className="space-y-2.5 text-sm">
+                {c.links.map((l) => (
+                  <li key={l.label}>
+                    {l.to ? (
+                      <Link to={l.to} className="text-ink-muted no-underline transition-colors hover:text-ink hover:no-underline">
+                        {l.label}
+                      </Link>
+                    ) : (
+                      <a
+                        href={l.href}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-ink-muted no-underline transition-colors hover:text-ink hover:no-underline"
+                      >
+                        {l.label}
+                      </a>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </nav>
+          ))}
+        </div>
       </div>
       <div className="border-t border-line">
-        <p className="mx-auto max-w-6xl px-4 py-5 text-center text-xs text-ink-subtle sm:px-6">© 2026 GroundEd · Built for HackGlobal 2026</p>
+        <p className="mx-auto max-w-6xl px-4 py-5 text-center text-xs text-ink-subtle sm:px-6">
+          © 2026 GroundEd · Built for HackGlobal 2026
+        </p>
       </div>
     </footer>
   );

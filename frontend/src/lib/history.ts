@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
+import { api } from "../api";
 import type { Analysis } from "../types";
 import { needsReview } from "./findings";
 
 /**
- * Browser-only report history and demo account (hackathon scope, docs/ux/information-architecture.md).
- * Nothing here is sent to a server.
+ * Browser-only upload/report history and demo account (hackathon scope, docs/ux/information-architecture.md).
+ * Guests can upload and analyze freely, but history is only recorded and displayed while logged in.
  */
 export interface ReportEntry {
   id: string;
@@ -41,7 +42,7 @@ export function listReports(): ReportEntry[] {
   return read<ReportEntry[]>(REPORTS_KEY, []);
 }
 
-/** Saves a report to "My reports". Only when signed in: signed-out visitors' reports aren't kept. */
+/** Saves an analyzed module to upload history. Only runs when logged in; guest uploads are never stored in history. */
 export function recordReport(a: Analysis) {
   if (!getDemoUser()) return;
   const entry: ReportEntry = {
@@ -60,13 +61,29 @@ export interface DemoUser {
 
 export const getDemoUser = () => read<DemoUser | null>(USER_KEY, null);
 export const signInDemo = () => write(USER_KEY, { name: "Demo Faculty" } satisfies DemoUser);
-/** Signing out also forgets the demo account's report list (it lives only in this browser). */
+
+/** Logs in with the demo account and seeds sample reports if the upload history is currently empty. */
+export async function logInWithDemoHistory(): Promise<void> {
+  signInDemo();
+  if (listReports().length === 0) {
+    try {
+      const samples = await api.samples();
+      for (const s of samples.slice(0, 2)) {
+        recordReport(await api.analyzeSample(s.id));
+      }
+    } catch {
+      // Backend offline or busy: still logged in, history starts empty until first upload.
+    }
+  }
+}
+
+/** Logging out ends the demo session and clears the browser's saved upload history. */
 export const signOutDemo = () => {
   write(USER_KEY, null);
   write(REPORTS_KEY, null);
 };
 
-/** Re-render when history or the demo user changes (in this tab). */
+/** Re-render when history or the logged-in user changes (in this tab or across tabs). */
 export function useStored<T>(get: () => T): T {
   const [value, setValue] = useState(get);
   useEffect(() => {

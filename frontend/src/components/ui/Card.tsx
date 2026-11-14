@@ -10,24 +10,26 @@ export function Card({ className = "", ...rest }: HTMLAttributes<HTMLDivElement>
   );
 }
 
-/** Soft grey panel: 24 px radius, no border. Optional label chip and title. */
+/** Soft grey panel: 24 px radius, no border. Optional label chip, title and description. */
 export function Panel({
   label,
   title,
+  description,
   className = "",
   children,
   ...rest
-}: HTMLAttributes<HTMLDivElement> & { label?: ReactNode; title?: ReactNode }) {
+}: HTMLAttributes<HTMLDivElement> & { label?: ReactNode; title?: ReactNode; description?: ReactNode }) {
   return (
     <div className={`rounded-[var(--radius-panel)] bg-panel p-5 sm:p-6 ${className}`} {...rest}>
-      {(label || title) && (
+      {(label || title || description) && (
         <div className="mb-4 space-y-2">
           {label && (
             <span className="inline-flex items-center gap-1.5 rounded-full bg-surface px-3 py-1 text-xs font-semibold text-ink">
               {label}
             </span>
           )}
-          {title && <h3 className="text-lg">{title}</h3>}
+          {title && <h3 className="text-[22px] leading-[1.2] text-ink">{title}</h3>}
+          {description && <p className="text-[15px] font-normal leading-relaxed text-ink-muted">{description}</p>}
         </div>
       )}
       {children}

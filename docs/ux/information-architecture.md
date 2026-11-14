@@ -7,7 +7,7 @@
 | Topic | Decision |
 |---|---|
 | Name for the uploaded file | **Module**, everywhere in the UI. The Landing page says "syllabus, module or lesson guide" once, so everyone recognises their document. |
-| Results layout | **Side by side** (the originality-checker pattern): the module with highlights on the left, the ranked findings panel on the right, synced both ways. A finding expands in the panel; **Open full detail** goes to the finding detail page. Below 1024 px: list only. *(Changed from the earlier hybrid tabs.)* |
+| Results layout | **Side by side** (split document and evidence workspace): the module with highlights on the left, the ranked findings panel on the right, synced both ways. A finding expands in the panel; **Open full detail** goes to the finding detail page. Below 1024 px: list only. *(Changed from the earlier hybrid tabs.)* |
 | Decisions on a finding | **Update** (agree; accept the upgrade or approve a draft) · **Keep intentionally** (taught on purpose) · **Dismiss** (not outdated / incorrect). Each has an optional reason. A finding with no decision is **To review**. |
 | Accounts | **Sign-in exists, but is never required to try GroundEd.** For the hackathon, a **browser-only demo account** gives one-click access to saved reports (see "Accounts" below). |
 | Extra screens | **Methodology**, **Report history**, **Sign in (demo account)**. |

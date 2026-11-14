@@ -1,41 +1,81 @@
-import { useState } from "react";
-import { BookOpenCheck, Gauge, Hand, Link2, ShieldQuestion, MessageSquare } from "lucide-react";
+import { useRef, useState, type KeyboardEvent } from "react";
+import { BookOpenCheck, Check, Crosshair, ExternalLink, FileText, MessageSquare, Sparkles } from "lucide-react";
+import { AiSuggestion } from "../components/ui/AiSuggestion";
 import { ButtonLink } from "../components/ui/Button";
 import { Panel } from "../components/ui/Card";
 import { HorizonBand } from "../components/ui/HorizonBand";
 import { PriorityBadge } from "../components/ui/PriorityBadge";
 import { QuoteBlock } from "../components/ui/QuoteBlock";
 import { Sprout } from "../components/ui/Sprout";
-import { StatusBadge } from "../components/ui/StatusBadge";
-import { BrowserFrame, DecisionPreview, ReportPreview } from "../components/ProductPreview";
+import { BrowserFrame, DecisionPreview, ReportPreview, UploadPreview } from "../components/ProductPreview";
 import { usePageTitle } from "../lib/usePageTitle";
 
 const section = "mx-auto max-w-6xl px-4 sm:px-6";
 const sectionTitle = "text-[36px] leading-[1.05] sm:text-[52px]";
+const cardTitle = "heading-serif text-[22px] leading-[1.2] text-ink";
+const cardBody = "text-[15px] font-normal leading-relaxed text-ink-muted";
 
-const steps = [
-  { title: "Upload a module", body: "A syllabus, module or lesson guide as a PDF. Or start with a sample; no account needed." },
-  { title: "Check the evidence", body: "Each finding shows the quote from your module beside the trusted source behind it." },
-  { title: "Decide what to update", body: "Update, keep it on purpose, or dismiss it. Export a report for your chair." },
+type StepId = "upload" | "review" | "decide";
+
+const steps: { id: StepId; title: string; body: string; url: string }[] = [
+  {
+    id: "upload",
+    title: "Upload a module",
+    body: "Drop a syllabus, module or lesson guide as a PDF—or try a built-in sample with no account needed.",
+    url: "grounded.app/analyze",
+  },
+  {
+    id: "review",
+    title: "Check the evidence",
+    body: "See your module side by side with ranked findings, verbatim quotes, and official lifecycle records.",
+    url: "grounded.app/reports/web-systems",
+  },
+  {
+    id: "decide",
+    title: "Decide what to update",
+    body: "Update (with a sourced replacement or optional AI draft), keep intentionally, or dismiss—then export.",
+    url: "grounded.app/reports/web-systems#finding-mysql",
+  },
 ];
 
-const principles = [
-  { icon: Link2, title: "Every finding is cited", body: "A quote and page from your module, and a trusted source with its date." },
-  { icon: ShieldQuestion, title: "No guessing", body: "If there's no trusted source, the item is marked Unverified, not filled in by AI." },
-  { icon: Gauge, title: "Transparent priority", body: "Fixed scoring rules you can read, so the same module always gets the same result." },
-  { icon: Hand, title: "You decide", body: "GroundEd advises. Nothing changes until you choose, and AI drafts are always labelled." },
+const scoreRows = [
+  { label: "Lifecycle", reason: "Ended or removed", pts: 40, max: 40 },
+  { label: "How it's taught", reason: "Used in code students write", pts: 30, max: 30 },
+  { label: "Frequency", reason: "Appears on 2 pages", pts: 8, max: 20 },
+  { label: "Hands-on", reason: "On a lab or exercise page", pts: 10, max: 10 },
 ];
 
 export default function Landing() {
   usePageTitle();
-  const [tab, setTab] = useState<"review" | "decide">("review");
+  const [activeStep, setActiveStep] = useState<StepId>("review");
+  const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
+
+  const currentStep = steps.find((s) => s.id === activeStep) ?? steps[1];
+
+  function handleStepKeyDown(e: KeyboardEvent<HTMLButtonElement>, index: number) {
+    let nextIndex: number | null = null;
+    if (e.key === "ArrowRight" || e.key === "ArrowDown") {
+      nextIndex = (index + 1) % steps.length;
+    } else if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
+      nextIndex = (index - 1 + steps.length) % steps.length;
+    } else if (e.key === "Home") {
+      nextIndex = 0;
+    } else if (e.key === "End") {
+      nextIndex = steps.length - 1;
+    }
+    if (nextIndex !== null) {
+      e.preventDefault();
+      setActiveStep(steps[nextIndex].id);
+      tabRefs.current[nextIndex]?.focus();
+    }
+  }
 
   return (
     <div className="space-y-24 pb-8 md:space-y-[120px]">
       {/* 1 · Hero on the horizon band: before → after */}
       <section className="px-3 pt-6 sm:px-6">
         <HorizonBand>
-          <div className="mx-auto max-w-5xl px-4 pb-12 pt-14 text-center sm:pt-20">
+          <div className="mx-auto max-w-5xl px-4 pb-16 pt-14 text-center sm:pt-20">
             <p className="mx-auto inline-flex items-center gap-2 rounded-full bg-surface/80 px-3.5 py-1.5 text-sm font-semibold text-lapis-deep">
               <BookOpenCheck size={16} aria-hidden /> For IT and computing courses
             </p>
@@ -51,27 +91,106 @@ export default function Landing() {
               <ButtonLink to="/analyze#samples" variant="secondary">Try a sample</ButtonLink>
             </div>
 
-            {/* Before → after */}
-            <div className="relative mx-auto mt-14 grid max-w-3xl gap-4 text-left sm:grid-cols-2 sm:items-end">
-              <figure className="rounded-[var(--radius-card)] border border-line bg-surface p-5 shadow-[var(--shadow-card)] sm:-rotate-2">
-                <figcaption className="mb-3 text-[11px] font-semibold uppercase tracking-[0.06em] text-ink-subtle">In your module · page 4</figcaption>
-                <p className="leading-relaxed text-ink">
-                  Lab 3: Connect to the database using{" "}
-                  <span className="rounded-[3px] bg-eol-soft px-0.5 underline decoration-eol decoration-2 underline-offset-[3px]">mysql_connect()</span>{" "}
-                  and display the results in an HTML table.
-                </p>
-              </figure>
-              <figure className="space-y-3 rounded-[var(--radius-card)] border border-line bg-surface p-5 shadow-[var(--shadow-float)] sm:translate-y-4">
-                <figcaption className="text-[11px] font-semibold uppercase tracking-[0.06em] text-lapis-deep">With GroundEd</figcaption>
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="text-[11px] font-semibold uppercase tracking-[0.06em] text-ink-subtle">Practice</span>
-                  <span className="font-semibold">mysql_connect()</span>
-                  <span className="ml-auto"><PriorityBadge priority="high" short /></span>
+            {/* Hero visual: understated, low-contrast schematic of PDF page (left) and assessment card (right) */}
+            <div className="relative mx-auto mt-12 grid max-w-3xl gap-4 text-left sm:grid-cols-2 sm:items-end">
+              {/* Left rectangle: calm PDF page mockup */}
+              <figure
+                aria-label="Mockup of a PDF module page with a highlighted passage"
+                className="rounded-[var(--radius-card)] border border-line/80 bg-surface/95 p-4 shadow-[var(--shadow-card)] sm:-rotate-1"
+              >
+                <div className="mb-3 flex items-center justify-between text-[11px] font-medium text-ink-subtle">
+                  <span className="inline-flex items-center gap-1.5">
+                    <FileText size={13} className="text-ink-subtle/80" aria-hidden />
+                    Module PDF
+                  </span>
+                  <span className="font-mono text-[10px]">Page 4 / 12</span>
                 </div>
-                <StatusBadge status="eol" compact />
-                <QuoteBlock size="sm" tone="source" caption="PHP Group · php.net · Official documentation">
-                  The original MySQL extension was removed in PHP 7.0.0.
-                </QuoteBlock>
+
+                {/* Inner document sheet */}
+                <div className="space-y-2.5 rounded-[10px] border border-line/70 bg-panel/45 p-3.5">
+                  <div className="h-2.5 w-2/5 rounded-full bg-ink/25" />
+                  <div className="space-y-1.5 pt-0.5">
+                    <div className="h-2 w-full rounded-full bg-ink/10" />
+                    <div className="h-2 w-11/12 rounded-full bg-ink/10" />
+                  </div>
+
+                  {/* Softly highlighted passage on the PDF */}
+                  <div className="space-y-1.5 rounded-[6px] border border-high-line/60 border-l-2 border-l-high/65 bg-high-soft/55 p-2.5">
+                    <div className="h-2 w-4/5 rounded-full bg-high/35" />
+                    <div className="h-2 w-1/2 rounded-full bg-high/20" />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <div className="h-2 w-full rounded-full bg-ink/10" />
+                    <div className="h-2 w-9/12 rounded-full bg-ink/10" />
+                    <div className="h-2 w-3/5 rounded-full bg-ink/10" />
+                  </div>
+                </div>
+              </figure>
+
+              {/* Right rectangle: calm assessment card mockup */}
+              <figure
+                aria-label="Mockup of the GroundEd assessment panel"
+                className="space-y-2.5 rounded-[var(--radius-card)] border border-line/80 bg-surface/95 p-4 shadow-[var(--shadow-float)] sm:translate-y-2"
+              >
+                {/* Muted header with subtle % outdated summary */}
+                <div className="flex items-center justify-between border-b border-line/70 pb-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[11px] font-medium text-ink-subtle">Assessment</span>
+                    <span className="rounded-full bg-panel px-2 py-0.5 font-mono text-[10px] text-ink-muted">
+                      To review · 3
+                    </span>
+                  </div>
+                  <span className="font-mono text-[11px] font-semibold text-ink-muted">66% outdated</span>
+                </div>
+
+                {/* Finding header */}
+                <div className="flex items-center justify-between gap-2 pt-0.5">
+                  <div className="space-y-1">
+                    <div className="h-2.5 w-28 rounded-full bg-ink/35" />
+                    <div className="h-1.5 w-12 rounded-full bg-ink/15" />
+                  </div>
+                  <span className="inline-flex items-center gap-1 rounded-full border border-high-line/60 bg-high-soft/60 px-2 py-0.5 text-[10px] font-medium text-high/80">
+                    ▲ High
+                  </span>
+                </div>
+
+                {/* 1. Outdated in module block (clickable shape) */}
+                <div className="flex items-center justify-between gap-2 rounded-[8px] border border-line/70 bg-panel/40 p-2.5">
+                  <div className="min-w-0 flex-1 space-y-1.5 border-l-2 border-clay/55 pl-2.5">
+                    <div className="h-2 w-20 rounded-full bg-ink/25" />
+                    <div className="h-1.5 w-4/5 rounded-full bg-ink/12" />
+                  </div>
+                  <span className="inline-flex shrink-0 items-center gap-1 rounded-full border border-line/80 bg-surface px-2 py-0.5 text-[10px] font-medium text-ink-muted">
+                    <Crosshair size={10} aria-hidden /> Page 4
+                  </span>
+                </div>
+
+                {/* 2. Updated info & source block (clickable shape) */}
+                <div className="flex items-center justify-between gap-2 rounded-[8px] border border-line/70 bg-panel/40 p-2.5">
+                  <div className="min-w-0 flex-1 space-y-1.5 border-l-2 border-lapis/55 pl-2.5">
+                    <div className="h-2 w-24 rounded-full bg-lapis/35" />
+                    <div className="h-1.5 w-3/4 rounded-full bg-ink/12" />
+                  </div>
+                  <span className="inline-flex shrink-0 items-center gap-1 rounded-full border border-line/80 bg-surface px-2 py-0.5 text-[10px] font-medium text-ink-muted">
+                    php.net <ExternalLink size={9} aria-hidden />
+                  </span>
+                </div>
+
+                {/* 3. Subtle footer: AI draft + Decision pills */}
+                <div className="flex items-center justify-between gap-2 border-t border-line/70 pt-2">
+                  <span className="inline-flex items-center gap-1 rounded-[6px] border border-dashed border-ai/30 bg-ai-soft/45 px-2 py-0.5 text-[10px] font-medium text-ai/75">
+                    <Sparkles size={10} aria-hidden /> Generate draft
+                  </span>
+                  <div className="flex items-center gap-1">
+                    <span className="inline-flex items-center gap-1 rounded-[6px] bg-lapis/15 px-2 py-0.5 text-[10px] font-semibold text-lapis-deep">
+                      <Check size={10} strokeWidth={2.5} aria-hidden /> Update
+                    </span>
+                    <span className="rounded-[6px] border border-line/80 bg-panel/50 px-2 py-0.5 text-[10px] text-ink-subtle">
+                      Keep
+                    </span>
+                  </div>
+                </div>
               </figure>
             </div>
           </div>
@@ -84,184 +203,208 @@ export default function Landing() {
         <div className="space-y-4 text-lg text-ink-muted">
           <p>
             A 2023 study comparing university syllabi with six years of software job ads found industry demand for
-            tools like Docker and Kubernetes rising faster than courses reflected it (Dobslaw et al., 2023). Tools
-            already in a module can reach end-of-life within a few years.
+            modern tooling rising faster than courses reflected it (Dobslaw et al., 2023). Languages, frameworks, and
+            functions already in a module can reach end-of-life within a few years.
           </p>
           <p>
-            IT faculty we spoke with in the Philippines confirmed it: reviews are manual and infrequent, and checking
-            every tool takes time they rarely have.
+            IT faculty we spoke with in the Philippines confirmed it: reviews are manual and infrequent, checking every
+            tool takes hours they rarely have, and generic AI chatbots can't be trusted without sources.
           </p>
         </div>
       </section>
 
-      {/* 3 · Live mini-UI panels */}
-      <section className={`${section} space-y-10`}>
+      {/* 3 · How it works (unified 3-step selector + live BrowserFrame preview) */}
+      <section id="how-it-works" className={`${section} scroll-mt-24 space-y-8`}>
         <div className="mx-auto max-w-2xl space-y-3 text-center">
-          <h2 className={sectionTitle}>Review with confidence</h2>
-          <p className="text-lg text-ink-muted">Everything you need to judge a finding, in one place.</p>
+          <h2 className={sectionTitle}>How it works</h2>
+          <p className="text-lg text-ink-muted">
+            Three steps from syllabus PDF to a source-backed curriculum review report.
+          </p>
         </div>
-        <div className="grid gap-5 md:grid-cols-2">
-          <Panel label="Fast" title="Results in under a minute">
-            {/* Mirrors the real loading screen (no fake step checklist). */}
-            <div className="space-y-4 rounded-[var(--radius-card)] bg-surface p-5 text-center" aria-hidden>
-              <p className="text-xs font-semibold uppercase tracking-[0.06em] text-ink-subtle">Analyzing your module</p>
-              <p className="font-semibold">WST2-Lab-Manual.pdf</p>
-              <div className="mx-auto h-1.5 w-full max-w-xs overflow-hidden rounded-full bg-line">
-                <div className="indeterminate h-full w-1/3 rounded-full bg-lapis" />
-              </div>
-              <p className="text-sm text-ink-muted">Checking trusted sources…</p>
-            </div>
-          </Panel>
-          <Panel label="Evidence" title="Quote and source, side by side">
-            <div className="space-y-4 rounded-[var(--radius-card)] bg-surface p-5">
-              <QuoteBlock size="sm" caption="Your module · page 3">Pages are styled with Bootstrap 3</QuoteBlock>
-              <QuoteBlock size="sm" tone="source" caption="endoflife.date · Support data">Bootstrap 3 · end of support 24 Jul 2019</QuoteBlock>
-            </div>
-          </Panel>
-          <Panel label="Priority" title="Know why it ranks where it does">
-            <div className="space-y-3 rounded-[var(--radius-card)] bg-surface p-5 text-sm">
-              {[
-                ["Lifecycle", 40, 40],
-                ["How it's taught", 30, 30],
-                ["Frequency", 8, 20],
-                ["Hands-on", 0, 10],
-              ].map(([label, pts, max]) => (
-                <div key={label as string} className="grid grid-cols-[8rem_1fr_3rem] items-center gap-3">
-                  <span className="font-medium">{label}</span>
-                  <span className="h-2 overflow-hidden rounded-full bg-line" aria-hidden>
-                    <span className="block h-full rounded-full bg-ink" style={{ width: `${((pts as number) / (max as number)) * 100}%` }} />
-                  </span>
-                  <span className="text-right font-mono text-ink-subtle tabular-nums">{pts}/{max}</span>
-                </div>
-              ))}
-              <p className="pt-1 text-ink-muted"><PriorityBadge priority="medium" /> <span className="ml-1 font-mono">78/100</span></p>
-            </div>
-          </Panel>
-          <Panel label="Your call" title="You decide what changes">
-            {/* Illustration only: not interactive (landing cards are never clickable). */}
-            <div className="space-y-3 rounded-[var(--radius-card)] bg-surface p-5" aria-hidden>
-              <div className="flex flex-wrap gap-2 text-sm font-semibold">
-                <span className="inline-flex items-center gap-2 rounded-[var(--radius-control)] border border-lapis bg-sky px-3 py-1.5 text-lapis-deep">
-                  <span className="h-3 w-3 rounded-full border-[4px] border-lapis" /> Update
-                </span>
-                <span className="inline-flex items-center gap-2 rounded-[var(--radius-control)] border border-line px-3 py-1.5">
-                  <span className="h-3 w-3 rounded-full border-2 border-ink-subtle" /> Keep intentionally
-                </span>
-                <span className="inline-flex items-center gap-2 rounded-[var(--radius-control)] border border-line px-3 py-1.5">
-                  <span className="h-3 w-3 rounded-full border-2 border-ink-subtle" /> Dismiss
-                </span>
-              </div>
-              <p className="rounded-[var(--radius-control)] border border-line px-3 py-2 text-sm text-ink-subtle">Why? Students still maintain legacy systems</p>
-            </div>
-          </Panel>
-        </div>
-      </section>
 
-      {/* 4 · See it work (demo video goes here once recorded) */}
-      <section className={`${section} space-y-8`}>
-        <div className="mx-auto max-w-2xl space-y-3 text-center">
-          <h2 className={sectionTitle}>See it work</h2>
-          <p className="text-lg text-ink-muted">Your module on the left, ranked findings on the right.</p>
-        </div>
-        <div className="flex justify-center">
-          <div role="tablist" aria-label="Product preview" className="inline-flex rounded-full border border-line bg-panel p-1">
-            {[
-              { id: "review" as const, label: "Review a module" },
-              { id: "decide" as const, label: "Decide on a finding" },
-            ].map((t) => (
+        {/* Interactive 3-step tab cards */}
+        <div
+          role="tablist"
+          aria-label="How GroundEd works"
+          className="grid gap-4 md:grid-cols-3"
+        >
+          {steps.map((s, i) => {
+            const selected = activeStep === s.id;
+            return (
               <button
-                key={t.id}
+                key={s.id}
+                ref={(el) => {
+                  tabRefs.current[i] = el;
+                }}
+                id={`step-tab-${s.id}`}
                 role="tab"
                 type="button"
-                aria-selected={tab === t.id}
-                aria-controls="preview-panel"
-                onClick={() => setTab(t.id)}
-                className={`rounded-full px-4 py-2 text-sm font-semibold ${tab === t.id ? "bg-surface text-ink shadow-[var(--shadow-card)]" : "text-ink-muted hover:text-ink"}`}
+                aria-selected={selected}
+                aria-controls={`step-panel-${s.id}`}
+                tabIndex={selected ? 0 : -1}
+                onClick={() => setActiveStep(s.id)}
+                onKeyDown={(e) => handleStepKeyDown(e, i)}
+                className={`group flex flex-col items-start gap-3 rounded-[var(--radius-panel)] border p-6 text-left transition-all ${
+                  selected
+                    ? "border-lapis bg-sky/55 shadow-[var(--shadow-card)]"
+                    : "border-transparent bg-panel hover:bg-panel-strong"
+                }`}
               >
-                {t.label}
+                <span
+                  className={`flex h-9 w-9 items-center justify-center rounded-full text-base font-bold transition-colors ${
+                    selected ? "bg-lapis text-white" : "bg-surface text-ink group-hover:bg-lapis/15"
+                  }`}
+                  aria-hidden
+                >
+                  {i + 1}
+                </span>
+                <span className={cardTitle}>{s.title}</span>
+                <span className={cardBody}>{s.body}</span>
               </button>
-            ))}
-          </div>
+            );
+          })}
         </div>
-        <div id="preview-panel" role="tabpanel" className="mx-auto max-w-5xl">
-          {/* TODO: replace with the recorded demo video (keep the BrowserFrame) */}
-          <BrowserFrame url={tab === "review" ? "grounded.app/reports/web-systems" : "grounded.app/reports/web-systems/findings/f1"}>
-            {tab === "review" ? <ReportPreview /> : <DecisionPreview />}
+
+        {/* Live BrowserFrame synced to the selected step (full width matching the 3 cards above) */}
+        <div
+          id={`step-panel-${currentStep.id}`}
+          role="tabpanel"
+          aria-labelledby={`step-tab-${currentStep.id}`}
+        >
+          <BrowserFrame url={currentStep.url}>
+            {activeStep === "upload" && <UploadPreview />}
+            {activeStep === "review" && <ReportPreview />}
+            {activeStep === "decide" && <DecisionPreview />}
           </BrowserFrame>
         </div>
       </section>
 
-      {/* 5 · How it works */}
-      <section id="how-it-works" className={`${section} scroll-mt-24 space-y-10`}>
-        <h2 className={`${sectionTitle} text-center`}>How it works</h2>
-        <ol className="grid gap-5 md:grid-cols-3">
-          {steps.map((s, i) => (
-            <li key={s.title} className="space-y-4 rounded-[var(--radius-panel)] bg-panel p-6">
-              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-lapis text-lg font-bold text-white" aria-hidden>
-                {i + 1}
-              </span>
-              <h3 className="text-xl">
-                <span className="sr-only">Step {i + 1}: </span>
-                {s.title}
-              </h3>
-              <p className="text-ink-muted">{s.body}</p>
-            </li>
-          ))}
-        </ol>
-      </section>
-
-      {/* 6 · Trust principles */}
+      {/* 4 · Built to be trusted (3 distinct Grounded RAG proof panels — no overlap with How it works) */}
       <section className={`${section} space-y-10`}>
-        <h2 className={`${sectionTitle} text-center`}>Built to be trusted</h2>
-        <ul className="grid gap-x-10 gap-y-8 sm:grid-cols-2">
-          {principles.map((p) => (
-            <li key={p.title} className="flex gap-4">
-              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-sky text-lapis-deep">
-                <p.icon size={20} aria-hidden />
-              </span>
-              <div>
-                <h3 className="text-lg">{p.title}</h3>
-                <p className="text-ink-muted">{p.body}</p>
+        <div className="mx-auto max-w-2xl space-y-3 text-center">
+          <h2 className={sectionTitle}>Built to be trusted</h2>
+          <p className="text-lg text-ink-muted">
+            Code finds, checks, and scores the evidence. AI never guesses facts or calculates scores.
+          </p>
+        </div>
+
+        <div className="grid gap-5 lg:grid-cols-3">
+          {/* Proof 1: Dual citations & Unverified safeguard */}
+          <Panel
+            label="No guessing"
+            title="Every claim is cited"
+            description="Each finding links to its official lifecycle record or documentation—or is marked Unverified, never guessed."
+            className="flex flex-col justify-between"
+          >
+            <div className="space-y-3">
+              <div className="rounded-[var(--radius-card)] bg-surface p-4">
+                <div className="mb-2 flex items-center justify-between gap-2">
+                  <span className="text-sm font-semibold text-ink">Bootstrap 3</span>
+                  <PriorityBadge priority="medium" short />
+                </div>
+                <QuoteBlock size="sm" tone="source" caption="endoflife.date · Support data">
+                  End of support 24 Jul 2019 · Latest release: Bootstrap 5.3
+                </QuoteBlock>
               </div>
-            </li>
-          ))}
-        </ul>
+
+              <div className="rounded-[var(--radius-card)] border border-line bg-surface p-4">
+                <div className="mb-1.5 flex items-center justify-between gap-2">
+                  <span className="text-sm font-semibold text-ink">CampusPortal SDK v1.4</span>
+                  <PriorityBadge priority="unverified" />
+                </div>
+                <p className="text-xs leading-relaxed text-ink-muted">
+                  No trusted source found. GroundEd does not guess or invent lifecycle dates—flagged for manual check.
+                </p>
+              </div>
+            </div>
+          </Panel>
+
+          {/* Proof 2: Deterministic 100-pt Priority Score */}
+          <Panel
+            label="Deterministic"
+            title="Fixed 100-point priority"
+            description="Priority is calculated by transparent rules in code, so the same module always gets the exact same score."
+            className="flex flex-col justify-between"
+          >
+            <div className="flex flex-col justify-between space-y-4 rounded-[var(--radius-card)] bg-surface p-4 text-sm">
+              <div className="space-y-3">
+                {scoreRows.map((row) => (
+                  <div key={row.label} className="space-y-1">
+                    <div className="flex items-baseline justify-between gap-2">
+                      <span className="font-semibold text-ink">{row.label}</span>
+                      <span className="font-mono text-xs text-ink-subtle tabular-nums">
+                        {row.pts}/{row.max}
+                      </span>
+                    </div>
+                    <div className="h-2 overflow-hidden rounded-full bg-line" aria-hidden>
+                      <div
+                        className="h-full rounded-full bg-ink"
+                        style={{ width: `${(row.pts / row.max) * 100}%` }}
+                      />
+                    </div>
+                    <p className="text-xs text-ink-muted">{row.reason}</p>
+                  </div>
+                ))}
+              </div>
+              <div className="flex items-center justify-between border-t border-line pt-3">
+                <span className="text-xs text-ink-muted">Same module = same score</span>
+                <span className="inline-flex items-center gap-1.5">
+                  <PriorityBadge priority="high" short />
+                  <span className="font-mono text-xs font-semibold text-ink">88/100</span>
+                </span>
+              </div>
+            </div>
+          </Panel>
+
+          {/* Proof 3: Strict separation of Sourced Facts vs. AI Suggestions */}
+          <Panel
+            label="Clear boundaries"
+            title="You decide what changes"
+            description="Sourced facts and optional AI drafts never look alike, and nothing changes without your approval."
+            className="flex flex-col justify-between"
+          >
+            <div className="space-y-3">
+              <div className="rounded-[var(--radius-card)] bg-surface p-4">
+                <p className="mb-1.5 text-xs font-semibold uppercase tracking-[0.06em] text-lapis-deep">
+                  Verified source fact
+                </p>
+                <QuoteBlock size="sm" tone="source" caption="PHP Group · php.net">
+                  The original MySQL extension was removed in PHP 7.0.0. Use MySQLi or PDO_MySQL.
+                </QuoteBlock>
+              </div>
+
+              <AiSuggestion label="AI suggestion: not sourced. Review and edit before using.">
+                <p className="text-xs leading-relaxed text-ink">
+                  Optional Gemini rewrites are visually isolated and never mixed with citations. Nothing counts as
+                  changed until you approve it.
+                </p>
+              </AiSuggestion>
+            </div>
+          </Panel>
+        </div>
       </section>
 
-      {/* 7 · Voices: real quotes only. Until we have consented quotes, show how it was validated. */}
-      <section className={section}>
+      {/* 5 · Voices + Closing CTA */}
+      <section className={`${section} space-y-20`}>
         <Panel className="flex flex-col items-center gap-4 px-6 py-12 text-center">
-          <span className="flex h-12 w-12 items-center justify-center rounded-full bg-surface text-lapis"><MessageSquare size={22} aria-hidden /></span>
-          <h2 className="text-[28px]">Shaped by educators</h2>
-          <p className="max-w-xl text-ink-muted">
+          <span className="flex h-12 w-12 items-center justify-center rounded-full bg-surface text-lapis">
+            <MessageSquare size={22} aria-hidden />
+          </span>
+          <h2 className={sectionTitle}>Shaped by educators</h2>
+          <p className="max-w-xl text-lg text-ink-muted">
             The problem was validated with IT faculty in the Philippines, and we're now testing with educators in more
             countries. Tried GroundEd? Your feedback directly shapes what we build next.
           </p>
           <ButtonLink to="/feedback" variant="secondary">Share feedback</ButtonLink>
         </Panel>
-      </section>
 
-      {/* 8 · Closing CTA + product shot */}
-      <section className={`${section} space-y-10 text-center`}>
-        <div className="mx-auto max-w-2xl space-y-5">
+        <div className="mx-auto max-w-2xl space-y-5 text-center">
           <div className="flex justify-center"><Sprout size={56} /></div>
           <h2 className={sectionTitle}>Ready for next term?</h2>
           <p className="text-lg text-ink-muted">See what in your module may warrant review, in under a minute.</p>
           <div className="flex flex-wrap justify-center gap-3">
             <ButtonLink to="/analyze">Analyze a module</ButtonLink>
             <ButtonLink to="/methodology" variant="ghost">How GroundEd works →</ButtonLink>
-          </div>
-        </div>
-        {/* Laptop: 16:10 screen in a bezel, on a base with a hinge notch. Illustration only. */}
-        <div className="mx-auto max-w-4xl px-4" aria-hidden>
-          <div className="rounded-[22px] bg-ink p-[12px] pb-[18px] shadow-[var(--shadow-float)]">
-            <div className="mx-auto mb-2 h-1.5 w-1.5 rounded-full bg-[#3a4560]" />
-            <div className="aspect-[16/10] overflow-hidden rounded-[6px] bg-canvas">
-              <ReportPreview tall />
-            </div>
-          </div>
-          <div className="relative mx-auto h-4 w-[112%] -translate-x-[5.4%] rounded-b-[18px] bg-gradient-to-b from-[#d6dae2] to-[#aeb4c0]">
-            <div className="absolute left-1/2 top-0 h-1.5 w-28 -translate-x-1/2 rounded-b-[8px] bg-[#9aa1ae]" />
           </div>
         </div>
       </section>

@@ -23,7 +23,7 @@ Tokens live in `frontend/src/index.css` (`@theme`). Reusable components live in 
 |---|---|
 | **Primary user** | A course instructor revising their own module. Busy, expert in the subject, sceptical of AI. |
 | **Also** | Curriculum reviewers, instructional designers, students. Anyone checking a tech module; no role restrictions. |
-| **Mental model** | "Like an originality checker, but for currency": upload → report → highlights in the module with sources beside them. We reuse the *pattern*, never another product's look or wording. |
+| **Mental model** | Side-by-side document review for currency: upload → report → highlights in the module with sources beside them. |
 | **Context** | Laptop/desktop at 1280 px and up, sometimes slow internet. Wide age range, so readable text and high contrast matter. |
 
 ## 2. Principles
@@ -188,7 +188,7 @@ plain-language verdict instead ("No longer supported since 2015.").
 - **App shell:**
   - **Floating pill header:** sticky, 12 px from the top, `full` radius, white at 85% with a backdrop blur, elevation 2. It holds: logo · How it works · Reports · Feedback, then Sign in · **Analyze a module** (the only filled button).
   - White canvas; footer with Methodology, Sources, GitHub, Feedback.
-- **Results workspace (`/reports/:id`, the originality-checker pattern).** No site navigation and no footer:
+- **Results workspace (`/reports/:id`, side-by-side document review).** No site navigation and no footer:
   the page is a full-height workspace; **only the two panes scroll**, never the page.
   - **Top bar:** Horizon mark (home) · module name (serif, nothing below it) · **+ New analysis** (back to
     upload) · **Download ▾** (secondary while reviewing, primary once everything is decided) · **Details** (how the
@@ -200,8 +200,8 @@ plain-language verdict instead ("No longer supported since 2015.").
   - **Left toolbar:** ‹ Finding n of m › (also J / K keys) · page indicator · zoom · Fit. Coloured **markers** beside
     the document's scrollbar show where every finding is; the selected one is ringed.
   - **Right (≈ 45%, min 420 px): one scroll area.** The summary scrolls away; the **Findings | Sources** tabs stay
-    pinned. Summary: "7 findings to be reviewed" + a large **"n% reviewed"** on the right (like an originality
-    score) → the priority tags, which **are the filters** (All · ▲ High · ● Medium · ▼ Low · ? Unverified) →
+    pinned. Summary: "7 findings to be reviewed" + a large **"n% reviewed"** on the right (completion
+    indicator) → the priority tags, which **are the filters** (All · ▲ High · ● Medium · ▼ Low · ? Unverified) →
     "Hide reviewed" → completion sprout → a one-time, dismissible sign-in note after the first decision.
   - **Opening:** the top finding is selected and the document scrolls to it (no blank first page).
   - **Sync:** selecting a finding scrolls the document to its box; "Show in document" (the p. N chip next to each

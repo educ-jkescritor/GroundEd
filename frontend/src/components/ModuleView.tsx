@@ -97,7 +97,7 @@ export default function ModuleView({ pages, findings, selectedId, scrollToSelect
           aria-pressed={selected}
           aria-label={`${text.slice(m.start, m.end)}. Finding: ${m.finding.technology}, ${meta.label}`}
           className={`inline cursor-pointer rounded-[3px] px-0.5 text-left underline decoration-2 underline-offset-[3px] ${TONE_HIGHLIGHT[toneOf(m.finding)]} ${
-            selected ? "outline-2 outline-offset-1 outline-lapis" : "hover:brightness-95"
+            selected ? "outline-2 outline-offset-1" : "hover:brightness-95"
           }`}
         >
           {text.slice(m.start, m.end)}
