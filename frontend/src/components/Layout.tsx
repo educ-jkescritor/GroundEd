@@ -127,7 +127,7 @@ export default function Layout() {
   );
 }
 
-/** Conventional multi-column footer: brand + columns + bottom bar. */
+/** Global multi-column footer: brand anchored on the left, navigation columns grouped on the right. */
 function Footer({ signedIn }: { signedIn: boolean }) {
   const columns: { title: string; links: { label: string; to?: string; href?: string }[] }[] = [
     {
@@ -151,41 +151,54 @@ function Footer({ signedIn }: { signedIn: boolean }) {
     {
       title: "Project",
       links: [
-        { label: "Give feedback", to: "/feedback" },
         { label: "GitHub", href: "https://github.com/educ-jkescritor/GroundEd" },
-        { label: "endoflife.date", href: "https://endoflife.date" },
+        { label: "Give feedback", to: "/feedback" },
       ],
     },
   ];
 
   return (
     <footer className="mt-24 border-t border-line bg-panel print:hidden">
-      <div className="mx-auto grid max-w-6xl gap-10 px-4 py-14 sm:px-6 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
-        <div className="space-y-3">
+      <div className="mx-auto flex max-w-6xl flex-col justify-between gap-12 px-4 py-14 sm:px-6 md:flex-row md:items-start lg:gap-24">
+        <div className="max-w-xs space-y-3.5">
           <Logo />
-          <p className="max-w-xs text-sm text-ink-muted">
+          <p className="text-sm leading-relaxed text-ink-muted">
             Source-backed reviews for technology course modules. GroundEd advises; you decide what changes.
           </p>
         </div>
-        {columns.map((c) => (
-          <nav key={c.title} aria-label={c.title} className="space-y-3">
-            <p className="text-xs font-semibold uppercase tracking-[0.06em] text-ink-subtle">{c.title}</p>
-            <ul className="space-y-2 text-sm">
-              {c.links.map((l) => (
-                <li key={l.label}>
-                  {l.to ? (
-                    <Link to={l.to} className="text-ink-muted no-underline hover:text-ink hover:no-underline">{l.label}</Link>
-                  ) : (
-                    <a href={l.href} target="_blank" rel="noreferrer" className="text-ink-muted no-underline hover:text-ink hover:no-underline">{l.label}</a>
-                  )}
-                </li>
-              ))}
-            </ul>
-          </nav>
-        ))}
+
+        <div className="grid grid-cols-2 gap-10 sm:grid-cols-3 sm:gap-14 md:ml-auto lg:gap-20">
+          {columns.map((c) => (
+            <nav key={c.title} aria-label={c.title} className="space-y-3.5">
+              <p className="text-xs font-bold uppercase tracking-[0.07em] text-ink">{c.title}</p>
+              <ul className="space-y-2.5 text-sm">
+                {c.links.map((l) => (
+                  <li key={l.label}>
+                    {l.to ? (
+                      <Link to={l.to} className="text-ink-muted no-underline transition-colors hover:text-ink hover:no-underline">
+                        {l.label}
+                      </Link>
+                    ) : (
+                      <a
+                        href={l.href}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-ink-muted no-underline transition-colors hover:text-ink hover:no-underline"
+                      >
+                        {l.label}
+                      </a>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </nav>
+          ))}
+        </div>
       </div>
       <div className="border-t border-line">
-        <p className="mx-auto max-w-6xl px-4 py-5 text-center text-xs text-ink-subtle sm:px-6">© 2026 GroundEd · Built for HackGlobal 2026</p>
+        <p className="mx-auto max-w-6xl px-4 py-5 text-center text-xs text-ink-subtle sm:px-6">
+          © 2026 GroundEd · Built for HackGlobal 2026
+        </p>
       </div>
     </footer>
   );

@@ -1,5 +1,5 @@
 import { useRef, useState, type KeyboardEvent } from "react";
-import { BookOpenCheck, MessageSquare } from "lucide-react";
+import { BookOpenCheck, Check, Crosshair, ExternalLink, FileText, MessageSquare, Sparkles } from "lucide-react";
 import { AiSuggestion } from "../components/ui/AiSuggestion";
 import { ButtonLink } from "../components/ui/Button";
 import { Panel } from "../components/ui/Card";
@@ -91,37 +91,106 @@ export default function Landing() {
               <ButtonLink to="/analyze#samples" variant="secondary">Try a sample</ButtonLink>
             </div>
 
-            {/* Before → after (aligned with FindingItem.tsx & priority highlight tokens) */}
-            <div className="relative mx-auto mt-14 grid max-w-3xl gap-4 text-left sm:grid-cols-2 sm:items-end">
-              <figure className="rounded-[var(--radius-card)] border border-line bg-surface p-5 shadow-[var(--shadow-card)] sm:-rotate-2">
-                <figcaption className="mb-3 text-xs font-semibold uppercase tracking-[0.06em] text-ink-subtle">
-                  In your module · page 4
-                </figcaption>
-                <p className="leading-relaxed text-ink">
-                  Lab 3: Connect to the database using{" "}
-                  <span className="rounded-[3px] bg-high-soft px-0.5 underline decoration-high decoration-2 underline-offset-[3px]">
-                    mysql_connect()
-                  </span>{" "}
-                  and display the results in an HTML table.
-                </p>
-              </figure>
-              <figure className="space-y-3 rounded-[var(--radius-card)] border border-line bg-surface p-5 shadow-[var(--shadow-float)] sm:translate-y-4">
-                <figcaption className="text-xs font-semibold uppercase tracking-[0.06em] text-lapis-deep">
-                  With GroundEd
-                </figcaption>
-                <div className="flex items-start justify-between gap-2">
-                  <div>
-                    <p className="font-semibold text-ink">mysql_connect()</p>
-                    <p className="text-xs text-ink-muted">
-                      <strong className="font-semibold text-ink">Removed in PHP 7.0</strong> · Use{" "}
-                      <strong className="font-semibold text-ink">PDO or mysqli</strong> instead
-                    </p>
-                  </div>
-                  <PriorityBadge priority="high" short />
+            {/* Hero visual: understated, low-contrast schematic of PDF page (left) and assessment card (right) */}
+            <div className="relative mx-auto mt-12 grid max-w-3xl gap-4 text-left sm:grid-cols-2 sm:items-end">
+              {/* Left rectangle: calm PDF page mockup */}
+              <figure
+                aria-label="Mockup of a PDF module page with a highlighted passage"
+                className="rounded-[var(--radius-card)] border border-line/80 bg-surface/95 p-4 shadow-[var(--shadow-card)] sm:-rotate-1"
+              >
+                <div className="mb-3 flex items-center justify-between text-[11px] font-medium text-ink-subtle">
+                  <span className="inline-flex items-center gap-1.5">
+                    <FileText size={13} className="text-ink-subtle/80" aria-hidden />
+                    Module PDF
+                  </span>
+                  <span className="font-mono text-[10px]">Page 4 / 12</span>
                 </div>
-                <QuoteBlock size="sm" tone="source" caption="PHP Group · php.net · Official documentation">
-                  This extension was deprecated in PHP 5.5.0, and it was removed in PHP 7.0.0.
-                </QuoteBlock>
+
+                {/* Inner document sheet */}
+                <div className="space-y-2.5 rounded-[10px] border border-line/70 bg-panel/45 p-3.5">
+                  <div className="h-2.5 w-2/5 rounded-full bg-ink/25" />
+                  <div className="space-y-1.5 pt-0.5">
+                    <div className="h-2 w-full rounded-full bg-ink/10" />
+                    <div className="h-2 w-11/12 rounded-full bg-ink/10" />
+                  </div>
+
+                  {/* Softly highlighted passage on the PDF */}
+                  <div className="space-y-1.5 rounded-[6px] border border-high-line/60 border-l-2 border-l-high/65 bg-high-soft/55 p-2.5">
+                    <div className="h-2 w-4/5 rounded-full bg-high/35" />
+                    <div className="h-2 w-1/2 rounded-full bg-high/20" />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <div className="h-2 w-full rounded-full bg-ink/10" />
+                    <div className="h-2 w-9/12 rounded-full bg-ink/10" />
+                    <div className="h-2 w-3/5 rounded-full bg-ink/10" />
+                  </div>
+                </div>
+              </figure>
+
+              {/* Right rectangle: calm assessment card mockup */}
+              <figure
+                aria-label="Mockup of the GroundEd assessment panel"
+                className="space-y-2.5 rounded-[var(--radius-card)] border border-line/80 bg-surface/95 p-4 shadow-[var(--shadow-float)] sm:translate-y-2"
+              >
+                {/* Muted header with subtle % outdated summary */}
+                <div className="flex items-center justify-between border-b border-line/70 pb-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[11px] font-medium text-ink-subtle">Assessment</span>
+                    <span className="rounded-full bg-panel px-2 py-0.5 font-mono text-[10px] text-ink-muted">
+                      To review · 3
+                    </span>
+                  </div>
+                  <span className="font-mono text-[11px] font-semibold text-ink-muted">66% outdated</span>
+                </div>
+
+                {/* Finding header */}
+                <div className="flex items-center justify-between gap-2 pt-0.5">
+                  <div className="space-y-1">
+                    <div className="h-2.5 w-28 rounded-full bg-ink/35" />
+                    <div className="h-1.5 w-12 rounded-full bg-ink/15" />
+                  </div>
+                  <span className="inline-flex items-center gap-1 rounded-full border border-high-line/60 bg-high-soft/60 px-2 py-0.5 text-[10px] font-medium text-high/80">
+                    ▲ High
+                  </span>
+                </div>
+
+                {/* 1. Outdated in module block (clickable shape) */}
+                <div className="flex items-center justify-between gap-2 rounded-[8px] border border-line/70 bg-panel/40 p-2.5">
+                  <div className="min-w-0 flex-1 space-y-1.5 border-l-2 border-clay/55 pl-2.5">
+                    <div className="h-2 w-20 rounded-full bg-ink/25" />
+                    <div className="h-1.5 w-4/5 rounded-full bg-ink/12" />
+                  </div>
+                  <span className="inline-flex shrink-0 items-center gap-1 rounded-full border border-line/80 bg-surface px-2 py-0.5 text-[10px] font-medium text-ink-muted">
+                    <Crosshair size={10} aria-hidden /> Page 4
+                  </span>
+                </div>
+
+                {/* 2. Updated info & source block (clickable shape) */}
+                <div className="flex items-center justify-between gap-2 rounded-[8px] border border-line/70 bg-panel/40 p-2.5">
+                  <div className="min-w-0 flex-1 space-y-1.5 border-l-2 border-lapis/55 pl-2.5">
+                    <div className="h-2 w-24 rounded-full bg-lapis/35" />
+                    <div className="h-1.5 w-3/4 rounded-full bg-ink/12" />
+                  </div>
+                  <span className="inline-flex shrink-0 items-center gap-1 rounded-full border border-line/80 bg-surface px-2 py-0.5 text-[10px] font-medium text-ink-muted">
+                    php.net <ExternalLink size={9} aria-hidden />
+                  </span>
+                </div>
+
+                {/* 3. Subtle footer: AI draft + Decision pills */}
+                <div className="flex items-center justify-between gap-2 border-t border-line/70 pt-2">
+                  <span className="inline-flex items-center gap-1 rounded-[6px] border border-dashed border-ai/30 bg-ai-soft/45 px-2 py-0.5 text-[10px] font-medium text-ai/75">
+                    <Sparkles size={10} aria-hidden /> Generate draft
+                  </span>
+                  <div className="flex items-center gap-1">
+                    <span className="inline-flex items-center gap-1 rounded-[6px] bg-lapis/15 px-2 py-0.5 text-[10px] font-semibold text-lapis-deep">
+                      <Check size={10} strokeWidth={2.5} aria-hidden /> Update
+                    </span>
+                    <span className="rounded-[6px] border border-line/80 bg-panel/50 px-2 py-0.5 text-[10px] text-ink-subtle">
+                      Keep
+                    </span>
+                  </div>
+                </div>
               </figure>
             </div>
           </div>
