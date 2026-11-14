@@ -37,6 +37,19 @@ Scoring (100 pts): lifecycle status 50 · time past EOL 20 · version lag 15 · 
 
 `feature/backend-pipeline`, `feature/frontend-ui` → PR → `develop` → PR → `main` (release/demo only).
 Merge `develop` into your feature branch before touching shared files.
+Backend files (`backend/**`) change only on backend branches; frontend files only on frontend branches.
+
+**Every coding task gets its own short-lived branch** off the area branch, then merges back:
+```
+git switch feature/backend-pipeline && git pull
+git switch -c feat/<short-task-name>          # or fix/, docs/, refactor/, test/, chore/
+# ...commit work...
+git switch feature/backend-pipeline
+git merge --no-ff feat/<short-task-name> && git push && git branch -d feat/<short-task-name>
+```
+**Commit messages** use Conventional Commits prefixes: `feat:` new behaviour · `fix:` bug fix · `docs:` docs only ·
+`refactor:` code change without behaviour change · `test:` tests only · `chore:` tooling, deps, config.
+One logical change per commit; subject in imperative mood, ≤ 72 chars (e.g. `fix: ignore <% %> outside PHP pages`).
 
 ## Scope
 
