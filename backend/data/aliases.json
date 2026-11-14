@@ -1,0 +1,10 @@
+{
+  "_comment": "Maps lowercase names found in syllabi to endoflife.date product slugs. Add entries as you find gaps.",
+  "postgres": "postgresql",
+  "mysql": "mysql",
+  "node": "nodejs",
+  "node.js": "nodejs",
+  "angular.js": "angularjs",
+  "ms sql": "mssqlserver",
+  "sql server": "mssqlserver"
+}
