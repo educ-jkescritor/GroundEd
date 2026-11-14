@@ -1,128 +1,157 @@
 # Deploying GroundEd on Vultr
 
-One Vultr server runs everything with Docker Compose: **Caddy** serves the React app and HTTPS, and forwards
-`/api/*` to the **FastAPI backend**. Config: `deploy/docker-compose.yml`, `deploy/Caddyfile`.
+One Vultr server runs everything with Docker Compose: **Caddy** is the front door (website files, HTTPS,
+safety headers, upload size cap) and forwards `/api/*` to the **FastAPI backend**. Config: `deploy/docker-compose.yml`,
+`deploy/Caddyfile`. This guide records the first real deployment (2026-11-15) step by step.
 
 ```
 Browser ──HTTPS──► Caddy (web container) ──/api/*──► FastAPI (backend container) ──► SQLite (volume)
                      └── serves the React build
 ```
 
-> Vultr's menus change over time; names below may differ slightly. Check current prices before choosing a plan.
+> Vultr's console changes over time; menu names may differ. Prices below were shown on 2026-11-15.
+
+## Reference deployment (hackathon)
+
+| Item | Value |
+|---|---|
+| Plan | Cloud Compute, Shared CPU, `vc2-2c-4gb` (2 vCPU / 4 GB / 80 GB), Singapore, $20/mo (~$0.027/h) |
+| OS | Ubuntu 24.04 LTS x64 (LTS: years of security updates; not the short-lived .10 releases) |
+| Extras | Automatic backups off, DDoS protection off |
+| Code | `/opt/GroundEd`, branch `develop` (switch to `main` for the final release) |
+| Address | `https://<ip-with-dashes>.sslip.io` (free name for the IP, real Let's Encrypt certificate via Caddy) |
 
 ---
 
-## 0. Before you start (on your laptop)
+## 1. SSH key (on your laptop, once)
 
-1. **Vultr account** with the hackathon credit applied (Billing → shows the credit).
-2. **SSH key** (lets you log in without a password):
+An SSH key is the pass for logging in to the server remotely. The **private** key stays on the laptop; the **public**
+key (`.pub`) goes to the server. Use a separate key per purpose and protect it with a passphrase.
+
+```bash
+ssh-keygen -t ed25519 -a 100 -C "groundEd-vultr" -f ~/.ssh/id_ed25519_vultr
+chmod 700 ~/.ssh
+```
+
+## 2. Create the server (Vultr console)
+
+Compute → **Instance** → **Shared CPU** → **Cloud Compute** → plan `vc2-2c-4gb` → **Singapore** → Configure:
+**Ubuntu 24.04 LTS x64**, label/hostname `grounded-demo`, public IPv4, backups off, DDoS off, limited user off.
+
+- If the console lets you add the SSH key, select it. If the key field does not work (it did not for us), deploy
+  without it and use step 3.
+- Do not press Enter inside the form: it can submit immediately. Check the summary (image, features, total) first.
+
+Wait until the server is **Running**, then copy its IP and the root password (eye icon on the server page).
+
+## 3. Install the key and log in (laptop)
+
+```bash
+ssh-copy-id -i ~/.ssh/id_ed25519_vultr.pub root@<IP>     # first login: type 'yes', then the Vultr root password
+ssh -i ~/.ssh/id_ed25519_vultr root@<IP>                 # asks for the key passphrase; prompt becomes root@<host>
+```
+Prompt `…@MSI` = your laptop; prompt `root@<host>` = the server.
+
+## 4. Secure the server (on the server)
+
+```bash
+cloud-init status --wait                                             # first-boot setup finished -> status: done
+apt update && DEBIAN_FRONTEND=noninteractive apt -y upgrade          # security updates
+
+# Key-only login (keep this window open; test a new login in a second window before closing it)
+printf 'PasswordAuthentication no\nKbdInteractiveAuthentication no\nPermitRootLogin prohibit-password\n' \
+  > /etc/ssh/sshd_config.d/00-grounded-hardening.conf
+sshd -t && systemctl restart ssh && sshd -T | grep -E '^(passwordauthentication|permitrootlogin)'
+# -> permitrootlogin without-password / passwordauthentication no
+
+# Firewall: only SSH and web
+ufw allow OpenSSH && ufw allow 80/tcp && ufw allow 443/tcp && ufw --force enable && ufw status
+
+# If /var/run/reboot-required exists after the upgrade, reboot once now: reboot
+```
+Check from the laptop that passwords are refused:
+`ssh -o PubkeyAuthentication=no root@<IP>` → `Permission denied (publickey)`.
+
+## 5. Install Docker and get the code (on the server)
+
+```bash
+curl -fsSL https://get.docker.com | sh                 # Docker's official install script
+docker --version && docker compose version
+cd /opt && git clone -b develop https://github.com/educ-jkescritor/GroundEd.git && cd GroundEd && git log --oneline -1
+```
+The repository is public, so no GitHub token is needed. (A private repo needs a read-only token or deploy key.)
+
+## 6. Settings: `backend/.env`
+
+Copy your working `.env` from the laptop over SSH instead of retyping the API key:
+```bash
+# laptop, in the repo folder
+scp -i ~/.ssh/id_ed25519_vultr backend/.env root@<IP>:/opt/GroundEd/backend/.env
+```
+```bash
+# server, in /opt/GroundEd: set the site address, lock the file, check without printing the key
+sed -i 's#^CORS_ORIGINS=.*#CORS_ORIGINS=https://<ip-with-dashes>.sslip.io#' backend/.env && chmod 600 backend/.env
+grep -E '^(GEMINI_MODEL|GEMINI_FALLBACK_MODEL|CORS_ORIGINS)=' backend/.env && grep -c '^GEMINI_API_KEY=.\+' backend/.env
+```
+`.env` is git-ignored and excluded from the Docker image (`backend/.dockerignore`); it never leaves the server.
+
+## 7. Start
+
+```bash
+SITE_ADDRESS=<ip-with-dashes>.sslip.io docker compose -f deploy/docker-compose.yml up -d --build
+docker compose -f deploy/docker-compose.yml ps        # backend: Up (healthy), web: Up
+```
+First build: 2–4 minutes. The web container starts only after the backend reports healthy.
+
+## 8. Check it (from anywhere)
+
+```bash
+curl https://<ip-with-dashes>.sslip.io/api/health      # status ok, gemini_configured true, versions
+```
+Then in a browser: run a sample, upload a module, open a finding, try an AI draft, download the report.
+The `versions` in `/api/health` should equal the ones from the same commit run locally: same knowledge base.
+
+---
+
+## Updating (every new version)
+
+1. Change code on a task branch → merge into `develop` → push (tests pass first; the server is never the first
+   place new code runs).
+2. On the server:
    ```bash
-   ssh-keygen -t ed25519 -C "groundEd-vultr"     # press Enter for the default path
-   cat ~/.ssh/id_ed25519.pub                       # copy this line
+   cd /opt/GroundEd && git pull && SITE_ADDRESS=<ip-with-dashes>.sslip.io docker compose -f deploy/docker-compose.yml up -d --build
    ```
-   Vultr → **Account → SSH Keys → Add SSH Key** → paste it.
-3. Your **Gemini API key** (same one as in `backend/.env`). Never commit it.
+   Only changed layers rebuild (usually < 2 minutes); the old containers serve until the new ones are swapped in.
+3. Check `/api/health`.
 
-## 1. Create the server
+Kept across updates: the database volume (reports, feedback, draft cache), Caddy's certificate volume, `backend/.env`.
 
-Vultr → **Deploy → Cloud Compute (shared CPU)**:
-
-| Setting | Choose | Why |
-|---|---|---|
-| Location | Closest to your users (e.g. Singapore for the Philippines) | Speed |
-| Image | **Ubuntu 24.04 LTS** (or the Marketplace **Docker** image, which has Docker preinstalled) | Supported, long-term |
-| Plan | **2 vCPU / 4 GB RAM** | Building the React app needs memory; 1 GB plans can fail during `npm run build` |
-| SSH key | The key from step 0 | Login |
-| Firewall | Create a group: allow **22** (SSH, ideally your IP only), **80** and **443** (web) | Only what is needed |
-
-Deploy, wait until it is **Running**, and copy its **public IPv4 address** (e.g. `203.0.113.5`).
-
-## 2. Log in and install Docker
-
-```bash
-ssh root@203.0.113.5
-```
-If you chose plain Ubuntu (skip if you used the Docker image):
-```bash
-curl -fsSL https://get.docker.com | sh
-docker compose version        # should print a version
-```
-
-## 3. Get the code
-
-```bash
-git clone https://github.com/educ-jkescritor/GroundEd.git && cd GroundEd
-git switch main                 # the release branch (use develop only for a test deployment)
-```
-If the repository is **private**, GitHub will ask for credentials: use a **fine-grained personal access token**
-(read-only, this repo only) as the password, or add a read-only **deploy key** to the repo.
-
-## 4. Configure secrets on the server
-
-```bash
-cp backend/.env.example backend/.env
-nano backend/.env               # set GEMINI_API_KEY; set CORS_ORIGINS to your site address (step 5)
-chmod 600 backend/.env          # readable only by root
-```
-`.env` stays on the server. It is git-ignored and excluded from the Docker image (`backend/.dockerignore`).
-
-## 5. Choose the web address (HTTPS without buying a domain)
-
-Use **sslip.io**: the address `203-0-113-5.sslip.io` (your IP with dashes) points to your server automatically,
-and Caddy gets a free HTTPS certificate for it.
-
-```bash
-export SITE_ADDRESS=203-0-113-5.sslip.io
-```
-Put `CORS_ORIGINS=https://203-0-113-5.sslip.io` in `backend/.env`. With your own domain, point an A record at the
-IP and use the domain instead.
-
-## 6. Start it
-
-```bash
-SITE_ADDRESS=203-0-113-5.sslip.io docker compose -f deploy/docker-compose.yml up -d --build
-docker compose -f deploy/docker-compose.yml ps        # both services "running"
-```
-The first build takes a few minutes.
-
-## 7. Check it works
-
-```bash
-curl https://203-0-113-5.sslip.io/api/health
-# {"status":"ok","gemini_configured":true,"versions":{"pipeline":"...","registry":"...","library":"...","rules":"..."}}
-curl https://203-0-113-5.sslip.io/api/samples
-curl -F sample_id=legacy-php-lab https://203-0-113-5.sslip.io/api/analyze | head -c 300
-```
-Then open `https://203-0-113-5.sslip.io` in a browser, run a sample, upload a PDF, and try an AI draft.
-
-The `versions` in `/api/health` should match what `uv run python -m app.cli registry` / the provenance stamp shows
-locally: that proves the server runs the same knowledge base.
-
-## 8. Everyday operations
-
-| Task | Command (from the `GroundEd` folder) |
+| Situation | Command (in `/opt/GroundEd`) |
 |---|---|
-| Deploy a new version | `git pull && SITE_ADDRESS=... docker compose -f deploy/docker-compose.yml up -d --build` |
-| See logs | `docker compose -f deploy/docker-compose.yml logs -f backend` |
-| Restart | `docker compose -f deploy/docker-compose.yml restart` |
-| Stop | `docker compose -f deploy/docker-compose.yml down` (data volume is kept) |
+| Only `.env` changed (e.g. Gemini model) | `SITE_ADDRESS=… docker compose -f deploy/docker-compose.yml up -d` (no rebuild) |
+| Status | `docker compose -f deploy/docker-compose.yml ps` |
+| Logs | `docker compose -f deploy/docker-compose.yml logs --tail 50 backend` |
+| Roll back | `git log --oneline -5` → `git checkout <good-commit>` → same `up -d --build` |
+| Release | `git switch main && git pull` → same `up -d --build` |
 
-## 9. Safety and cost
+## Safety and cost
 
-- **No login yet** (known hackathon gap). For a public demo use the **sample PDFs**; reports are deleted after
-  `UPLOAD_RETENTION_HOURS` (24 h) and uploaded files immediately after analysis.
-- **Gemini billing:** use a key whose Google Cloud project has billing linked (paid tier), so module quotes sent
-  for drafts are not used to train models.
-- **Credits:** a running server is billed per hour even when idle. **Destroy** it after the hackathon if you no
-  longer need it (stopping is not enough on most plans). Snapshots and backups cost extra.
-- Keep SSH restricted (key login, firewall), and never paste the API key into chat, issues or commits.
+- **No login yet** (known hackathon gap). Share the link only once the frontend fixes are in; demo with the samples.
+  Uploaded PDFs are deleted right after analysis; reports after 24 hours.
+- **AI drafts:** limited to 5/min per visitor and 300/day; cached for 24 h. Pre-click the drafts you will demo, on the
+  live server, on demo day (the first call can take ~20 s when Google is busy).
+- **Gemini billing:** use a key whose Google Cloud project has billing linked (paid tier), so quotes sent for drafts
+  are not used to train models.
+- **Credits:** billed per hour while the server exists, even idle. **Destroy** it after the hackathon.
 
 ## Troubleshooting
 
 | Symptom | Likely cause → fix |
 |---|---|
-| Browser shows a certificate error | DNS/sslip address wrong, or ports 80/443 closed in the firewall |
-| `npm run build` killed during build | Not enough RAM → use a 4 GB plan |
+| `Connection refused` / timeout on SSH right after creation | Server still booting → wait 1–2 minutes |
+| `Permission denied (publickey)` | Wrong key → use `-i ~/.ssh/id_ed25519_vultr`; key not installed → step 3 |
+| Compose: `project name must not contain uppercase` | Use a lowercase `-p` name (only when you pass one) |
+| Browser certificate error | sslip address wrong, or ports 80/443 closed in the firewall |
+| Website build killed | Not enough RAM → 4 GB plan |
 | `/api/health` shows `gemini_configured: false` | `GEMINI_API_KEY` missing in `backend/.env` → fix, then `up -d` |
-| Uploads fail with a CORS error | `CORS_ORIGINS` does not match the exact `https://` address |
-| `/api/...` returns 502 | Backend container not running → `logs backend` |
+| `/api/...` returns 502 | Backend not running/healthy → `logs backend` |
