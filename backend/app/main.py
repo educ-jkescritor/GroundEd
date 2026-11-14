@@ -7,7 +7,7 @@ from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 
 from . import config, db
-from .mock import MOCK_SAMPLES, mock_analysis
+from .mock import MOCK_SAMPLES, mock_analysis, mock_draft
 from .models import Analysis, Draft, FeedbackIn, FeedbackOut, Sample
 
 app = FastAPI(title="GroundEd API", version="0.1.0")
@@ -45,7 +45,10 @@ async def analyze(file: Optional[UploadFile] = File(None), sample_id: Optional[s
     #   score.compute(...)                               -> Score with breakdown
     #   db.save_analysis(analysis)
     analysis_id = sample_id or uuid.uuid4().hex[:12]
-    filename = file.filename if file else f"{sample_id}.pdf"
+    sample = next((s for s in MOCK_SAMPLES if s.id == sample_id), None)
+    if sample_id and not sample:
+        raise HTTPException(404, "Unknown sample.")
+    filename = file.filename if file else f"{sample.title.replace(' (sample)', '')}.pdf"
     analysis = mock_analysis(analysis_id, filename, "upload" if file else "sample")
     db.save_analysis(analysis)
     return analysis
@@ -62,11 +65,7 @@ def get_analysis(analysis_id: str) -> Analysis:
 @app.post("/api/analysis/{analysis_id}/findings/{finding_id}/draft", response_model=Draft)
 def draft_update(analysis_id: str, finding_id: str) -> Draft:
     # TODO: detect.draft_section(finding, page_text) via Gemini
-    return Draft(
-        finding_id=finding_id, model="mock",
-        text="[MOCK] Lab exercises use Python 3 (current supported release). "
-             "Students install Python 3 from python.org and use venv for dependencies.",
-    )
+    return Draft(finding_id=finding_id, model="mock", text=mock_draft(finding_id))
 
 
 @app.post("/api/feedback", response_model=FeedbackOut)

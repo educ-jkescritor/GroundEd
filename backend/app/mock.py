@@ -16,7 +16,22 @@ MOCK_SAMPLES = [
            description="SQL and NoSQL course with lab environment requirements."),
     Sample(id="mobile-dev", title="Mobile App Development (sample)",
            description="Android and cross-platform development labs."),
+    Sample(id="ged-ethics", title="Ethics in Society (GED sample)",
+           description="A general education module, to show what happens outside technology courses."),
 ]
+
+MOCK_DRAFTS = {
+    "f1": "Lab 3: Connect to the database using PDO with prepared statements, and display the results in an HTML table.",
+    "f2": "All laboratory exercises use a currently supported PHP 8 release running on a local XAMPP server.",
+    "f3": "For interactive pages we introduce a currently supported front-end framework (for example Angular or React).",
+    "f4": "Pages are styled with Bootstrap 5 so that layouts adapt to small screens.",
+    "f5": "Students install the current Node.js LTS release to run build tools.",
+    "f6": "Activity: build the product catalog page using CSS Grid or Flexbox for alignment.",
+}
+
+
+def mock_draft(finding_id: str) -> str:
+    return "[MOCK] " + MOCK_DRAFTS.get(finding_id, "Updated wording for this part of the module.")
 
 PAGES = [
     PageText(number=1, text=(
@@ -142,6 +157,15 @@ def mock_analysis(analysis_id: str = "demo", filename: str = "WST2-Module.pdf", 
             citations=[Citation(page=1, snippet="Students may use Dreamweaver CS6")],
         ),
     ]
+    if analysis_id == "ged-ethics":
+        return Analysis(
+            id=analysis_id, created_at=datetime.now(timezone.utc),
+            source=SourceInfo(kind=kind, filename=filename, pages=1), summary=Summary(), findings=[],
+            pages=[PageText(number=1, text=(
+                "Module 1: Ethical frameworks\n"
+                "Students compare utilitarian and deontological reasoning through case studies."))],
+            coverage="not_covered",
+        )
     statuses = ("eol", "nearing_eol", "less_used", "supported", "unverified")
     summary = Summary(**{s: sum(f.status == s for f in findings) for s in statuses})
     return Analysis(

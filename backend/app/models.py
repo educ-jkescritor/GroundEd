@@ -88,6 +88,8 @@ class Analysis(BaseModel):
     summary: Summary
     findings: list[Finding]
     pages: list[PageText] = []  # optional: module text per page for the side-by-side Report
+    # "not_covered": the module is outside technology courses (e.g. GED), so there are no findings by design.
+    coverage: Literal["covered", "not_covered"] = "covered"  # optional: module text per page for the side-by-side Report
 
 
 class Draft(BaseModel):

@@ -67,6 +67,9 @@ The frontend works without these, but shows more when the backend sends them. Ba
 | `usage` | `Finding` | `lab` · `activity` · `mentioned` | "Taught in labs · pages 4, 6" |
 | `pages` | `Analysis` | `[{ "number": 1, "text": "…" }]` | The module column with highlights. Each citation `snippet` must appear verbatim in its page's `text`. |
 | `summary.less_used` | `Analysis.summary` | count | Header counts |
+| `coverage` | `Analysis` | `covered` (default) · `not_covered` | "Not covered yet" page for modules outside technology courses (e.g. GED); return no findings |
+
+Errors the frontend recognises on `POST /api/analyze`: `415` not a PDF · `413` too large · `422` with a message containing "scanned" · `429`/`503` service busy. Unknown `sample_id` returns `404`.
 
 Still wanted later (see docs/ux/information-architecture.md, "Finding fields explained"): source tier, publisher,
 passage text and dates; confidence; provenance stamp; job status for the progress page.

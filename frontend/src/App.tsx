@@ -7,6 +7,7 @@ import FindingDetail from "./pages/FindingDetail";
 import Reports from "./pages/Reports";
 import SignIn from "./pages/SignIn";
 import Feedback from "./pages/Feedback";
+import Methodology from "./pages/Methodology";
 import NotFound from "./pages/NotFound";
 
 /** Old /results/:id links keep working. */
@@ -26,6 +27,7 @@ export default function App() {
         <Route path="/reports/:id/findings/:fid" element={<FindingDetail />} />
         <Route path="/results/:id" element={<LegacyResults />} />
         <Route path="/sign-in" element={<SignIn />} />
+        <Route path="/methodology" element={<Methodology />} />
         <Route path="/feedback" element={<Feedback />} />
         <Route path="*" element={<NotFound />} />
       </Route>

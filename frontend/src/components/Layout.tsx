@@ -2,11 +2,13 @@ import type { ReactNode } from "react";
 import { NavLink, Link, Outlet } from "react-router-dom";
 import { ButtonLink } from "./ui/Button";
 import { Logo } from "./ui/Logo";
+import { getDemoUser, useStored } from "../lib/history";
 
 const navCls = ({ isActive }: { isActive: boolean }) =>
   `text-sm font-medium no-underline hover:no-underline ${isActive ? "text-ink" : "text-ink-muted hover:text-ink"}`;
 
 export default function Layout() {
+  const user = useStored(getDemoUser);
   return (
     <div className="flex min-h-screen flex-col">
       {/* Floating pill header (DESIGN.md §7) */}
@@ -17,12 +19,14 @@ export default function Layout() {
         >
           <Logo />
           <div className="hidden items-center gap-5 md:flex">
-            <a href="/#how-it-works" className="text-sm font-medium text-ink-muted no-underline hover:text-ink">How it works</a>
+            <NavLink to="/methodology" className={navCls}>How it works</NavLink>
             <NavLink to="/reports" className={navCls}>Reports</NavLink>
             <NavLink to="/feedback" className={navCls}>Feedback</NavLink>
           </div>
           <div className="ml-auto flex items-center gap-2">
-            <ButtonLink to="/sign-in" variant="ghost" size="sm" shape="pill" className="hidden sm:inline-flex">Sign in</ButtonLink>
+            <ButtonLink to="/sign-in" variant="ghost" size="sm" shape="pill" className="hidden sm:inline-flex">
+              {user ? user.name : "Sign in"}
+            </ButtonLink>
             <ButtonLink to="/analyze" size="sm" shape="pill">Analyze a module</ButtonLink>
           </div>
         </nav>
@@ -36,7 +40,8 @@ export default function Layout() {
         <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-8 text-sm text-ink-muted sm:flex-row sm:items-center sm:justify-between sm:px-6">
           <p>Advisory tool: you decide what changes. Lifecycle data from <a href="https://endoflife.date" target="_blank" rel="noreferrer">endoflife.date</a>.</p>
           <p className="flex flex-wrap gap-4">
-            <a href="/#scoring">Methodology</a>
+            <Link to="/methodology">Methodology</Link>
+            <Link to="/reports">Reports</Link>
             <a href="https://github.com/educ-jkescritor/GroundEd" target="_blank" rel="noreferrer">GitHub</a>
             <Link to="/feedback">Feedback</Link>
           </p>

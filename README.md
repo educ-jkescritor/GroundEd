@@ -9,7 +9,12 @@ the syllabus page where it appears and the lifecycle record behind it. Anything 
 **unverified** instead of guessed. Each item gets a transparent 100-point priority score, and nothing in the
 syllabus changes without the faculty member's approval.
 
-> Status: **skeleton**. The API returns mock data in its final shape; the real pipeline is in progress.
+> Status: **frontend complete on mock data; backend pipeline in progress.** The API returns realistic mock data
+> in its final shape (`backend/app/mock.py`) until the real pipeline replaces it.
+
+**Pages:** Landing · Analyze (upload or sample, with progress) · Report (module and ranked findings side by side) ·
+Finding detail · Reports history · Sign in (browser-only demo account) · Methodology · Feedback · Not found.
+Try the **Ethics in Society (GED sample)** to see the "Not covered yet" path.
 
 ## Repository layout
 ```

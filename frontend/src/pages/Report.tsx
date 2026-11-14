@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { Loader2 } from "lucide-react";
+import { CircleSlash, Loader2 } from "lucide-react";
 import { ApiError, api, errorMessage } from "../api";
 import type { Analysis } from "../types";
 import { Page } from "../components/Layout";
@@ -57,6 +57,27 @@ export default function Report() {
     );
   }
 
+  if (analysis.coverage === "not_covered") {
+    return (
+      <Page narrow>
+        <div className="space-y-5 rounded-[var(--radius-panel)] bg-panel p-8 text-center">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-unverified-soft px-3 py-1 text-xs font-semibold text-unverified">
+            <CircleSlash size={14} aria-hidden /> Not covered yet
+          </span>
+          <h1 className="text-2xl">This module looks like it's outside technology courses</h1>
+          <p className="mx-auto max-w-lg text-ink-muted">
+            GroundEd covers IT and computing courses for now, so there's nothing to report for{" "}
+            <strong className="text-ink">{analysis.source.filename}</strong>. We'd rather say nothing than invent findings.
+          </p>
+          <div className="flex flex-wrap justify-center gap-3">
+            <ButtonLink to="/analyze">Analyze another module</ButtonLink>
+            <ButtonLink to="/methodology#coverage" variant="ghost">What's covered?</ButtonLink>
+          </div>
+        </div>
+      </Page>
+    );
+  }
+
   const review = analysis.findings.filter(needsReview);
   const counts = priorityCounts(analysis);
   const decided = review.filter((f) => decisions[f.id]).length;
@@ -88,12 +109,16 @@ export default function Report() {
             </div>
           </header>
 
-          {allDone && (
+          {(allDone || review.length === 0) && (
             <div className="flex flex-wrap items-center gap-4 rounded-[var(--radius-panel)] border border-line p-5">
               <Sprout />
               <div className="flex-1">
-                <h2 className="text-lg">All {review.length} findings reviewed</h2>
-                <p className="text-ink-muted">Your module is ready for next term. Export the report to share it.</p>
+                <h2 className="text-lg">{review.length === 0 ? "Nothing here may warrant review" : `All ${review.length} findings reviewed`}</h2>
+                <p className="text-ink-muted">
+                  {review.length === 0
+                    ? "We didn't find technologies or practices that may be outdated. You can still export the report."
+                    : "Your module is ready for next term. Export the report to share it."}
+                </p>
               </div>
               <ButtonLink to={`/feedback?analysis=${encodeURIComponent(analysis.id)}`} variant="secondary">Give feedback</ButtonLink>
             </div>

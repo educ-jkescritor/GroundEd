@@ -68,6 +68,8 @@ export interface Analysis {
   summary: Partial<Record<FindingStatus, number>>;
   findings: Finding[];
   pages?: PageText[]; // module text per page, for the side-by-side Report (optional)
+  // "not_covered": outside technology courses (e.g. GED); no findings by design.
+  coverage?: "covered" | "not_covered";
 }
 
 export interface Draft {
