@@ -72,7 +72,8 @@
   }
   h1,
   h2,
-  h3 {
+  h3,
+  .heading-serif {
     /* Instrument Serif has a single weight; a thin stroke in the text colour makes it slightly bolder
        without the smeared look of browser-synthesised bold. */
     font-family: var(--font-display);
