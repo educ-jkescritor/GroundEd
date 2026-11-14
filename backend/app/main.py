@@ -105,6 +105,8 @@ def draft_update(analysis_id: str, finding_id: str, request: Request) -> Draft:
     finding = next((f for f in analysis.findings if f.id == finding_id), None)
     if not finding:
         raise HTTPException(404, "Finding not found in this analysis.")
+    if finding.status == "supported":
+        raise HTTPException(409, "This item is still supported; there is nothing to rewrite.")
     inputs = llm.draft_inputs(finding)
     if inputs is None:
         raise HTTPException(409, "Drafts are only made for findings with a verified source.")

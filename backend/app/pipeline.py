@@ -15,7 +15,7 @@ from .models import Analysis, Citation, Finding, Lifecycle, Provenance, SourceIn
 from .pdf import Page, extract_pages, file_sha256, find_snippet_bbox
 from .score import compute, status_for
 
-PIPELINE_VERSION = "0.4.0"  # 0.4.0: version-aware product entries
+PIPELINE_VERSION = "0.5.0"  # 0.5.0: supported items listed (unscored)
 MAX_CITATIONS = 5  # per finding; prominence still counts every page
 
 
@@ -71,19 +71,24 @@ def _finding_for_entry(entry: registry.Entry, mentions: list[Mention], pages_by_
         latest = eol.latest_label(product)
         lifecycle = Lifecycle(product=product.product, cycle=rel.label, eol_date=rel.eol_from, latest_cycle=latest,
                               source_url=product.html_url, source_name="endoflife.date")
-        deprecated, version, ended = False, rel.label, rel.is_eol
+        written = {m.version for m in mentions if m.version}
+        # Show the version as the module writes it ("8"); the lifecycle record names the release checked ("8.5").
+        version = written.pop() if len(written) == 1 else rel.label
+        deprecated, ended = False, rel.is_eol
         if upgrade is None and latest:  # product upgrades come from the same lifecycle record
             base["upgrade"] = upgrade = Upgrade(target_cycle=f"{product.label} {latest} (latest)",
                                                 source_url=product.html_url)
 
+    status = status_for(lifecycle.eol_date, deprecated, today, ended)
+    if status == "supported":
+        # Checked and still supported: shown so faculty see what was verified, but no score, priority or upgrade.
+        base["upgrade"] = None
+        return Finding(**base, version=version, status=status, lifecycle=lifecycle, score=None)
     passages = library.passages_for(
         entry.technology,
         entry.fact.doc if entry.fact else None, entry.fact.quote if entry.fact else None,
         entry.upgrade.source_url if entry.upgrade else None, entry.upgrade.target if entry.upgrade else None,
     ) or None
-    status = status_for(lifecycle.eol_date, deprecated, today, ended)
-    if status == "supported":
-        return None  # still supported: not a finding (no claim to make)
     score = compute(lifecycle.eol_date, deprecated, depth, len(pages), hands_on, today, ended)
     return Finding(**base, version=version, status=status, lifecycle=lifecycle, score=score, passages=passages)
 

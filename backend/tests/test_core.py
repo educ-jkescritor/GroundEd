@@ -160,7 +160,8 @@ def test_samples_and_analyze_sample(client):
     ids = [s["id"] for s in client.get("/api/samples").json()]
     assert "legacy-php-lab" in ids
     a = client.post("/api/analyze", data={"sample_id": "modern-php-lab"}).json()
-    assert a["findings"] == [] and a["provenance"]["detector"] == "registry"
+    assert [f for f in a["findings"] if f["status"] != "supported"] == []  # no claims on the modern lab
+    assert a["summary"]["supported"] >= 1 and a["provenance"]["detector"] == "registry"
     a = client.post("/api/analyze", data={"sample_id": "legacy-php-lab"}).json()
     ids = {f["id"] for f in a["findings"]}
     assert {"php-ext-mysql", "php-asp-script-tags", "php-ext-ereg", "mysql-int-display-width"} <= ids
@@ -349,3 +350,12 @@ def test_wal_mode_is_enabled(client):
     import sqlite3
     with sqlite3.connect(config.DB_PATH) as conn:
         assert conn.execute("PRAGMA journal_mode").fetchone()[0] == "wal"
+
+
+def test_no_drafts_for_supported_items(client, monkeypatch):
+    from app import llm
+    monkeypatch.setattr(llm, "draft_section", lambda *a: ("x", "fake"))
+    a = client.post("/api/analyze", data={"sample_id": "modern-php-lab"}).json()
+    sup = next(f for f in a["findings"] if f["status"] == "supported")
+    r = client.post(f"/api/analysis/{a['id']}/findings/{sup['id']}/draft")
+    assert r.status_code == 409 and "still supported" in r.json()["detail"]

@@ -35,7 +35,7 @@ CASES = [
     ("Test the page in IE 8", "internet-explorer-8"),
     ("Windows 10 lab computers", "windows-10"),
     # must NOT produce a finding
-    ("Install PHP 8.4 with Composer", None),             # supported
+    ("Install PHP 8.4 with Composer", None),             # supported: listed as checked, never a claim
     ("Python 3 is required", None),                      # newest 3.x is supported
     ("PHP 6 (2007 not yet released)", None),             # history line + not a real release
     ("1997 (PHP 2.0)", None),                            # history line
@@ -61,7 +61,8 @@ def _pdf(tmp_path, text):
 @pytest.mark.parametrize("text, expected", CASES)
 def test_product_versions(tmp_path, text, expected):
     a = analyze(_pdf(tmp_path, text), "m.pdf", today=TODAY, use_cache=False)
-    ids = {f.id for f in a.findings}
+    ids = {f.id for f in a.findings if f.status != "supported"}  # claims only
+    assert all(f.score is None for f in a.findings if f.status == "supported")
     if expected is None:
         assert ids == set(), f"false alarm for {text!r}: {ids}"
     else:
@@ -103,3 +104,17 @@ def test_coverage_map_matches_the_registry():
     ids = {e.id for e in registry.load().entries}
     assert covered - ids == set(), f"coverage map lists items with no registry entry: {covered - ids}"
     assert ids - covered == set(), f"registry entries missing from the coverage map: {ids - covered}"
+
+
+def test_supported_versions_are_listed_as_checked_without_score(tmp_path):
+    a = analyze(_pdf(tmp_path, "Install PHP 8.4 with Composer"), "m.pdf", today=TODAY, use_cache=False)
+    f = next(x for x in a.findings if x.id == "php-8.4")
+    assert f.status == "supported" and f.score is None and f.upgrade is None and f.passages is None
+    assert f.lifecycle.source_name == "endoflife.date" and f.citations
+    assert a.summary.supported == 1 and a.summary.eol == 0
+
+
+def test_version_shows_what_the_module_wrote_and_lifecycle_names_the_checked_release(tmp_path):
+    a = analyze(_pdf(tmp_path, "Requires PHP5 or later"), "m.pdf", today=TODAY, use_cache=False)
+    f = next(x for x in a.findings if x.id == "php-5.6")
+    assert f.version == "5" and f.lifecycle.cycle == "5.6"

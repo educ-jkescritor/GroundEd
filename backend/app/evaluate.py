@@ -74,7 +74,8 @@ def run(runs: int = 3, modules_dir: Path = MODULES_DIR, today: date | None = Non
                     rep.page_ok += 1
             else:
                 rep.missed.append(f"{name}:{item_id}")
-        rep.false_alarms += [f"{name}:{fid}" for fid in got if fid not in want]
+        # A false alarm is an unexpected *claim*. "Supported" items are verification, not claims.
+        rep.false_alarms += [f"{name}:{fid}" for fid, f in got.items() if fid not in want and f.status != "supported"]
         for f in a.findings:
             for p in f.passages or []:
                 if p.role == "fact":
