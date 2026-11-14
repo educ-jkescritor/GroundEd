@@ -262,3 +262,39 @@ def test_tampered_quote_makes_the_finding_unverified(monkeypatch):
     a = analyze(config.SAMPLES_DIR / "legacy-php-lab.pdf", "legacy.pdf", today=TODAY, use_cache=False)
     f = next(x for x in a.findings if x.id == "php-ext-mysql")
     assert f.status == "unverified" and f.score is None and f.lifecycle is None
+
+
+# ---------- hardening ----------
+
+def test_too_many_pages_is_rejected_with_a_clear_message(tmp_path, monkeypatch):
+    from app import pdf as pdf_mod
+    monkeypatch.setattr(pdf_mod, "MAX_PAGES", 3)
+    p = tmp_path / "long.pdf"
+    doc = pymupdf.open()
+    for _ in range(4):
+        doc.new_page().insert_text((72, 72), "some text on this page " * 3)
+    doc.save(p)
+    with pytest.raises(PdfError, match="4 pages; the limit is 3"):
+        extract_pages(p)
+
+
+def test_slow_analysis_times_out_with_504(client, monkeypatch):
+    import time as _time
+    from app import main as main_mod
+    monkeypatch.setattr(config, "ANALYSIS_TIMEOUT_SECONDS", 1)
+    monkeypatch.setattr(main_mod, "run_pipeline", lambda *a, **k: _time.sleep(3))
+    r = client.post("/api/analyze", data={"sample_id": "legacy-php-lab"})
+    assert r.status_code == 504 and "longer than 1 seconds" in r.json()["detail"]
+
+
+def test_upload_is_judged_by_content_not_label(client):
+    pdf_bytes = (config.SAMPLES_DIR / "modern-php-lab.pdf").read_bytes()
+    r = client.post("/api/analyze", files={"file": ("lab", pdf_bytes, "application/octet-stream")})
+    assert r.status_code == 200
+    r = client.post("/api/analyze", files={"file": ("x.pdf", b"MZ\x90 not a pdf", "application/octet-stream")})
+    assert r.status_code == 415
+
+
+def test_health_reports_versions(client):
+    v = client.get("/api/health").json()["versions"]
+    assert set(v) == {"pipeline", "registry", "library", "rules"} and all(v.values())
