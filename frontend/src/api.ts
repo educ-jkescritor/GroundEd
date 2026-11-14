@@ -48,6 +48,9 @@ export const api = {
     return request<Analysis>("/api/analyze", { method: "POST", body: form });
   },
 
+  /** URL of a public sample's PDF (for the document viewer). */
+  sampleFileUrl: (sampleId: string) => `${BASE}/api/samples/${encodeURIComponent(sampleId)}/file`,
+
   analysis: (id: string) => request<Analysis>(`/api/analysis/${encodeURIComponent(id)}`),
 
   draft: (analysisId: string, findingId: string) =>

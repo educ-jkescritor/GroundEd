@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, type ReactNode } from "react";
 import { FileText } from "lucide-react";
 import type { Finding, PageText } from "../types";
 import { STATUS_META } from "./ui/StatusBadge";
+import { TONE_HIGHLIGHT, toneOf } from "../lib/findings";
 
 interface Mark {
   start: number;
@@ -93,7 +94,7 @@ export default function ModuleView({ pages, findings, selectedId, scrollToSelect
           title={`${m.finding.technology}: ${meta.label}`}
           aria-pressed={selected}
           aria-label={`${text.slice(m.start, m.end)}. Finding: ${m.finding.technology}, ${meta.label}`}
-          className={`inline cursor-pointer rounded-[3px] px-0.5 text-left underline decoration-2 underline-offset-[3px] ${meta.hl} ${
+          className={`inline cursor-pointer rounded-[3px] px-0.5 text-left underline decoration-2 underline-offset-[3px] ${TONE_HIGHLIGHT[toneOf(m.finding)]} ${
             selected ? "outline-2 outline-offset-1 outline-lapis" : "hover:brightness-95"
           }`}
         >

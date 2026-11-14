@@ -76,7 +76,7 @@ class SourceStatus(BaseModel):
 
 
 def load_sources(path: Path = SOURCES_FILE) -> list[Source]:
-    sources = [Source.model_validate(s) for s in yaml.safe_load(path.read_text())]
+    sources = [Source.model_validate(s) for s in yaml.safe_load(path.read_text(encoding="utf-8"))]
     ids = [s.id for s in sources]
     if len(ids) != len(set(ids)):
         raise ValueError("Duplicate source ids in sources.yaml")
@@ -194,7 +194,7 @@ def build(sources: Optional[list[Source]] = None, only: Optional[set[str]] = Non
             old = load_document(s.id)
             if old and old.content_sha256 == doc.content_sha256:
                 doc.fetched_at = old.fetched_at  # unchanged content: keep the snapshot byte-identical
-            (SNAPSHOT_DIR / f"{s.id}.json").write_text(doc.model_dump_json(indent=1) + "\n")
+            (SNAPSHOT_DIR / f"{s.id}.json").write_text(doc.model_dump_json(indent=1) + "\n", encoding="utf-8")
             statuses.append(SourceStatus(id=s.id, status="ok", tried_at=_now(), passages=len(passages),
                                          reason="" if not old or old.content_sha256 == doc.content_sha256
                                          else "content changed since last snapshot: review registry entries using it"))
@@ -210,29 +210,30 @@ def build(sources: Optional[list[Source]] = None, only: Optional[set[str]] = Non
 def _write_index(new: list[SourceStatus]) -> None:
     index = {}
     if INDEX_FILE.exists():
-        index = {s["id"]: s for s in json.loads(INDEX_FILE.read_text())["sources"]}
+        index = {s["id"]: s for s in json.loads(INDEX_FILE.read_text(encoding="utf-8"))["sources"]}
     for s in new:
         index[s.id] = s.model_dump()
-    INDEX_FILE.write_text(json.dumps({"sources": sorted(index.values(), key=lambda x: x["id"])}, indent=1) + "\n")
+    INDEX_FILE.write_text(json.dumps({"sources": sorted(index.values(), key=lambda x: x["id"])}, indent=1) + "\n",
+                          encoding="utf-8")
 
 
 def status() -> list[SourceStatus]:
     """Status of every source in sources.yaml (never built => needs a build)."""
     seen = {}
     if INDEX_FILE.exists():
-        seen = {s["id"]: SourceStatus.model_validate(s) for s in json.loads(INDEX_FILE.read_text())["sources"]}
+        seen = {s["id"]: SourceStatus.model_validate(s) for s in json.loads(INDEX_FILE.read_text(encoding="utf-8"))["sources"]}
     return [seen.get(s.id) or SourceStatus(id=s.id, status="failed", reason="never built", tried_at="")
             for s in load_sources()]
 
 
 def load_document(doc_id: str) -> Optional[Document]:
     p = SNAPSHOT_DIR / f"{doc_id}.json"
-    return Document.model_validate_json(p.read_text()) if p.exists() else None
+    return Document.model_validate_json(p.read_text(encoding="utf-8")) if p.exists() else None
 
 
 @lru_cache(maxsize=1)
 def load_documents() -> tuple[Document, ...]:
-    return tuple(Document.model_validate_json(p.read_text()) for p in sorted(SNAPSHOT_DIR.glob("*.json"))
+    return tuple(Document.model_validate_json(p.read_text(encoding="utf-8")) for p in sorted(SNAPSHOT_DIR.glob("*.json"))
                  if not p.name.startswith("_"))
 
 

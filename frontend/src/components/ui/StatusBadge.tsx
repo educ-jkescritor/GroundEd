@@ -1,13 +1,16 @@
 import { CircleCheck, CircleHelp, Clock, OctagonAlert, TrendingDown, type LucideIcon } from "lucide-react";
 import type { FindingStatus } from "../../types";
 
-// DESIGN.md §5: fixed meaning, always icon + label, never colour alone.
-export const STATUS_META: Record<FindingStatus, { label: string; icon: LucideIcon; text: string; bg: string; hl: string }> = {
-  eol: { label: "End-of-life", icon: OctagonAlert, text: "text-eol", bg: "bg-eol-soft", hl: "bg-eol-soft decoration-eol" },
-  nearing_eol: { label: "Nearing end-of-life", icon: Clock, text: "text-nearing", bg: "bg-nearing-soft", hl: "bg-nearing-soft decoration-nearing" },
-  less_used: { label: "Less used in industry", icon: TrendingDown, text: "text-declining", bg: "bg-declining-soft", hl: "bg-declining-soft decoration-declining" },
-  supported: { label: "Supported", icon: CircleCheck, text: "text-supported", bg: "bg-supported-soft", hl: "bg-supported-soft decoration-supported" },
-  unverified: { label: "Unverified", icon: CircleHelp, text: "text-unverified", bg: "bg-unverified-soft", hl: "bg-unverified-soft decoration-unverified" },
+/**
+ * Status (end-of-life, supported…). Neutral by design (DESIGN.md §5): red/amber/green belong to PRIORITY only,
+ * so a colour never means two things. Status is told by its icon and words.
+ */
+export const STATUS_META: Record<FindingStatus, { label: string; icon: LucideIcon }> = {
+  eol: { label: "End-of-life", icon: OctagonAlert },
+  nearing_eol: { label: "Nearing end-of-life", icon: Clock },
+  less_used: { label: "Less used in industry", icon: TrendingDown },
+  supported: { label: "Supported", icon: CircleCheck },
+  unverified: { label: "Unverified", icon: CircleHelp },
 };
 
 export function StatusBadge({ status, compact = false }: { status: FindingStatus; compact?: boolean }) {
@@ -15,7 +18,7 @@ export function StatusBadge({ status, compact = false }: { status: FindingStatus
   const Icon = meta.icon;
   return (
     <span
-      className={`inline-flex shrink-0 items-center gap-1.5 rounded-full font-semibold ${meta.bg} ${meta.text} ${
+      className={`inline-flex shrink-0 items-center gap-1.5 rounded-full border border-line bg-surface font-semibold text-ink-muted ${
         compact ? "px-2 py-0.5 text-[11px]" : "px-2.5 py-1 text-xs"
       }`}
     >

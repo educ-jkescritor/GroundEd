@@ -81,3 +81,47 @@ export function sourceHost(url: string): string {
     return url;
   }
 }
+
+export type Tone = Priority | "unverified";
+
+/** The finding's colour tone: its priority, or "unverified" when there's no source (never scored). */
+export function toneOf(f: Finding): Tone {
+  return priorityOf(f.score) ?? "unverified";
+}
+
+/** Highlight styles on the document, per tone (same red/amber/green as the priority tags). */
+export const TONE_HIGHLIGHT: Record<Tone, string> = {
+  high: "bg-high/15 decoration-high",
+  medium: "bg-medium/15 decoration-medium",
+  low: "bg-low/15 decoration-low",
+  unverified: "bg-unverified/10 decoration-unverified",
+};
+
+/** Overlay boxes drawn on the PDF, per tone. */
+export const TONE_BOX: Record<Tone, string> = {
+  high: "bg-high/20 border-high",
+  medium: "bg-medium/20 border-medium",
+  low: "bg-low/20 border-low",
+  unverified: "bg-unverified/15 border-unverified",
+};
+
+const yearOf = (iso?: string | null) => (iso ? new Date(iso).getFullYear() : null);
+
+/**
+ * One plain-language sentence for the collapsed card: why it matters + how the module uses it.
+ * e.g. "No longer supported since 2015. Students write it in lab code."
+ */
+export function verdict(f: Finding): string {
+  const y = yearOf(f.lifecycle?.eol_date);
+  const why =
+    f.status === "eol" ? (y ? `No longer supported since ${y}.` : "No longer supported.")
+    : f.status === "nearing_eol" ? (f.lifecycle?.eol_date ? `Support ends ${formatDate(f.lifecycle.eol_date)}.` : "Support is ending soon.")
+    : f.status === "less_used" ? "Still supported, but used less in industry."
+    : f.status === "supported" ? "Currently supported."
+    : "No trusted source found, so GroundEd doesn't guess.";
+  const how =
+    f.usage === "code" ? (f.hands_on ? " Students write it in lab code." : " Students write it in code.")
+    : f.usage === "explained" ? " Explained in the module."
+    : f.usage === "listed" ? " Only listed." : "";
+  return why + how;
+}

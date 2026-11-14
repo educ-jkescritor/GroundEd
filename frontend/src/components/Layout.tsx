@@ -29,7 +29,7 @@ function ScrollManager() {
 }
 
 /** Signed-in account menu: name ▾ → My reports, Sign out. */
-function AccountMenu({ name }: { name: string }) {
+export function AccountMenu({ name }: { name: string }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();

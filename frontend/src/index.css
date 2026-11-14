@@ -37,6 +37,17 @@
   --color-unverified: #475467;
   --color-unverified-soft: #f2f4f7;
 
+  /* Priority (DESIGN.md §5): the only red/amber/green in the app. Always with an icon and a word. */
+  --color-high: #b42318;
+  --color-high-soft: #fef3f2;
+  --color-high-line: #fda29b;
+  --color-medium: #b54708;
+  --color-medium-soft: #fffaeb;
+  --color-medium-line: #fec84b;
+  --color-low: #067647;
+  --color-low-soft: #ecfdf3;
+  --color-low-line: #75e0a7;
+
   /* AI-generated (unsourced) content */
   --color-ai: #6941c6;
   --color-ai-soft: #f4f3ff;

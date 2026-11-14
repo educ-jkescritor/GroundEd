@@ -119,23 +119,32 @@ All text pairs below are checked against WCAG 2.2 AA (≥ 4.5:1 for text; ≥ 3:
 > **Rule:** clay and moss are brand decoration. They **never** carry meaning (status, priority, errors),
 > so they can't be confused with "nearing end-of-life" amber or "supported" green.
 
-### Status (fixed meaning; always icon + label, never colour alone)
-| Status | Text token | Background token | Icon (lucide) | Contrast |
-|---|---|---|---|---|
-| End-of-life | `eol` `#B42318` | `eol-soft` `#FEF3F2` | `OctagonAlert` | 6.1 |
-| Nearing end-of-life | `nearing` `#B54708` | `nearing-soft` `#FFFAEB` | `Clock` | 5.2 |
-| Supported | `supported` `#067647` | `supported-soft` `#ECFDF3` | `CircleCheck` | 5.4 |
-| Less used in industry | `declining` `#3E5372` | `declining-soft` `#EEF2F7` | `TrendingDown` | 7.0 |
-| Unverified | `unverified` `#475467` | `unverified-soft` `#F2F4F7` | `CircleHelp` | 7.0 |
-| AI suggestion | `ai` `#6941C6` | `ai-soft` `#F4F3FF` + dashed `#B9A6EC` border | `Sparkles` | 6.0 |
+### Status (neutral; told by icon and words)
+Status is **not colour-coded**, so red/amber/green mean only one thing: priority. Status badges are neutral
+(`surface` background, `line` border, `ink-muted` text) with an icon, and the results page states status in a
+plain-language verdict instead ("No longer supported since 2015.").
 
-### Priority (a ranking, not a status)
-Uses the neutral ink scale, never status colours:
-- **High:** solid `ink`, white text
-- **Medium:** `ink` outline
-- **Low:** `line` outline, `ink-muted` text
+| Status | Icon (lucide) |
+|---|---|
+| End-of-life | `OctagonAlert` |
+| Nearing end-of-life | `Clock` |
+| Less used in industry | `TrendingDown` |
+| Supported | `CircleCheck` |
+| Unverified | `CircleHelp` |
+| AI suggestion (not a status) | `Sparkles`, `ai` `#6941C6` on `ai-soft` `#F4F3FF`, dashed `#B9A6EC` border |
 
-Thresholds come from the backend (`score.priority`: High ≥ 80, Medium ≥ 50, else Low). Supported items show "No action needed" instead.
+### Priority (the only red / amber / green)
+| Priority | Tag | Tokens (text · background · border) | Used on |
+|---|---|---|---|
+| High (80–100) | ▲ High | `high` #B42318 · `high-soft` · `high-line` | Tag, summary bar, document highlight |
+| Medium (50–79) | ● Medium | `medium` #B54708 · `medium-soft` · `medium-line` | Same |
+| Low (under 50) | ▼ Low | `low` #067647 · `low-soft` · `low-line` | Same |
+| Unverified (no source, never scored) | ? Unverified | `unverified` · `unverified-soft` · `line` | Same |
+| Decided (Updated / Kept / Dismissed) | ✓ + word | `lapis-deep` text | Card meta, progress bar |
+
+- Colour goes on the **tags only** (plus the summary bar and document highlights), **not** on card edges.
+- Every tag has an icon and a word, so colour is never the only cue.
+- Thresholds come from the backend (`score.priority`).
 
 ## 6. Typography
 
@@ -179,15 +188,27 @@ Thresholds come from the backend (`score.priority`: High ≥ 80, Medium ≥ 50, 
 - **App shell:**
   - **Floating pill header:** sticky, 12 px from the top, `full` radius, white at 85% with a backdrop blur, elevation 2. It holds: logo · How it works · Reports · Feedback, then Sign in · **Analyze a module** (the only filled button).
   - White canvas; footer with Methodology, Sources, GitHub, Feedback.
-- **Report (side by side, the originality-checker pattern):**
-  - Header band (`panel`): module name, "as of" date, headline, priority counts, Export.
-  - **Left (≈ 60%): the module.** Pages scroll, with findings highlighted where they appear.
-  - **Right (≈ 40%, min 380 px, sticky): the ranked findings panel.** Filters at top; findings sorted by priority.
-  - **Sync both ways:** clicking a highlight selects and expands that finding on the right; clicking a finding scrolls the module to its highlight.
-  - **Expanded finding (in the panel):** both quotes (module and source), status and priority, decision control, "Open full detail →".
-  - Supported items collapsed at the bottom of the panel.
-  - **Below `lg` (1024 px):** the module column is hidden; the panel becomes a full-width list with "View in module" links.
-  - **Fallback:** if page positions aren't available, the left side shows each page's text with highlights found by matching the quote.
+- **Results workspace (`/reports/:id`, the originality-checker pattern).** No site navigation and no footer:
+  the page is a full-height workspace; **only the two panes scroll**, never the page.
+  - **Top bar:** Horizon mark (home) · module name (serif) with pages and analysis date · **+ New analysis**
+    (back to upload) · **Download ▾** (Report as PDF, Copy as Markdown) · **Details** (how the report was made,
+    in plain language, as a modal) · account menu or Sign in.
+  - **Left (≈ 55%): the real PDF**, rendered with PDF.js (loaded only on this page), with page arrows, zoom and
+    Fit. Finding boxes come from the backend's citation `bbox`, tinted by priority; the selected one gets a
+    lapis outline. Uploaded files are kept only in the tab's memory (the backend deletes uploads); after a reload,
+    or if the PDF fails, the pane falls back to the extracted page text with highlights.
+  - **Right (≈ 45%, min 400 px):** main result (headline, priority bar, priority tags, "n of m decided" progress)
+    → tabs **Findings | Sources** → the scrolling list.
+  - **Sync:** clicking a finding expands it and scrolls the document pane to its box; clicking a box selects and
+    scrolls to its card. Saving a decision opens the next finding to review.
+  - **Below `lg` (1024 px):** a Findings / Document switch shows one pane at a time.
+- **Finding card.** Collapsed: name · priority tag · one-line verdict ("No longer supported since 2015. Students
+  write it in code.") · pages · decision state. Expanded, in this order: ① In your module (quote, page, Show in
+  document) ② Why it may need updating (source's exact sentence, publisher, link) ③ What to use instead
+  (replacement, Draft updated wording) ④ Your decision; then a folded "Why is this … priority?" with the score.
+  Not shown on cards: kind tags, score number, provenance, library passages (those go to Sources / Details).
+- **Sources tab:** a bibliography: each source with type in words (Support data / Official documentation),
+  publisher, saved date, the findings it backs, and a link.
 - **Finding detail (full page, for deep review):**
   - Wide screens: two columns, *In your module* (quote, page, view in module) and *Source* (tier, publisher, passage, dates, link).
   - Below them: Why this priority (score), Help (upgrade / AI draft), Decision, with Previous / Next finding.

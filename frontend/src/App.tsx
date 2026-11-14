@@ -19,11 +19,12 @@ function LegacyResults() {
 export default function App() {
   return (
     <Routes>
+      {/* The results workspace has its own top bar instead of the site navigation (DESIGN.md §7). */}
+      <Route path="/reports/:id" element={<Report />} />
       <Route element={<Layout />}>
         <Route path="/" element={<Landing />} />
         <Route path="/analyze" element={<Analyze />} />
         <Route path="/reports" element={<Reports />} />
-        <Route path="/reports/:id" element={<Report />} />
         <Route path="/reports/:id/findings/:fid" element={<FindingDetail />} />
         <Route path="/results/:id" element={<LegacyResults />} />
         <Route path="/sign-in" element={<SignIn />} />

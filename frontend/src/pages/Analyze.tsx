@@ -9,6 +9,7 @@ import { Panel } from "../components/ui/Card";
 import { Notice } from "../components/ui/Notice";
 import { ProgressSteps, type StepState } from "../components/ui/ProgressSteps";
 import { usePageTitle } from "../lib/usePageTitle";
+import { rememberFile } from "../lib/fileStore";
 
 const MAX_MB = 10;
 const STEPS = ["Reading the module", "Finding technologies and practices", "Checking sources", "Scoring priorities"];
@@ -76,7 +77,11 @@ export default function Analyze() {
       setError({ title: "That file is too large", body: `Please choose a PDF up to ${MAX_MB} MB.` });
       return;
     }
-    run(file.name, () => api.analyzeFile(file));
+    run(file.name, async () => {
+      const analysis = await api.analyzeFile(file);
+      rememberFile(analysis.id, file); // keep the real PDF for the results page's viewer
+      return analysis;
+    });
   }
 
   function onDrop(e: DragEvent) {
