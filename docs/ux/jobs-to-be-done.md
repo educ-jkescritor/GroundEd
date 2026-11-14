@@ -24,10 +24,10 @@ A "job" is the progress a person is trying to make, written as:
 | 9 | I'm studying from a tech module | check whether what it teaches is still current, in plain language | know what to learn on top of it | Student |
 | 10 | I upload a module outside tech courses (e.g. GED) | be told clearly that it isn't covered yet | not get misleading results | Everyone |
 
-## How the "Turnitin pattern" maps to these jobs
-| Familiar step (originality checkers) | GroundEd equivalent | Jobs served |
+## How the side-by-side document review pattern maps to these jobs
+| Review step | GroundEd workflow | Jobs served |
 |---|---|---|
-| Upload a paper | Upload a module PDF (or pick a sample) | 7 |
+| Upload a document | Upload a module PDF (or pick a sample) | 7 |
 | Wait while it's checked | Progress steps: reading → detecting → checking sources → scoring | — |
 | Report with one headline summary | Headline: "N items may warrant review (H high · M medium · L low)" | 1, 6 |
 | Document view with coloured highlights | Module pages with highlighted quotes, coloured by priority | 1, 2 |
@@ -37,7 +37,7 @@ A "job" is the progress a person is trying to make, written as:
 
 **Scope:** technology-related courses only; general education (GED) courses are not covered yet (job 10).
 
-**Important difference:** originality checkers often *judge* a student. GroundEd *advises* a colleague.
+**Advisory posture:** GroundEd *advises* a colleague rather than grading or judging a document.
 So there's no blame language, no single "bad" percentage, and the faculty always has the last word.
 
 ## Success measures (to test in Phase 7)

@@ -10,7 +10,7 @@
 | Primary user | **Course instructor** revising their own module. The main flow is optimised for them. |
 | Who can use it | **Anyone** who wants to check a module for outdated information: instructors (including IT instructors), reviewers, instructional designers, **students**. No role restrictions or separate modes. |
 | Course scope | **Technology-related courses only** (e.g. IT, CS, IS, web development and related subjects). **General education (GED) courses are not in scope yet.** Out-of-scope modules get a clear "not covered yet" message, not invented findings. |
-| Mental model | **"Like Turnitin, but for currency."** Faculty already know the pattern: upload a document → get a report → see highlights in the document with their sources beside them. We reuse this *interaction pattern*, not Turnitin's look, wording or branding. |
+| Mental model | **Side-by-side document and evidence review.** Faculty recognize the pattern: upload a document → get a report → see highlights in the document with their sources beside them. |
 | Devices | **Laptop/desktop first** (1280 px and up, side-by-side evidence). Phones get a readable stacked layout. |
 | Language | **English only** UI, in plain international English. Uploaded modules may contain other languages (e.g. Filipino). |
 
@@ -26,7 +26,7 @@
 |---|---|
 | **Teaches** | 3–4 sections a term: Web Systems & Technologies, Integrative Programming |
 | **Experience** | 8 years teaching; strong in fundamentals, less time to follow every framework release *(assumption)* |
-| **Tools they already use** | Turnitin or similar checkers, Google Classroom / Canvas / Moodle, Word/Google Docs, PDF modules *(assumption)* |
+| **Tools they already use** | Document review tools, Google Classroom / Canvas / Moodle, Word/Google Docs, PDF modules *(assumption)* |
 | **Device** | Faculty-room laptop or home laptop, sometimes slow internet |
 | **When they'd use GroundEd** | 1–3 weeks before a term, while updating the module; when a department asks for a curriculum revision |
 
