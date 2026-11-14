@@ -5,6 +5,7 @@
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-serif: "Source Serif 4", ui-serif, Georgia, serif; /* ONLY for text quoted from a module or source */
   --font-mono: "JetBrains Mono", ui-monospace, monospace;
+  --font-display: "Inter", ui-sans-serif, system-ui, sans-serif; /* headings; see DESIGN.md §6 */
 
   /* Neutrals: white canvas with soft grey panels */
   --color-canvas: #ffffff;
@@ -52,6 +53,8 @@
 @layer base {
   html {
     -webkit-font-smoothing: antialiased;
+    font-size: 17px; /* base text size (DESIGN.md §6); every rem-based size scales from this */
+    scrollbar-gutter: stable; /* reserve the scrollbar's space so the centred header never shifts between pages */
   }
   body {
     @apply bg-canvas font-sans text-ink leading-relaxed;
@@ -59,7 +62,8 @@
   h1,
   h2,
   h3 {
-    @apply font-sans font-bold text-balance;
+    font-family: var(--font-display);
+    @apply font-bold text-balance;
     letter-spacing: -0.02em;
   }
   a {

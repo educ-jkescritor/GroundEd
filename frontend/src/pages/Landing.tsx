@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { BookOpenCheck, Gauge, Hand, Link2, ShieldQuestion, Upload, FileSearch, UserCheck, MessageSquare } from "lucide-react";
+import { BookOpenCheck, Gauge, Hand, Link2, ShieldQuestion, MessageSquare } from "lucide-react";
 import { ButtonLink } from "../components/ui/Button";
 import { Panel } from "../components/ui/Card";
 import { HorizonBand } from "../components/ui/HorizonBand";
@@ -8,18 +8,16 @@ import { ProgressSteps } from "../components/ui/ProgressSteps";
 import { QuoteBlock } from "../components/ui/QuoteBlock";
 import { Sprout } from "../components/ui/Sprout";
 import { StatusBadge } from "../components/ui/StatusBadge";
-import { DecisionControl } from "../components/ui/DecisionControl";
 import { BrowserFrame, DecisionPreview, ReportPreview } from "../components/ProductPreview";
-import type { Decision } from "../lib/decisions";
 import { usePageTitle } from "../lib/usePageTitle";
 
 const section = "mx-auto max-w-6xl px-4 sm:px-6";
 const sectionTitle = "text-[32px] leading-[1.1] tracking-[-0.03em] sm:text-[44px]";
 
 const steps = [
-  { icon: Upload, title: "Upload a module", body: "A syllabus, module or lesson guide as a PDF. Or start with a sample; no account needed." },
-  { icon: FileSearch, title: "Check the evidence", body: "Each finding shows the quote from your module beside the trusted source behind it." },
-  { icon: UserCheck, title: "Decide what to update", body: "Update, keep it on purpose, or dismiss it. Export a report for your chair." },
+  { title: "Upload a module", body: "A syllabus, module or lesson guide as a PDF. Or start with a sample; no account needed." },
+  { title: "Check the evidence", body: "Each finding shows the quote from your module beside the trusted source behind it." },
+  { title: "Decide what to update", body: "Update, keep it on purpose, or dismiss it. Export a report for your chair." },
 ];
 
 const principles = [
@@ -32,7 +30,6 @@ const principles = [
 export default function Landing() {
   usePageTitle();
   const [tab, setTab] = useState<"review" | "decide">("review");
-  const [demoDecision, setDemoDecision] = useState<Decision | undefined>();
 
   return (
     <div className="space-y-24 pb-8 md:space-y-[120px]">
@@ -144,9 +141,20 @@ export default function Landing() {
             </div>
           </Panel>
           <Panel label="Your call" title="You decide what changes">
-            <div className="rounded-[var(--radius-card)] bg-surface p-5">
-              <DecisionControl compact decision={demoDecision} onSave={setDemoDecision} onUndo={() => setDemoDecision(undefined)} />
-              <p className="mt-3 text-xs text-ink-subtle">Try it: this example isn't saved anywhere.</p>
+            {/* Illustration only: not interactive (landing cards are never clickable). */}
+            <div className="space-y-3 rounded-[var(--radius-card)] bg-surface p-5" aria-hidden>
+              <div className="flex flex-wrap gap-2 text-sm font-semibold">
+                <span className="inline-flex items-center gap-2 rounded-[var(--radius-control)] border border-lapis bg-sky px-3 py-1.5 text-lapis-deep">
+                  <span className="h-3 w-3 rounded-full border-[4px] border-lapis" /> Update
+                </span>
+                <span className="inline-flex items-center gap-2 rounded-[var(--radius-control)] border border-line px-3 py-1.5">
+                  <span className="h-3 w-3 rounded-full border-2 border-ink-subtle" /> Keep intentionally
+                </span>
+                <span className="inline-flex items-center gap-2 rounded-[var(--radius-control)] border border-line px-3 py-1.5">
+                  <span className="h-3 w-3 rounded-full border-2 border-ink-subtle" /> Dismiss
+                </span>
+              </div>
+              <p className="rounded-[var(--radius-control)] border border-line px-3 py-2 text-sm text-ink-subtle">Why? Students still maintain legacy systems</p>
             </div>
           </Panel>
         </div>
@@ -191,18 +199,15 @@ export default function Landing() {
         <h2 className={`${sectionTitle} text-center`}>How it works</h2>
         <ol className="grid gap-5 md:grid-cols-3">
           {steps.map((s, i) => (
-            <li
-              key={s.title}
-              className={`space-y-4 rounded-[var(--radius-panel)] p-6 ${i === 0 ? "bg-lapis text-white" : "bg-panel"}`}
-            >
-              <div className="flex items-center gap-3">
-                <span className={`flex h-9 w-9 items-center justify-center rounded-full font-bold ${i === 0 ? "bg-white text-lapis" : "bg-surface text-ink"}`}>
-                  {i + 1}
-                </span>
-                <s.icon size={20} aria-hidden className={i === 0 ? "text-white/85" : "text-ink-subtle"} />
-              </div>
-              <h3 className="text-xl">{s.title}</h3>
-              <p className={i === 0 ? "text-white/90" : "text-ink-muted"}>{s.body}</p>
+            <li key={s.title} className="space-y-4 rounded-[var(--radius-panel)] bg-panel p-6">
+              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-lapis text-lg font-bold text-white" aria-hidden>
+                {i + 1}
+              </span>
+              <h3 className="text-xl">
+                <span className="sr-only">Step {i + 1}: </span>
+                {s.title}
+              </h3>
+              <p className="text-ink-muted">{s.body}</p>
             </li>
           ))}
         </ol>
@@ -228,15 +233,13 @@ export default function Landing() {
 
       {/* 7 · Voices: real quotes only. Until we have consented quotes, show how it was validated. */}
       <section className={section}>
-        <Panel className="grid gap-6 md:grid-cols-[auto_1fr_auto] md:items-center">
+        <Panel className="flex flex-col items-center gap-4 px-6 py-12 text-center">
           <span className="flex h-12 w-12 items-center justify-center rounded-full bg-surface text-lapis"><MessageSquare size={22} aria-hidden /></span>
-          <div className="space-y-1">
-            <h2 className="text-2xl">Shaped by educators</h2>
-            <p className="text-ink-muted">
-              The problem was validated with IT faculty in the Philippines, and we're now testing with educators in
-              more countries. Tried GroundEd? Your feedback directly shapes what we build next.
-            </p>
-          </div>
+          <h2 className="text-[28px]">Shaped by educators</h2>
+          <p className="max-w-xl text-ink-muted">
+            The problem was validated with IT faculty in the Philippines, and we're now testing with educators in more
+            countries. Tried GroundEd? Your feedback directly shapes what we build next.
+          </p>
           <ButtonLink to="/feedback" variant="secondary">Share feedback</ButtonLink>
         </Panel>
       </section>
@@ -252,13 +255,17 @@ export default function Landing() {
             <ButtonLink to="/methodology" variant="ghost">How GroundEd works →</ButtonLink>
           </div>
         </div>
-        <div className="mx-auto max-w-4xl" aria-hidden>
-          <div className="rounded-t-[20px] border-[10px] border-b-0 border-ink bg-ink">
-            <div className="overflow-hidden rounded-t-[8px]">
-              <ReportPreview />
+        {/* Laptop: 16:10 screen in a bezel, on a base with a hinge notch. Illustration only. */}
+        <div className="mx-auto max-w-4xl px-4" aria-hidden>
+          <div className="rounded-[22px] bg-ink p-[12px] pb-[18px] shadow-[var(--shadow-float)]">
+            <div className="mx-auto mb-2 h-1.5 w-1.5 rounded-full bg-[#3a4560]" />
+            <div className="aspect-[16/10] overflow-hidden rounded-[6px] bg-canvas">
+              <ReportPreview tall />
             </div>
           </div>
-          <div className="mx-auto h-3 w-[104%] -translate-x-[2%] rounded-b-[14px] bg-gradient-to-b from-[#c9ced8] to-[#aeb4c0]" />
+          <div className="relative mx-auto h-4 w-[112%] -translate-x-[5.4%] rounded-b-[18px] bg-gradient-to-b from-[#d6dae2] to-[#aeb4c0]">
+            <div className="absolute left-1/2 top-0 h-1.5 w-28 -translate-x-1/2 rounded-b-[8px] bg-[#9aa1ae]" />
+          </div>
         </div>
       </section>
     </div>

@@ -13,12 +13,30 @@ export default function Reports() {
   const reports = useStored(listReports);
   const user = useStored(getDemoUser);
 
+  if (!user) {
+    return (
+      <Page narrow>
+        <Panel className="space-y-4 text-center">
+          <h1 className="text-2xl">Sign in to see your reports</h1>
+          <p className="text-ink-muted">
+            You don't need an account to analyze a module. Signing in keeps a list of the reports you open, so you can
+            come back to them.
+          </p>
+          <div className="flex flex-wrap justify-center gap-3">
+            <ButtonLink to="/sign-in">Sign in</ButtonLink>
+            <ButtonLink to="/analyze" variant="secondary">Analyze a module</ButtonLink>
+          </div>
+        </Panel>
+      </Page>
+    );
+  }
+
   return (
     <Page narrow>
       <div className="space-y-2">
-        <h1 className="text-[32px]">Reports</h1>
+        <h1 className="text-[32px]">My reports</h1>
         <p className="text-ink-muted">
-          {user ? `Signed in as ${user.name} (demo). ` : ""}Reports you've opened are saved in this browser.
+          Signed in as {user.name} (demo account). Reports you open are saved in this browser.
         </p>
       </div>
 

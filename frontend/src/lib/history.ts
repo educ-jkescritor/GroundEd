@@ -41,7 +41,9 @@ export function listReports(): ReportEntry[] {
   return read<ReportEntry[]>(REPORTS_KEY, []);
 }
 
+/** Saves a report to "My reports". Only when signed in: signed-out visitors' reports aren't kept. */
 export function recordReport(a: Analysis) {
+  if (!getDemoUser()) return;
   const entry: ReportEntry = {
     id: a.id,
     filename: a.source.filename,
@@ -58,7 +60,11 @@ export interface DemoUser {
 
 export const getDemoUser = () => read<DemoUser | null>(USER_KEY, null);
 export const signInDemo = () => write(USER_KEY, { name: "Demo Faculty" } satisfies DemoUser);
-export const signOutDemo = () => write(USER_KEY, null);
+/** Signing out also forgets the demo account's report list (it lives only in this browser). */
+export const signOutDemo = () => {
+  write(USER_KEY, null);
+  write(REPORTS_KEY, null);
+};
 
 /** Re-render when history or the demo user changes (in this tab). */
 export function useStored<T>(get: () => T): T {

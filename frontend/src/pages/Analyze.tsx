@@ -41,9 +41,6 @@ export default function Analyze() {
     api.samples()
       .then((list) => {
         setSamples(list);
-        if (window.location.hash === "#samples") {
-          requestAnimationFrame(() => document.getElementById("samples")?.scrollIntoView({ behavior: "smooth" }));
-        }
       })
       .catch((e) => setError(friendlyError(e)));
   }, []);

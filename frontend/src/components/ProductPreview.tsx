@@ -20,8 +20,12 @@ export function BrowserFrame({ url, children }: { url: string; children: ReactNo
 
 const hl = "rounded-[3px] px-0.5 underline decoration-2 underline-offset-[3px]";
 
-/** Static example of the Report (module + ranked findings). Example content, not a real analysis. */
-export function ReportPreview() {
+/**
+ * Static example of the Report (module + ranked findings). Example content, not a real analysis.
+ * `tall` fills a 16:10 screen (the laptop shot): adds the report header, a second page and more findings.
+ */
+export function ReportPreview({ tall = false }: { tall?: boolean }) {
+  if (tall) return <ReportPreviewTall />;
   return (
     <div className="grid gap-4 bg-canvas p-4 text-left text-sm md:grid-cols-[1.4fr_1fr] sm:p-5">
       <div className="space-y-3 rounded-[var(--radius-card)] border border-line p-4">
@@ -58,6 +62,63 @@ export function ReportPreview() {
             <PriorityBadge priority={r.p} short />
           </div>
         ))}
+      </div>
+    </div>
+  );
+}
+
+function ReportPreviewTall() {
+  const rows = [
+    { name: "PHP 5.6", status: "eol" as const, p: "medium" as const },
+    { name: "AngularJS 1.x", status: "eol" as const, p: "low" as const },
+    { name: "Bootstrap 3", status: "eol" as const, p: "low" as const },
+    { name: "Node.js 22", status: "nearing_eol" as const, p: "low" as const },
+    { name: "Table-based layouts", status: "less_used" as const, p: "low" as const },
+  ];
+  return (
+    <div className="flex h-full flex-col gap-3 bg-canvas p-4 text-left text-[11px] leading-snug sm:text-xs">
+      {/* Mini header band */}
+      <div className="flex items-center gap-3 rounded-[12px] bg-panel px-4 py-3">
+        <div className="flex-1">
+          <p className="text-[10px] text-ink-subtle">Web Systems and Technologies.pdf · 5 pages · As of 14 Nov 2026</p>
+          <p className="text-sm font-bold sm:text-base">7 findings may warrant review</p>
+        </div>
+        <PriorityBadge priority="high" count={1} />
+        <PriorityBadge priority="medium" count={1} />
+        <PriorityBadge priority="low" count={4} />
+      </div>
+      <div className="grid min-h-0 flex-1 grid-cols-[1.35fr_1fr] gap-3">
+        {/* Module pages */}
+        <div className="space-y-2.5 overflow-hidden">
+          {[
+            { n: 2, title: "Weeks 1 to 3: Server-side programming", body: <><span className={`${hl} bg-eol-soft decoration-eol`}>All laboratory exercises use PHP 5.6</span> running on a local XAMPP server.</> },
+            { n: 4, title: "Lab 3: Database connectivity", body: <><span className={`${hl} bg-eol-soft decoration-eol outline-2 outline-offset-1 outline-lapis`}>Connect to the database using mysql_connect()</span> and display the results in an HTML table. Activity: use <span className={`${hl} bg-declining-soft decoration-declining`}>table-based layouts</span>.</> },
+            { n: 5, title: "Week 8: Modern tooling preview", body: <>Students install <span className={`${hl} bg-nearing-soft decoration-nearing`}>Node.js 22</span> to run build tools; the final project is built with React.</> },
+          ].map((p) => (
+            <div key={p.n} className="space-y-1 rounded-[10px] border border-line p-3">
+              <p className="text-[9px] font-semibold uppercase tracking-[0.06em] text-ink-subtle">Page {p.n}</p>
+              <p className="font-semibold">{p.title}</p>
+              <p className="text-ink-muted">{p.body}</p>
+            </div>
+          ))}
+        </div>
+        {/* Ranked findings */}
+        <div className="space-y-2 overflow-hidden">
+          <div className="space-y-1.5 rounded-[10px] border border-lapis p-2.5 shadow-[0_0_0_1px_var(--color-lapis)]">
+            <div className="flex items-center gap-2">
+              <span className="flex-1 font-semibold">mysql_connect()</span>
+              <PriorityBadge priority="high" short />
+            </div>
+            <StatusBadge status="eol" compact />
+            <p className="border-l-2 border-lapis pl-2 font-serif italic">“The original MySQL extension was removed in PHP 7.0.0.”</p>
+          </div>
+          {rows.map((r) => (
+            <div key={r.name} className="flex items-center gap-1.5 rounded-[10px] border border-line px-2.5 py-2">
+              <span className="flex-1 truncate font-semibold">{r.name}</span>
+              <StatusBadge status={r.status} compact />
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );

@@ -1,5 +1,3 @@
-import { useEffect } from "react";
-import { useLocation } from "react-router-dom";
 import { BookOpen, CheckCheck, Database, Library, Scale, ShieldQuestion } from "lucide-react";
 import { Page } from "../components/Layout";
 import { ButtonLink } from "../components/ui/Button";
@@ -41,10 +39,6 @@ const steps = [
 
 export default function Methodology() {
   usePageTitle("How GroundEd works");
-  const { hash } = useLocation();
-  useEffect(() => {
-    if (hash) requestAnimationFrame(() => document.getElementById(hash.slice(1))?.scrollIntoView({ behavior: "smooth" }));
-  }, [hash]);
 
   return (
     <Page narrow>

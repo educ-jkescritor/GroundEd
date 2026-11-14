@@ -14,7 +14,8 @@ import { Sprout } from "../components/ui/Sprout";
 import { useDecisions } from "../lib/decisions";
 import { needsReview, priorityCounts } from "../lib/findings";
 import { formatDate } from "../lib/format";
-import { recordReport } from "../lib/history";
+import { getDemoUser, recordReport, useStored } from "../lib/history";
+import { Link } from "react-router-dom";
 import { usePageTitle } from "../lib/usePageTitle";
 import NotFound from "./NotFound";
 
@@ -26,6 +27,7 @@ export default function Report() {
   const [selection, setSelection] = useState<{ id: string | null; from: "module" | "panel" }>({ id: null, from: "panel" });
   const selectedId = selection.id;
   const { decisions, decide, undo } = useDecisions(id);
+  const user = useStored(getDemoUser);
   usePageTitle(analysis ? analysis.source.filename : "Report");
 
   useEffect(() => {
@@ -106,6 +108,11 @@ export default function Report() {
               {counts.medium > 0 && <PriorityBadge priority="medium" count={counts.medium} />}
               {counts.low > 0 && <PriorityBadge priority="low" count={counts.low} />}
               <span className="ml-1">· {decided} of {review.length} decided</span>
+              {!user && (
+                <span className="ml-auto text-xs text-ink-subtle">
+                  <Link to="/sign-in">Sign in</Link> to keep this report in My reports.
+                </span>
+              )}
             </div>
           </header>
 

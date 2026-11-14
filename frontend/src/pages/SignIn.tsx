@@ -23,11 +23,12 @@ export default function SignIn() {
     try {
       // Give the demo account a couple of sample reports to explore.
       const samples = await api.samples();
-      for (const s of samples.slice(0, 2)) recordReport(await api.analyzeSample(s.id));
       signInDemo();
+      for (const s of samples.slice(0, 2)) recordReport(await api.analyzeSample(s.id));
       navigate("/reports");
     } catch (e) {
-      setError(errorMessage(e));
+      signOutDemo();
+      setError(`${errorMessage(e)} Is the GroundEd backend running?`);
     } finally {
       setBusy(false);
     }
