@@ -113,3 +113,8 @@ def test_supported_versions_are_listed_as_checked_without_score(tmp_path):
     assert f.lifecycle.source_name == "endoflife.date" and f.citations
     assert a.summary.supported == 1 and a.summary.eol == 0
 
+
+def test_version_shows_what_the_module_wrote_and_lifecycle_names_the_checked_release(tmp_path):
+    a = analyze(_pdf(tmp_path, "Requires PHP5 or later"), "m.pdf", today=TODAY, use_cache=False)
+    f = next(x for x in a.findings if x.id == "php-5.6")
+    assert f.version == "5" and f.lifecycle.cycle == "5.6"
