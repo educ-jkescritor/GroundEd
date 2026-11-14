@@ -6,7 +6,6 @@ If the API is unreachable, a stale cached copy is used; with no cache, the item 
 from __future__ import annotations
 
 import json
-import re
 import time
 from dataclasses import dataclass
 from typing import Optional
@@ -92,19 +91,6 @@ def find_release(data: ProductData, cycle: str) -> Optional[Release]:
         if r.name.startswith(cycle + "-"):
             return r
     return None
-
-
-def _major(name: str) -> Optional[int]:
-    m = re.match(r"(\d+)", name)
-    return int(m.group(1)) if m else None
-
-
-def majors_behind(data: ProductData, release: Release) -> int:
-    """Number of distinct newer major versions listed for the product."""
-    mine = _major(release.name)
-    if mine is None:
-        return 0
-    return len({m for r in data.releases if (m := _major(r.name)) is not None and m > mine})
 
 
 def latest_label(data: ProductData) -> Optional[str]:

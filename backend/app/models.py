@@ -38,6 +38,7 @@ class ScorePart(BaseModel):
 class Score(BaseModel):
     total: int
     max: int = 100
+    priority: Optional[Literal["high", "medium", "low"]] = None  # high >= 80, medium >= 50, else low
     breakdown: list[ScorePart]
 
 
@@ -77,6 +78,7 @@ class Provenance(BaseModel):
     registry_version: str  # hash of backend/registry/*.yaml
     pipeline_version: str
     detector: str  # e.g. "registry" or "registry+gemini-2.5-flash"
+    rules_version: Optional[str] = None  # hash of backend/rules/teaching.yaml (scoring signals)
     eol_data: dict[str, str] = {}  # endoflife.date product -> last_modified of the data used
     analysis_date: str  # ISO date used for "time past EOL" and status
 
