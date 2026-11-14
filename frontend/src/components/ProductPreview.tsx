@@ -186,12 +186,15 @@ export function ReportPreview() {
                 <p className="text-[11px] text-ink-muted">Most important first.</p>
               </div>
               <div className="text-right">
-                <p className="font-display text-2xl leading-none text-lapis-deep">0%</p>
-                <p className="text-[10px] font-semibold uppercase tracking-[0.06em] text-ink-subtle">reviewed</p>
+                <p className="font-display text-2xl leading-none text-high">66%</p>
+                <p className="text-[10px] font-semibold uppercase tracking-[0.06em] text-ink-subtle">outdated</p>
               </div>
             </div>
             <div className="flex flex-wrap gap-1.5">
-              <span className="rounded-full bg-ink px-2.5 py-0.5 text-[11px] font-semibold text-white">All 3</span>
+              <span className="inline-flex h-7 items-center justify-center gap-1.5 rounded-full border border-ink bg-ink px-3 text-xs font-semibold text-white">
+                <span>All</span>
+                <span className="tabular-nums opacity-75">3</span>
+              </span>
               <PriorityBadge priority="high" count={1} />
               <PriorityBadge priority="medium" count={1} />
               <PriorityBadge priority="low" count={1} />
@@ -202,12 +205,12 @@ export function ReportPreview() {
             </div>
           </div>
 
-          {/* Stacked finding cards */}
+          {/* Stacked finding cards (collapsed: only title + pages) */}
           <div className="space-y-2 p-3">
             {[
-              { name: "mysql_connect()", sub: "Removed · Use PDO or mysqli instead", p: "high" as const, active: true },
-              { name: "PHP 5.6", sub: "End-of-life · Use PHP 8.x instead", p: "medium" as const, active: false },
-              { name: "ASP-style <% %> tags", sub: "Removed · Use <?php ?> instead", p: "low" as const, active: false },
+              { name: "mysql_connect()", pages: "Page 4", p: "high" as const, active: true },
+              { name: "PHP 5.6", pages: "Pages 2, 4", p: "medium" as const, active: false },
+              { name: "ASP-style <% %> tags", pages: "Page 4", p: "low" as const, active: false },
             ].map((item) => (
               <div
                 key={item.name}
@@ -217,7 +220,7 @@ export function ReportPreview() {
               >
                 <div className="min-w-0 space-y-1">
                   <p className="truncate text-xs font-semibold text-ink">{item.name}</p>
-                  <p className="truncate text-[11px] text-ink-muted">{item.sub}</p>
+                  <p className="truncate text-[11px] text-ink-subtle">{item.pages}</p>
                 </div>
                 <div className="flex shrink-0 items-center gap-1">
                   <PriorityBadge priority={item.p} short />
@@ -259,10 +262,10 @@ export function DecisionPreview() {
           <div className="space-y-3 rounded-[8px] border border-line bg-surface p-4 shadow-[var(--shadow-card)]">
             <div className="flex items-center justify-between text-[10px] text-ink-subtle">
               <span className="font-semibold uppercase tracking-[0.06em]">Page 4</span>
-              <span className="rounded-full bg-lapis/10 px-2 py-0.5 font-semibold text-lapis-deep">Selected quote</span>
+              <span className="rounded-full bg-high-soft px-2 py-0.5 font-semibold text-high">Selected quote</span>
             </div>
             <div className="h-3 w-36 rounded-full bg-ink/80" />
-            <div className="rounded-[6px] border-l-2 border-high bg-high-soft/70 p-2.5 outline-2 outline-lapis">
+            <div className="rounded-[6px] border-l-2 border-high bg-high-soft/70 p-2.5 outline-2 outline-high">
               <p className="text-xs font-medium text-ink">
                 “Connect to the database using <span className="underline decoration-high decoration-2">mysql_connect()</span>”
               </p>
@@ -275,14 +278,14 @@ export function DecisionPreview() {
           </div>
         </div>
 
-        {/* Right: Expanded FindingItem card anatomy */}
+        {/* Right: Expanded FindingItem card anatomy (Outdated card + Updated/Source card + AI draft + Decision) */}
         <div className="flex flex-col justify-between bg-surface p-4">
           <div className="space-y-3 rounded-[12px] border border-lapis p-3.5 shadow-[0_0_0_1px_var(--color-lapis)]">
-            {/* Card header */}
+            {/* Card header (title + page) */}
             <div className="flex items-center justify-between gap-2">
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-semibold text-ink">mysql_connect()</span>
-                <span className="h-2 w-20 rounded-full bg-line" />
+              <div>
+                <p className="text-xs font-semibold text-ink">mysql_connect()</p>
+                <p className="text-[10px] text-ink-subtle">Page 4</p>
               </div>
               <div className="flex items-center gap-1.5">
                 <span className="inline-flex items-center gap-1 rounded-full bg-lapis px-2 py-0.5 text-[11px] font-semibold text-white">
@@ -292,31 +295,26 @@ export function DecisionPreview() {
               </div>
             </div>
 
-            {/* 3 Key-Fact tiles */}
-            <div className="grid grid-cols-3 gap-2">
-              {[
-                { k: "Status", v: "Removed", c: "text-high" },
-                { k: "In your module", v: "Lab code · p. 4", c: "text-ink" },
-                { k: "Use instead", v: "PDO or mysqli", c: "text-ink" },
-              ].map((t) => (
-                <div key={t.k} className="rounded-[8px] bg-panel p-2">
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.06em] text-ink-subtle">{t.k}</p>
-                  <p className={`mt-0.5 truncate text-xs font-semibold ${t.c}`}>{t.v}</p>
+            {/* Clickable Outdated card + Clickable Updated/Source card */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between gap-2 rounded-[8px] border border-line bg-surface p-2.5">
+                <div className="min-w-0 flex-1 space-y-1.5 border-l-2 border-clay pl-2.5">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.06em] text-ink-subtle">Outdated in your module</p>
+                  <div className="h-2 w-10/12 rounded-full bg-ink/30" />
                 </div>
-              ))}
-            </div>
-
-            {/* Side-by-side quote blocks (module vs source) */}
-            <div className="grid gap-2 sm:grid-cols-2">
-              <div className="space-y-1.5 border-l-2 border-clay pl-2.5">
-                <p className="text-[10px] font-semibold uppercase tracking-[0.06em] text-ink-subtle">Your module says</p>
-                <div className="h-2 w-11/12 rounded-full bg-ink/30" />
-                <div className="h-2 w-8/12 rounded-full bg-ink/20" />
+                <span className="rounded-full border border-line bg-panel px-2 py-0.5 text-[10px] font-semibold text-lapis-deep">
+                  Page 4
+                </span>
               </div>
-              <div className="space-y-1.5 border-l-2 border-lapis pl-2.5">
-                <p className="text-[10px] font-semibold uppercase tracking-[0.06em] text-lapis-deep">php.net says</p>
-                <div className="h-2 w-11/12 rounded-full bg-lapis/35" />
-                <div className="h-2 w-9/12 rounded-full bg-lapis/25" />
+
+              <div className="flex items-center justify-between gap-2 rounded-[8px] border border-line bg-surface p-2.5">
+                <div className="min-w-0 flex-1 space-y-1.5 border-l-2 border-lapis pl-2.5">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.06em] text-lapis-deep">Use PDO or mysqli instead</p>
+                  <div className="h-2 w-11/12 rounded-full bg-lapis/30" />
+                </div>
+                <span className="rounded-full border border-line bg-panel px-2 py-0.5 text-[10px] font-semibold text-lapis-deep">
+                  php.net ↗
+                </span>
               </div>
             </div>
 
