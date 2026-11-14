@@ -1,0 +1,274 @@
+{
+ "id": "php-migration70-incompatible",
+ "title": "Backward incompatible changes (PHP 7.0)",
+ "url": "https://www.php.net/manual/en/migration70.incompatible.php",
+ "publisher": "PHP Manual (php.net)",
+ "tier": 2,
+ "license": "CC-BY-3.0",
+ "store": "full",
+ "tags": [
+  "php",
+  "php7",
+  "removed",
+  "migration"
+ ],
+ "fetched_at": "2026-11-14T09:22:53+00:00",
+ "content_sha256": "c2fded07b743dcb51f76f960d495d1391fda52084b7388db97cd3fae5e7e7162",
+ "passages": [
+  {
+   "n": 0,
+   "heading": "Changes to error and exception handling",
+   "text": "Many fatal and recoverable fatal errors have been converted to exceptions in PHP 7. These error exceptions inherit from the Error class, which itself implements the Throwable interface (the new base interface all exceptions inherit). This means that custom error handlers may no longer be triggered because exceptions may be thrown instead (causing new fatal errors for uncaught Error exceptions). A more complete description of how errors operate in PHP can be found on the Throwable errors page. This migration guide will merely enumerate the changes that affect backward compatibility."
+  },
+  {
+   "n": 1,
+   "heading": "set_exception_handler() is no longer guaranteed to receive Exception objects",
+   "text": "Code that implements an exception handler registered with set_exception_handler() using a type declaration of Exception will cause a fatal error when an Error object is thrown. If the handler needs to work on both PHP 5 and 7, you should remove the type declaration from the handler, while code that is being migrated to work on PHP 7 exclusively can simply replace the Exception type declaration with Throwable instead. <?php // PHP 5 era code that will break. function handler ( Exception $e) { /*... */ } set_exception_handler ( 'handler'); // PHP 5 and 7 compatible. function handler ( $e) { /*... */ } // PHP 7 only. function handler ( Throwable $e) { /*... */ }?>"
+  },
+  {
+   "n": 2,
+   "heading": "Internal constructors always throw exceptions on failure",
+   "text": "Previously, some internal classes would return null or an unusable object when the constructor failed. All internal classes will now throw an Exception in this case in the same way that user classes already had to."
+  },
+  {
+   "n": 3,
+   "heading": "Parse errors throw ParseError",
+   "text": "Parser errors now throw a ParseError object. Error handling for eval() should now include a catch block that can handle this error."
+  },
+  {
+   "n": 4,
+   "heading": "E_STRICT notices severity changes",
+   "text": "All of the E_STRICT notices have been reclassified to other levels. E_STRICT constant is retained, so calls like error_reporting(E_ALL|E_STRICT) will not cause an error. E_STRICT notices severity changes Situation New level/behaviour Indexing by a resource E_NOTICE Abstract static methods Notice removed, triggers no error \"Redefining\" a constructor Notice removed, triggers no error Signature mismatch during inheritance E_WARNING Same (compatible) property in two used traits Notice removed, triggers no error Accessing static property non-statically E_NOTICE Only variables should be assigned by reference E_NOTICE Only variables should be passed by reference E_NOTICE Calling non-static methods statically E_DEPRECATED"
+  },
+  {
+   "n": 5,
+   "heading": "Changes to variable handling",
+   "text": "PHP 7 now uses an abstract syntax tree when parsing source files. This has permitted many improvements to the language which were previously impossible due to limitations in the parser used in earlier versions of PHP, but has resulted in the removal of a few special cases for consistency reasons, which has resulted in backward compatibility breaks. These cases are detailed in this section."
+  },
+  {
+   "n": 6,
+   "heading": "Changes to the handling of indirect variables, properties, and methods",
+   "text": "Indirect access to variables, properties, and methods will now be evaluated strictly in left-to-right order, as opposed to the previous mix of special cases. The table below shows how the order of evaluation has changed. Old and new evaluation of indirect expressions Expression PHP 5 interpretation PHP 7 interpretation $$foo['bar']['baz'] ${$foo['bar']['baz']} ($$foo)['bar']['baz'] $foo->$bar['baz'] $foo->{$bar['baz']} ($foo->$bar)['baz'] $foo->$bar['baz']() $foo->{$bar['baz']}() ($foo->$bar)['baz']() Foo::$bar['baz']() Foo::{$bar['baz']}() (Foo::$bar)['baz']() Code that used the old right-to-left evaluation order must be rewritten to explicitly use that evaluation order with curly braces (see the above middle column). This will make the code both forwards compatible with PHP 7.x and backwards compatible with PHP 5.x. This also affects the global keyword. The curly brace syntax can be used to emulate the previous behaviour if required: <?php function f () { // Valid in PHP 5 only. global $ $foo -> bar; // Valid in PHP 5 and 7. global ${ $foo -> bar }; }?>"
+  },
+  {
+   "n": 7,
+   "heading": "Changes to list() handling",
+   "text": "list() will now assign values to variables in the order they are defined, rather than reverse order. In general, this only affects the case where list() is being used in conjunction with the array [] operator, as shown below: <?php list( $a [], $a [], $a []) = [ 1, 2, 3]; var_dump ( $a);?> Output of the above example in PHP 5: array(3) { [0]=> int(3) [1]=> int(2) [2]=> int(1) } Output of the above example in PHP 7: array(3) { [0]=> int(1) [1]=> int(2) [2]=> int(3) } In general, it is recommended not to rely on the order in which list() assignments occur, as this is an implementation detail that may change again in the future. list() constructs can no longer be empty. The following are no longer allowed: <?php list() = $a; list(,,) = $a; list( $x, list(), $y) = $a;?> list() can no longer unpack string variables. str_split() should be used instead."
+  },
+  {
+   "n": 8,
+   "heading": "Array ordering when elements are automatically created during by reference assignments has changed",
+   "text": "The order of the elements in an array has changed when those elements have been automatically created by referencing them in a by reference assignment. For example: <?php $array = []; $array [ \"a\"] =& $array [ \"b\"]; $array [ \"b\"] = 1; var_dump ( $array);?> Output of the above example in PHP 5: array(2) { [\"b\"]=> &int(1) [\"a\"]=> &int(1) } Output of the above example in PHP 7: array(2) { [\"a\"]=> &int(1) [\"b\"]=> &int(1) }"
+  },
+  {
+   "n": 9,
+   "heading": "Parentheses around function arguments no longer affect behaviour",
+   "text": "In PHP 5, using redundant parentheses around a function argument could quiet strict standards warnings when the function argument was passed by reference. The warning will now always be issued. <?php function getArray () { return [ 1, 2, 3]; } function squareArray (array & $a) { foreach ( $a as & $v) { $v **= 2; } } // Generates a warning in PHP 7. squareArray (( getArray ()));?> The above example will output: Notice: Only variables should be passed by reference in /tmp/test.php on line 13"
+  },
+  {
+   "n": 10,
+   "heading": "Changes to foreach",
+   "text": "Minor changes have been made to the behaviour of the foreach control structure, primarily around the handling of the internal array pointer and modification of the array being iterated over."
+  },
+  {
+   "n": 11,
+   "heading": "foreach no longer changes the internal array pointer",
+   "text": "Prior to PHP 7, the internal array pointer was modified while an array was being iterated over with foreach. This is no longer the case, as shown in the following example: <?php $array = [ 0, 1, 2]; foreach ( $array as & $val) { var_dump ( current ( $array)); }?> Output of the above example in PHP 5: int(1) int(2) bool(false) Output of the above example in PHP 7: int(0) int(0) int(0)"
+  },
+  {
+   "n": 12,
+   "heading": "foreach by-value operates on a copy of the array",
+   "text": "When used in the default by-value mode, foreach will now operate on a copy of the array being iterated rather than the array itself. This means that changes to the array made during iteration will not affect the values that are iterated."
+  },
+  {
+   "n": 13,
+   "heading": "foreach by-reference has improved iteration behaviour",
+   "text": "When iterating by-reference, foreach will now do a better job of tracking changes to the array made during iteration. For example, appending to an array while iterating will now result in the appended values being iterated over as well: <?php $array = [ 0]; foreach ( $array as & $val) { var_dump ( $val); $array [ 1] = 1; }?> Output of the above example in PHP 5: int(0) Output of the above example in PHP 7: int(0) int(1)"
+  },
+  {
+   "n": 14,
+   "heading": "Iteration of non- Traversable objects",
+   "text": "Iterating over a non- Traversable object will now have the same behaviour as iterating over by-reference arrays. This results in the improved behaviour when modifying an array during iteration also being applied when properties are added to or removed from the object."
+  },
+  {
+   "n": 15,
+   "heading": "Invalid octal literals",
+   "text": "Previously, octal literals that contained invalid numbers were silently truncated ( 0128 was taken as 012). Now, an invalid octal literal will cause a parse error."
+  },
+  {
+   "n": 16,
+   "heading": "Negative bitshifts",
+   "text": "Bitwise shifts by negative numbers will now throw an ArithmeticError: <?php var_dump ( 1 >> - 1);?> Output of the above example in PHP 5: int(0) Output of the above example in PHP 7: Fatal error: Uncaught ArithmeticError: Bit shift by negative number in /tmp/test.php:2 Stack trace: #0 {main} thrown in /tmp/test.php on line 2"
+  },
+  {
+   "n": 17,
+   "heading": "Out of range bitshifts",
+   "text": "Bitwise shifts (in either direction) beyond the bit width of an int will always result in 0. Previously, the behaviour of such shifts was architecture dependent."
+  },
+  {
+   "n": 18,
+   "heading": "Changes to Division By Zero",
+   "text": "Previously, when 0 was used as the divisor for either the divide (/) or modulus (%) operators, an E_WARNING would be emitted and false would be returned. Now, the divide operator returns a float as either +INF, -INF, or NAN, as specified by IEEE 754. The modulus operator E_WARNING has been removed and will throw a DivisionByZeroError exception. <?php var_dump ( 3 / 0); var_dump ( 0 / 0); var_dump ( 0 % 0);?> Output of the above example in PHP 5: Warning: Division by zero in %s on line %d bool(false) Warning: Division by zero in %s on line %d bool(false) Warning: Division by zero in %s on line %d bool(false) Output of the above example in PHP 7: Warning: Division by zero in %s on line %d float(INF) Warning: Division by zero in %s on line %d float(NAN) PHP Fatal error: Uncaught DivisionByZeroError: Modulo by zero in %s line %d"
+  },
+  {
+   "n": 19,
+   "heading": "Hexadecimal strings are no longer considered numeric",
+   "text": "Strings containing hexadecimal numbers are no longer considered to be numeric. For example: <?php var_dump ( \"0x123\" == \"291\"); var_dump ( is_numeric ( \"0x123\")); var_dump ( \"0xe\" + \"0x1\"); var_dump ( substr ( \"foo\", \"0x1\"));?> Output of the above example in PHP 5: bool(true) bool(true) int(15) string(2) \"oo\" Output of the above example in PHP 7: bool(false) bool(false) int(0) Notice: A non well formed numeric value encountered in /tmp/test.php on line 5 string(3) \"foo\" filter_var() can be used to check if a string contains a hexadecimal number, and also to convert a string of that type to an int: <?php $str = \"0xffff\"; $int = filter_var ( $str, FILTER_VALIDATE_INT, FILTER_FLAG_ALLOW_HEX); if ( false === $int) { throw new Exception ( \"Invalid integer!\"); } var_dump ( $int); // int(65535)?>"
+  },
+  {
+   "n": 20,
+   "heading": "\\u{ may cause errors",
+   "text": "Due to the addition of the new Unicode codepoint escape syntax, strings containing a literal \\u{ followed by an invalid sequence will cause a fatal error. To avoid this, the leading backslash should be escaped."
+  },
+  {
+   "n": 21,
+   "heading": "call_user_method() and call_user_method_array()",
+   "text": "These functions were deprecated in PHP 4.1.0 in favour of call_user_func() and call_user_func_array(). You may also want to consider using variable functions and/or the... operator."
+  },
+  {
+   "n": 22,
+   "heading": "All ereg* functions",
+   "text": "All ereg functions were removed. PCRE is a recommended alternative."
+  },
+  {
+   "n": 23,
+   "heading": "mcrypt aliases",
+   "text": "The deprecated mcrypt_generic_end() function has been removed in favour of mcrypt_generic_deinit(). Additionally, the deprecated mcrypt_ecb(), mcrypt_cbc(), mcrypt_cfb() and mcrypt_ofb() functions have been removed in favour of using mcrypt_decrypt() with the appropriate MCRYPT_MODE_ * constant."
+  },
+  {
+   "n": 24,
+   "heading": "All ext/mysql functions",
+   "text": "All ext/mysql functions were removed. For details about choosing a different MySQL API, see Choosing a MySQL API."
+  },
+  {
+   "n": 25,
+   "heading": "All ext/mssql functions",
+   "text": "PDO_SQLSRV PDO_ODBC SQLSRV Unified ODBC API"
+  },
+  {
+   "n": 26,
+   "heading": "intl aliases",
+   "text": "The deprecated datefmt_set_timezone_id() and IntlDateFormatter::setTimeZoneID() aliases have been removed in favour of datefmt_set_timezone() and IntlDateFormatter::setTimeZone(), respectively."
+  },
+  {
+   "n": 27,
+   "heading": "set_magic_quotes_runtime()",
+   "text": "set_magic_quotes_runtime(), along with its alias magic_quotes_runtime(), have been removed. They were deprecated in PHP 5.3.0, and became effectively non-functional with the removal of magic quotes in PHP 5.4.0."
+  },
+  {
+   "n": 28,
+   "heading": "set_socket_blocking()",
+   "text": "The deprecated set_socket_blocking() alias has been removed in favour of stream_set_blocking()."
+  },
+  {
+   "n": 29,
+   "heading": "dl() in PHP-FPM",
+   "text": "dl() can no longer be used in PHP-FPM. It remains functional in the CLI and embed SAPIs."
+  },
+  {
+   "n": 30,
+   "heading": "GD Type1 functions",
+   "text": "Support for PostScript Type1 fonts has been removed from the GD extension, resulting in the removal of the following functions: imagepsbbox() imagepsencodefont() imagepsextendfont() imagepsfreefont() imagepsloadfont() imagepsslantfont() imagepstext() Using TrueType fonts and their associated functions is recommended instead."
+  },
+  {
+   "n": 31,
+   "heading": "Removed features",
+   "text": "The following INI directives have been removed as their associated features have also been removed: always_populate_raw_post_data asp_tags"
+  },
+  {
+   "n": 32,
+   "heading": "xsl.security_prefs",
+   "text": "The xsl.security_prefs directive has been removed. Instead, the XsltProcessor::setSecurityPrefs() method should be called to control the security preferences on a per-processor basis."
+  },
+  {
+   "n": 33,
+   "heading": "New objects cannot be assigned by reference",
+   "text": "The result of the new statement can no longer be assigned to a variable by reference: <?php class C {} $c =& new C;?> Output of the above example in PHP 5: Deprecated: Assigning the return value of new by reference is deprecated in /tmp/test.php on line 3 Output of the above example in PHP 7: Parse error: syntax error, unexpected 'new' (T_NEW) in /tmp/test.php on line 3"
+  },
+  {
+   "n": 34,
+   "heading": "Invalid class, interface and trait names",
+   "text": "The following names cannot be used to name classes, interfaces or traits: bool int float string null true false Furthermore, the following names should not be used. Although they will not generate an error in PHP 7.0, they are reserved for future use and should be considered deprecated. resource object mixed numeric"
+  },
+  {
+   "n": 35,
+   "heading": "ASP and script PHP tags removed",
+   "text": "Support for using ASP and script tags to delimit PHP code has been removed. The affected tags are: Removed ASP and script tags Opening tag Closing tag <% %> <%= %> <script language=\"php\"> </script>"
+  },
+  {
+   "n": 36,
+   "heading": "Calls from incompatible context removed",
+   "text": "Previously deprecated in PHP 5.6, static calls made to a non-static method with an incompatible context will now result in the called method having an undefined $this variable and a deprecation warning being issued. <?php class A { public function test () { var_dump ( $this); } } // Note: Does NOT extend A class B { public function callNonStaticMethodOfA () { A:: test (); } } (new B)-> callNonStaticMethodOfA ();?> Output of the above example in PHP 5.6: Deprecated: Non-static method A::test() should not be called statically, assuming $this from incompatible context in /tmp/test.php on line 8 object(B)#1 (0) { } Output of the above example in PHP 7: Deprecated: Non-static method A::test() should not be called statically in /tmp/test.php on line 8 Notice: Undefined variable: this in /tmp/test.php on line 3 NULL"
+  },
+  {
+   "n": 37,
+   "heading": "yield is now a right associative operator",
+   "text": "The yield construct no longer requires parentheses, and has been changed to a right associative operator with precedence between print and =>. This can result in changed behaviour: <?php echo yield - 1; // Was previously interpreted as echo (yield) - 1; // And is now interpreted as echo yield (- 1); yield $foo or die; // Was previously interpreted as yield ( $foo or die); // And is now interpreted as (yield $foo) or die;?> Parentheses can be used to disambiguate those cases."
+  },
+  {
+   "n": 38,
+   "heading": "Functions cannot have multiple parameters with the same name",
+   "text": "It is no longer possible to define two or more function parameters with the same name. For example, the following function will trigger an E_COMPILE_ERROR: <?php function foo ( $a, $b, $unused, $unused) { // }?>"
+  },
+  {
+   "n": 39,
+   "heading": "Functions inspecting arguments report the current parameter value",
+   "text": "func_get_arg(), func_get_args(), debug_backtrace() and exception backtraces will no longer report the original value that was passed to a parameter, but will instead provide the current value (which might have been modified). <?php function foo ( $x) { $x ++; var_dump ( func_get_arg ( 0)); } foo ( 1);?> Output of the above example in PHP 5: 1 Output of the above example in PHP 7: 2"
+  },
+  {
+   "n": 40,
+   "heading": "Switch statements cannot have multiple default blocks",
+   "text": "It is no longer possible to define two or more default blocks in a switch statement. For example, the following switch statement will trigger an E_COMPILE_ERROR: <?php switch ( 1) { default: break; default: break; }?>"
+  },
+  {
+   "n": 41,
+   "heading": "$HTTP_RAW_POST_DATA removed",
+   "text": "$HTTP_RAW_POST_DATA is no longer available. The php://input stream should be used instead."
+  },
+  {
+   "n": 42,
+   "heading": "# comments in INI files removed",
+   "text": "Support for prefixing comments with # in INI files has been removed.; (semi-colon) should be used instead. This change applies to php.ini, as well as files handled by parse_ini_file() and parse_ini_string()."
+  },
+  {
+   "n": 43,
+   "heading": "JSON extension replaced with JSOND",
+   "text": "The JSON extension has been replaced with JSOND, causing three minor BC breaks. Firstly, a number must not end in a decimal point (i.e. 34. must be changed to either 34.0 or 34). Secondly, when using scientific notation, the e exponent must not immediately follow a decimal point (i.e. 3.e3 must be changed to either 3.0e3 or 3e3). Finally, an empty string is no longer considered valid JSON."
+  },
+  {
+   "n": 44,
+   "heading": "Internal function failure on overflow",
+   "text": "Previously, internal functions would silently truncate numbers produced from float-to-integer coercions when the float was too large to represent as an integer. Now, an E_WARNING will be emitted and null will be returned."
+  },
+  {
+   "n": 45,
+   "heading": "Fixes to custom session handler return values",
+   "text": "Any predicate functions implemented by custom session handlers that return either false or -1 will be fatal errors. If any value from these functions other than a boolean, -1, or 0 is returned, then it will fail and an E_WARNING will be emitted."
+  },
+  {
+   "n": 46,
+   "heading": "Sort order of equal elements",
+   "text": "The internal sorting algorithm has been improved, what may result in different sort order of elements, which compare as equal, than before. Don't rely on the order of elements which compare as equal; it might change anytime."
+  },
+  {
+   "n": 47,
+   "heading": "Misplaced break and continue statements",
+   "text": "break and continue statements outside of a loop or switch control structure are now detected at compile-time instead of run-time as before, and trigger an E_COMPILE_ERROR."
+  },
+  {
+   "n": 48,
+   "heading": "Constant disallowed as break and continue argument",
+   "text": "break and continue statements no longer allow their argument to be a constant, and trigger a E_COMPILE_ERROR."
+  },
+  {
+   "n": 49,
+   "heading": "Mhash is not an extension anymore",
+   "text": "The Mhash extension has been fully integrated into the Hash extension. Therefore, it is no longer possible to detect Mhash support with extension_loaded(); use function_exists() instead. Furthermore, Mhash is no longer reported by get_loaded_extensions() and related features."
+  },
+  {
+   "n": 50,
+   "heading": "declare(ticks)",
+   "text": "The declare(ticks) directive does no longer leak into different compilation units."
+  }
+ ]
+}

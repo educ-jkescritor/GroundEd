@@ -1,0 +1,33 @@
+{
+ "id": "php-supported-versions",
+ "title": "Supported Versions",
+ "url": "https://www.php.net/supported-versions.php",
+ "publisher": "PHP (php.net)",
+ "tier": 1,
+ "license": "CC-BY-3.0",
+ "store": "full",
+ "tags": [
+  "php",
+  "versions",
+  "support"
+ ],
+ "fetched_at": "2026-11-14T09:22:07+00:00",
+ "content_sha256": "4d03cfb1ab92f67fedf09c4a0a04e9edd8229b1e0a7417bfaa4a6abbfece894a",
+ "passages": [
+  {
+   "n": 0,
+   "heading": "Supported Versions",
+   "text": "Each release branch of PHP is fully supported for two years from its initial stable release. During this period, bugs and security issues that have been reported are fixed and are released in regular point releases. After this two year period of active support, each branch is then supported for two additional years for critical security issues only. Releases during this period are made on an as-needed basis: there may be multiple point releases, or none, depending on the number of reports. Once the four years of support are completed, the branch reaches its end of life and is no longer supported. A table of end of life branches is available."
+  },
+  {
+   "n": 1,
+   "heading": "Currently Supported Versions",
+   "text": "Branch Initial Release Active Support Until Security Support Until Notes 8.2 8 Dec 2022 3 years, 11 months ago 31 Dec 2024 1 year, 10 months ago 31 Dec 2026 in 1 month Migration guide for PHP 8.2 8.3 23 Nov 2023 2 years, 11 months ago 31 Dec 2025 10 months ago 31 Dec 2027 in 1 year, 1 month Migration guide for PHP 8.3 8.4 21 Nov 2024 1 year, 11 months ago 31 Dec 2026 in 1 month 31 Dec 2028 in 2 years, 1 month Migration guide for PHP 8.4 8.5 20 Nov 2025 11 months ago 31 Dec 2027 in 1 year, 1 month 31 Dec 2029 in 3 years, 1 month Migration guide for PHP 8.5 Or, visualised as a calendar:"
+  },
+  {
+   "n": 2,
+   "heading": "Key",
+   "text": "Active support A release that is being actively supported. Reported bugs and security issues are fixed and regular point releases are made. Security fixes only A release that is supported for critical security issues only. Releases are only made on an as-needed basis. End of life A release that is no longer supported. Users of this release should upgrade as soon as possible, as they may be exposed to unpatched security vulnerabilities."
+  }
+ ]
+}

@@ -1,0 +1,63 @@
+{
+ "id": "mdn-center",
+ "title": "<center>: The Centered Text element (deprecated)",
+ "url": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/center",
+ "publisher": "MDN Web Docs (Mozilla)",
+ "tier": 2,
+ "license": "CC-BY-SA-2.5",
+ "store": "full",
+ "tags": [
+  "html",
+  "deprecated",
+  "element"
+ ],
+ "fetched_at": "2026-11-14T09:23:02+00:00",
+ "content_sha256": "79e57fd36b81283a698274c4b45e820da481d311af8374c03620b355507edc89",
+ "passages": [
+  {
+   "n": 0,
+   "heading": "<center> HTML centered text element",
+   "text": "Avoid using this feature in new projects. This feature may be a candidate for removal from web standards or browsers. See full compatibility Learn more The <center> HTML element is a block-level element that displays its block-level or inline contents centered horizontally within its containing element. The container is usually, but isn't required to be, <body>. This tag has been deprecated in HTML 4 (and XHTML 1) in favor of the CSS text-align property, which can be applied to the <div> element or to an individual <p>. For centering blocks, use other CSS properties like margin-left and margin-right and set them to auto (or set margin to 0 auto)."
+  },
+  {
+   "n": 1,
+   "heading": "DOM interface",
+   "text": "This element implements the HTMLElement interface."
+  },
+  {
+   "n": 2,
+   "heading": "Example 1",
+   "text": "<center> This text will be centered. <p>So will this paragraph.</p> </center>"
+  },
+  {
+   "n": 3,
+   "heading": "Example 2 (CSS alternative)",
+   "text": "<div class=\"center\"> This text will be centered. <p>So will this paragraph.</p> </div> .center { text-align: center; }"
+  },
+  {
+   "n": 4,
+   "heading": "Example 3 (CSS alternative)",
+   "text": "<p class=\"center\"> This line will be centered.<br /> And so will this line. </p> .center { text-align: center; }"
+  },
+  {
+   "n": 5,
+   "heading": "Result",
+   "text": "Note: Applying text-align: center to a <div> or <p> element centers the contents of those elements while leaving their overall dimensions unchanged."
+  },
+  {
+   "n": 6,
+   "heading": "Specifications",
+   "text": "Specification HTML # center"
+  },
+  {
+   "n": 7,
+   "heading": "See also",
+   "text": "text-align display"
+  },
+  {
+   "n": 8,
+   "heading": "Help improve MDN",
+   "text": "This page was last modified on Aug 21, 2026 by MDN contributors."
+  }
+ ]
+}

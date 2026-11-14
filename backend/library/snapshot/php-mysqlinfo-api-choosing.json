@@ -1,0 +1,30 @@
+{
+ "id": "php-mysqlinfo-api-choosing",
+ "title": "Choosing an API (MySQL in PHP)",
+ "url": "https://www.php.net/manual/en/mysqlinfo.api.choosing.php",
+ "publisher": "PHP Manual (php.net)",
+ "tier": 2,
+ "license": "CC-BY-3.0",
+ "store": "full",
+ "tags": [
+  "php",
+  "mysql",
+  "mysqli",
+  "pdo",
+  "replacement"
+ ],
+ "fetched_at": "2026-11-14T09:22:55+00:00",
+ "content_sha256": "05c0063c2c315afd504f0a4c7884b7db1303fde9109b12a054025eace59c0606",
+ "passages": [
+  {
+   "n": 0,
+   "heading": "Choosing an API",
+   "text": "PHP offers different APIs to connect to MySQL. Below we show the APIs provided by the mysqli and PDO extensions. Each code snippet creates a connection to a MySQL server running on \"example.com\" using the username \"user\" and the password \"password\". And a query is run to greet the user. Example #1 Comparing the MySQL APIs <?php // mysqli $mysqli = new mysqli ( \"example.com\", \"user\", \"password\", \"database\"); $result = $mysqli -> query ( \"SELECT 'Hello, dear MySQL user!' AS _message FROM DUAL\"); $row = $result -> fetch_assoc (); echo htmlentities ( $row [ '_message']); // PDO $pdo = new PDO ( 'mysql:host=example.com;dbname=database', 'user', 'password'); $statement = $pdo -> query ( \"SELECT 'Hello, dear MySQL user!' AS _message FROM DUAL\"); $row = $statement -> fetch ( PDO:: FETCH_ASSOC); echo htmlentities ( $row [ '_message']); Example #2 Comparing prepared statements <?php // mysqli $mysqli = new mysqli ( \"example.com\", \"user\", \"password\", \"database\"); $statement = $mysqli -> prepare ( \"SELECT District FROM City WHERE Name=?\"); $statement -> execute ([ \"Amersfoort\"]); $result = $statement -> get_result (); $row = $result -> fetch_assoc (); echo htmlentities ( $row [ 'District']); // PDO $pdo = new PDO ( 'mysql:host=example.com;dbname=database', 'user', 'password'); $statement = $pdo -> prepare ( \"SELECT District FROM City WHERE Name=?\"); $statement -> execute ([ \"Amersfoort\"]); $row = $statement -> fetch ( PDO::"
+  },
+  {
+   "n": 1,
+   "heading": "Choosing an API",
+   "text": "FETCH_ASSOC); echo htmlentities ( $row [ 'District']); Feature comparison The overall performance of both extensions is considered to be about the same. Although the performance of the extension contributes only a fraction of the total run time of a PHP web request. Often, the impact is as low as 0.1%. ext/mysqli PDO_MySQL PHP version introduced 5.0 5.1 Included with PHP 7.x and 8.x Yes Yes Development status Active Active Lifecycle Active Active Recommended for new projects Yes Yes OOP Interface Yes Yes Procedural Interface Yes No API supports non-blocking, asynchronous queries with mysqlnd Yes No Persistent Connections Yes Yes API supports Charsets Yes Yes API supports server-side Prepared Statements Yes Yes API supports client-side Prepared Statements No Yes API supports Stored Procedures Yes Yes API supports Multiple Statements Yes Most API supports Transactions Yes Yes Transactions can be controlled with SQL Yes Yes Supports all MySQL 5.1+ functionality Yes Most"
+  }
+ ]
+}
