@@ -1,0 +1,30 @@
+# Run from the repo root:  docker compose -f deploy/docker-compose.yml up -d --build
+services:
+  backend:
+    build: ../backend
+    env_file: ../backend/.env
+    environment:
+      DB_PATH: /app/state/grounded.db
+    volumes:
+      - backend_state:/app/state
+    restart: unless-stopped
+
+  web:
+    build: ../frontend
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      # Set to your domain (e.g. grounded.example.com or 1-2-3-4.sslip.io) for automatic HTTPS.
+      # Leave unset for plain HTTP on port 80.
+      SITE_ADDRESS: ${SITE_ADDRESS:-:80}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  backend_state:
+  caddy_data:

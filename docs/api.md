@@ -1,0 +1,38 @@
+# API contract
+
+Source of truth: `backend/app/models.py` (mirrored in `frontend/src/types.ts`).
+While the backend is in progress, every endpoint returns **mock data in this exact shape**, so the frontend can be built in parallel.
+Interactive docs: run the backend and open http://localhost:8000/docs
+
+| Method | Path | Body | Returns |
+|---|---|---|---|
+| GET | `/api/health` | none | `{status, gemini_configured}` |
+| GET | `/api/samples` | none | `Sample[]` |
+| POST | `/api/analyze` | multipart: `file` (PDF) **or** `sample_id` | `Analysis` |
+| GET | `/api/analysis/{id}` | none | `Analysis` |
+| POST | `/api/analysis/{id}/findings/{finding_id}/draft` | none | `Draft` |
+| POST | `/api/feedback` | JSON `FeedbackIn` | `{ok, id}` |
+
+## Example `Finding`
+```json
+{
+  "id": "f1",
+  "technology": "Python",
+  "version": "2.7",
+  "status": "eol",
+  "citations": [{ "page": 2, "snippet": "Lab exercises use Python 2.7", "bbox": [72, 300, 320, 314] }],
+  "lifecycle": {
+    "product": "python", "cycle": "2.7", "eol_date": "2020-01-01",
+    "latest_cycle": "3.x", "source_url": "https://endoflife.date/python"
+  },
+  "score": {
+    "total": 90, "max": 100,
+    "breakdown": [
+      { "key": "lifecycle_status", "label": "Lifecycle status", "points": 50, "max": 50, "reason": "Already end-of-life" }
+    ]
+  },
+  "upgrade": { "target_cycle": "3.x (latest)", "source_url": "https://endoflife.date/python" }
+}
+```
+
+`status` is one of `eol | nearing_eol | supported | unverified`. For `unverified`, `lifecycle` and `score` are `null`.
