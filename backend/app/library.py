@@ -246,6 +246,14 @@ def version() -> str:
     return h.hexdigest()[:12]
 
 
+def contains_quote(doc_id: str, quote: str) -> bool:
+    """True if the quote appears in the saved document text (whitespace, quote marks and case normalised)."""
+    from .detect import normalise
+
+    doc = next((d for d in load_documents() if d.id == doc_id), None)
+    return bool(doc) and normalise(quote) in normalise(" ".join(p.text for p in doc.passages))
+
+
 def by_url(url: str) -> Optional[Document]:
     norm = lambda u: u.rstrip("/").lower()
     return next((d for d in load_documents() if norm(d.url) == norm(url)), None)

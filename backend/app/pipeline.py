@@ -7,7 +7,7 @@ from datetime import date, datetime, timezone
 from pathlib import Path
 from typing import Optional
 
-from . import cache, detect, eol, registry, signals
+from . import cache, detect, eol, library, registry, signals
 from .detect import Mention
 from .models import Analysis, Citation, Finding, Lifecycle, Provenance, SourceInfo, Summary, Upgrade
 from .pdf import Page, extract_pages, file_sha256, find_snippet_bbox
@@ -15,6 +15,26 @@ from .score import compute, status_for
 
 PIPELINE_VERSION = "0.2.0"  # 0.2.0: scoring Option C
 MAX_CITATIONS = 5  # per finding; prominence still counts every page
+
+
+def _static_lifecycle(f: registry.StaticFact, eol_data: dict[str, str]) -> Optional[Lifecycle]:
+    """Lifecycle for a document-backed fact, or None if the evidence does not check out."""
+    doc = library.load_document(f.doc)
+    if doc is None or not library.contains_quote(f.doc, f.quote):
+        return None
+    eol_date = None
+    if f.removed_in:
+        try:
+            data = eol.get_product(f.removed_in.product)
+        except eol.EolError:
+            return None
+        eol_data[data.product] = f"{data.last_modified} ({data.origin})"
+        rel = eol.find_release(data, f.removed_in.cycle)
+        if rel is None or not rel.release_date:
+            return None
+        eol_date = rel.release_date  # removed in X => unsupported since X was released
+    return Lifecycle(product=f.product, cycle=f.cycle, eol_date=eol_date, source_url=doc.url,
+                     source_name=f"{doc.publisher} — {doc.title}", source_quote=f.quote)
 
 
 def _finding_for_entry(entry: registry.Entry, mentions: list[Mention], pages_by_no: dict[int, Page], pdf_path: Path,
@@ -33,10 +53,10 @@ def _finding_for_entry(entry: registry.Entry, mentions: list[Mention], pages_by_
     base = dict(id=entry.id, technology=entry.technology, citations=citations, upgrade=upgrade)
 
     if entry.fact:
-        f = entry.fact
-        lifecycle = Lifecycle(product=f.product, cycle=f.cycle, eol_date=f.eol_date, source_url=f.source_url,
-                              source_name=f.source_name, source_quote=f.source_quote)
-        deprecated, version = f.stage == "deprecated", f.cycle
+        lifecycle = _static_lifecycle(entry.fact, eol_data)
+        if lifecycle is None:  # quote not in the saved document, or date not sourceable: no source, no claim
+            return Finding(**base, version=entry.fact.cycle, status="unverified")
+        deprecated, version = entry.fact.stage == "deprecated", entry.fact.cycle
     else:
         ref = entry.eol
         try:
