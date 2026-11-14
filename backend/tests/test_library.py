@@ -71,3 +71,27 @@ def test_committed_snapshot_is_valid_and_versioned():
     for d in docs:
         assert d.passages and d.url.startswith("https://")
         assert "user contributed notes" not in " ".join(p.text for p in d.passages).lower()
+
+
+# ---------- search (runs on the committed snapshot; offline) ----------
+
+@pytest.mark.parametrize("query, expected_doc", [
+    ("mysql extension removed", "php-migration70-removed-exts"),
+    ("replacement for ereg regular expressions", "php-pcre"),
+    ("integer display width deprecated", "mysql-numeric-type-attributes"),
+    ("center element deprecated alternative", "mdn-center"),
+])
+def test_search_finds_the_right_document(query, expected_doc):
+    assert library.search(query, k=3)[0].doc_id == expected_doc
+
+
+def test_search_can_be_restricted_to_documents_and_is_deterministic():
+    hits = library.search("mysql functions removed", doc_ids=["php-migration70-incompatible"], k=5)
+    assert hits and {h.doc_id for h in hits} == {"php-migration70-incompatible"}
+    assert hits == library.search("mysql functions removed", doc_ids=["php-migration70-incompatible"], k=5)
+
+
+def test_search_is_safe_with_empty_or_fts_syntax_queries():
+    assert library.search("") == [] and library.search('"*)(:^') == []
+    # FTS5 operators/quotes in user text must not break the query; real words in it still match.
+    assert all(h.doc_id for h in library.search('mysql" NEAR(* OR "removed'))
