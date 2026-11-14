@@ -1,172 +1,314 @@
-# GroundEd Design System
+# GroundEd Design System (v2)
 
-This file is the source of truth for how GroundEd looks, reads and behaves. If a page or component disagrees with
-this file, either fix the component or update this file in the same commit. Tokens live in
-`frontend/src/index.css` (`@theme`); reusable components live in `frontend/src/components/ui/`.
+This file is the source of truth for how GroundEd looks, reads and behaves. If a page or component disagrees
+with it, fix the component or update this file in the same commit.
+Tokens live in `frontend/src/index.css` (`@theme`). Reusable components live in `frontend/src/components/ui/`.
+
+> **v2, 14 Nov 2026.** Built from the UX process in [`docs/ux/`](docs/ux/): personas, jobs to be done,
+> information architecture, journey map and key flows.
+> **Decisions:**
+> - Palette **A · Lapis & Clay** on a **white canvas with soft grey panels (24 px corners)**.
+> - **Bold sans headings**; serif only for quoted evidence.
+> - **Horizon** logo; **Sprout** as the only "ground" illustration motif.
+> - **16 px** base text, **comfortable** density, **light theme only**.
+> - Landing patterns inspired by letters.app (principles only, nothing copied): before → after hero on a horizon band, live mini-UI panels, demo video with tabs, pill header, 3-step cards.
+> - Laptop-first, English UI.
+> - Technology courses only.
 
 ---
 
-## 1. Design principles
+## 1. Who we design for
 
-GroundEd is used by busy faculty who only trust output they can check. Every screen should follow these four rules:
+| | |
+|---|---|
+| **Primary user** | A course instructor revising their own module. Busy, expert in the subject, sceptical of AI. |
+| **Also** | Curriculum reviewers, instructional designers, students. Anyone checking a tech module; no role restrictions. |
+| **Mental model** | "Like an originality checker, but for currency": upload → report → highlights in the module with sources beside them. We reuse the *pattern*, never another product's look or wording. |
+| **Context** | Laptop/desktop at 1280 px and up, sometimes slow internet. Wide age range, so readable text and high contrast matter. |
 
-1. **Evidence first.** A claim is never shown without its source next to it: syllabus page and snippet, plus the endoflife.date record.
-2. **Sourced vs AI is always visible.** Facts from sources look like facts. AI-written text (replacement ideas, drafts) always
-   uses the **AI suggestion** style (violet, dashed border, "AI suggestion: not sourced" label). Never mix the two.
-3. **Calm, not alarming.** Status colours are muted and paired with text and an icon. Red means "end-of-life", not "error".
-4. **Faculty stay in control.** Nothing looks "applied" until the user clicks Approve or Accept. Decisions are reversible.
+## 2. Principles
 
-## 2. Voice and microcopy
+1. **Evidence first.** A claim never appears without its sources beside it: the module quote with its page, and the trusted source with its tier, publisher and date.
+2. **Sourced and AI text never look alike.** AI-written text always uses the AI suggestion style (violet, dashed border, label).
+3. **Advise, never judge.** Calm colours and cautious words ("may warrant review"). We check material, never people.
+4. **The user decides.** Nothing counts as changed until the user chooses Update, Keep intentionally or Dismiss. Every decision can be undone.
+5. **Quiet by default, detail on demand.** Show what's needed to decide; put the rest one click away.
+6. **Plain language.** A student or a non-specialist reviewer should understand every label. Terms of art get a tooltip.
 
-- Plain, respectful, short. We talk to professors, not developers. Say "end-of-life" (spelled out the first time), not "EOL" alone.
-- **Advisory, never commanding.** GroundEd advises; faculty decide. Say "may warrant review", never "must update" or "wrong".
-- Current scope is **web development and related courses**; say so where it sets expectations (landing, empty states).
-- Use the second person ("your syllabus"). Avoid hype ("revolutionary", "magic").
-- Never claim certainty we don't have. Use "No source found" rather than "Not outdated".
+## 3. Voice, wording and microcopy
 
+**Voice:** a knowledgeable colleague. Plain, respectful, short, never hype. Second person ("your module").
+
+### Glossary
+| Use | Avoid | Meaning |
+|---|---|---|
+| **Module** | syllabus, file, document | The uploaded course material. The Landing page says "syllabus, module or lesson guide" once. |
+| **Report** | results, analysis | Everything GroundEd found for one module |
+| **Finding** | claim, issue, error | One item that may warrant review |
+| **May warrant review** | outdated!, wrong, must fix | Default advisory phrase |
+| **End-of-life** | dead, obsolete | No longer supported by its maintainers (sourced) |
+| **Less used in industry** | unpopular, bad | Still supported; usage is declining (trend source) |
+| **Unverified** | unknown, error | No trusted source found; GroundEd doesn't guess |
+| **Source**, **source tier** | reference, quality | A trusted document, and how strong it is |
+| **Update · Keep intentionally · Dismiss** | accept, reject | The user's decision on a finding |
+| **AI suggestion** | AI answer, fix | Text written by AI, not a sourced fact |
+| **Not covered yet** | unsupported, error | Module is outside technology courses (e.g. GED) |
+
+### Microcopy library
 | Situation | Copy |
 |---|---|
-| Status: EOL | **End-of-life**: "No longer supported since {date}; may warrant review." |
-| Status: nearing EOL | **Nearing end-of-life**: "Support ends {date}; may warrant review." |
-| Priority | **High priority** (≥ 80) · **Medium priority** (≥ 50) · **Low priority** (< 50) |
-| Status: supported | **Supported**: "Currently supported." |
-| Status: unverified | **Unverified**: "No source found. GroundEd does not guess. Please check manually." |
-| AI draft label | "AI suggestion: not sourced. Review and edit before using." |
-| Privacy note | "Your PDF's text is processed by Google Gemini to detect technologies. Uploads are deleted after 24 hours." |
-| Generic error | "Something went wrong. {detail} Try again, or use a sample syllabus." |
-| Rate limit | "GroundEd is busy right now. Try again in a minute, or explore a sample syllabus." |
-| Empty results | "No technologies detected. If your syllabus names tools, the PDF may be scanned. Try a text-based PDF." |
+| Report headline | "{n} findings may warrant review" · "No findings may warrant review" |
+| End-of-life | "No longer supported since {date}; may warrant review." |
+| Nearing end-of-life | "Support ends {date}; may warrant review." |
+| Supported | "Currently supported. No action needed." |
+| Less used in industry | "Still supported, but used less in industry ({source}, {year})." |
+| Unverified | "No trusted source found. GroundEd does not guess. Please check this one yourself." |
+| Low confidence | "Limited evidence: we couldn't confirm {what}. Check page {n}." |
+| AI suggestion label | "AI suggestion: not sourced. Review and edit before using." |
+| Decisions | Update · Keep intentionally · Dismiss · Undo. Reason field: "Why? (optional)" |
+| Privacy | "Your module's text is processed by Google Gemini to find technologies. Uploads are deleted after 24 hours." |
+| Scope note | "GroundEd covers technology courses (IT, computing, web development). Other subjects aren't covered yet." |
+| Not covered yet | "This module looks like it's outside technology courses, so there's nothing to report yet." |
+| Scanned PDF | "This PDF looks scanned, so we can't read its text yet. Try a text-based PDF." |
+| Busy service | "Our analysis service is busy right now. Your module wasn't lost: try again in a minute, or explore a sample." |
+| Network | "Can't reach GroundEd. Check your connection and try again." |
+| All decided (sprout moment) | "All {n} findings reviewed. Your module is ready for next term." |
+| Demo account | "Demo account: for trying GroundEd only. Reports are saved in this browser." |
 
-## 3. Colour tokens
+## 4. Brand
 
-Defined in `frontend/src/index.css` under `@theme`. Use the token classes (`bg-surface`, `text-ink`, `text-eol` …), **never raw hex** in components.
+- **Personality:** trustworthy · scholarly · calm.
+- **Logo: Horizon.** A circle split by a horizon line: a sky-wash top, a clay ground below, and a lapis "point of light" (knowledge) above the line. The **wordmark** "Ground**Ed**" is set in **Inter 700, tracking −0.03em** (matching the headings), with "Ed" in lapis.
+  - Files: `frontend/public/logo.svg` (mark + wordmark) and `frontend/public/favicon.svg` (mark only, works at 16 px).
+  - Clear space around the logo: at least the height of the "G".
+  - Minimum size: mark 16 px, full logo 120 px wide.
+  - **Don't** recolour it, stretch it, add shadows, or place it on clay or lapis backgrounds.
+- **Illustration motif: Sprout.** A small sprout growing from a groundline. It marks **growth and completion**, so it's used only for:
+  1. All findings reviewed
+  2. Feedback sent
+  3. A clean report (no findings)
+  4. The Landing page's closing call to action
 
-### Neutrals and brand
-| Token | Hex | Use |
-|---|---|---|
-| `ink` | `#16213A` | Primary text, headings, primary button |
-| `ink-muted` | `#4A5568` | Secondary text |
-| `ink-subtle` | `#718096` | Captions, metadata |
-| `canvas` | `#F7F6F2` | Page background (warm paper) |
-| `surface` | `#FFFFFF` | Cards, panels |
-| `line` | `#E3E1DA` | Borders, dividers |
-| `brand` | `#0E6E5C` | Brand accent, links, focus ring |
-| `brand-soft` | `#E3F2EE` | Brand tinted backgrounds |
+  Never use it on errors, in findings, or as decoration elsewhere.
+- **Horizon band (landing hero only).** A vertical gradient from `sky` at the top to `canvas` white, ending on a
+  1 px `ink` groundline with a faint clay band below. It echoes the Horizon logo. Use no clouds, scenery or photos.
 
-### Status (each has text and background)
-| Status | Text token | Background token | Icon (lucide) |
+## 5. Colour tokens
+
+Use token classes (`bg-canvas`, `text-ink`, `bg-lapis` …), **never raw hex** in components.
+All text pairs below are checked against WCAG 2.2 AA (≥ 4.5:1 for text; ≥ 3:1 for graphics).
+
+### Brand and neutrals (Palette A · Lapis & Clay, white canvas)
+| Token | Hex | Role | Contrast |
 |---|---|---|---|
-| End-of-life | `eol` `#B42318` | `eol-soft` `#FEF3F2` | `OctagonAlert` |
-| Nearing end-of-life | `nearing` `#B54708` | `nearing-soft` `#FFFAEB` | `Clock` |
-| Supported | `supported` `#067647` | `supported-soft` `#ECFDF3` | `CircleCheck` |
-| Unverified | `unverified` `#475467` | `unverified-soft` `#F2F4F7` | `CircleHelp` |
-| AI suggestion | `ai` `#6941C6` | `ai-soft` `#F4F3FF` | `Sparkles` |
+| `canvas` | `#FFFFFF` | Page background | — |
+| `panel` | `#F4F5F8` | Soft grey panels (landing features, evidence wells, report header band) | — |
+| `panel-strong` | `#EEF1F6` | Hover on panels, table headers | — |
+| `surface` | `#FFFFFF` | Cards and inputs *inside* panels (white on grey) | — |
+| `line` | `#E3E6EC` | Borders, dividers | — |
+| `ink` | `#17213A` | Primary text, headings, "High" priority | 16.0 on canvas · 14.7 on panel |
+| `ink-muted` | `#4F5A6E` | Secondary text | 7.0 on canvas · 6.4 on panel |
+| `ink-subtle` | `#5F687B` | Captions, metadata | 5.6 on canvas · 5.1 on panel · **not on `sky`** (4.45) |
+| `lapis` | `#2B55A6` | **Brand**: primary buttons, links, focus ring, logo "Ed" | 7.1 on white · white on lapis 7.1 |
+| `lapis-deep` | `#1F4380` | Hover/pressed lapis; text on `sky` | 7.7 on sky |
+| `sky` | `#DCE6F6` | Light brand wash: horizon band, selected tabs, info notices, logo sky | — |
+| `clay` | `#B9784A` | **Decoration only**: logo ground, groundline accents, quote rules | 3.6 on white (graphics only) |
+| `clay-deep` | `#8A5530` | Clay used as text (rare) | 6.1 on white |
+| `moss` | `#5E7F62` | **Sprout only** | 4.5 on white (graphics) |
 
-All text/background pairs meet WCAG AA (≥ 4.5:1). Status is **never** communicated by colour alone: always label + icon.
+> **Rule:** clay and moss are brand decoration. They **never** carry meaning (status, priority, errors),
+> so they can't be confused with "nearing end-of-life" amber or "supported" green.
 
-### Priority (High / Medium / Low)
-Priority is a **ranking**, not a status, so it never uses status colours (a supported item can't be "red").
-It uses the neutral ink scale: **High** = solid `ink` with white text · **Medium** = `ink` outline · **Low** = `line` outline, `ink-muted` text.
-Thresholds come from the backend's `score.priority` (High ≥ 80, Medium ≥ 50, else Low; see `docs/design-brief.md` §5.2).
-Supported items show "No action needed" instead of a priority.
+### Status (fixed meaning; always icon + label, never colour alone)
+| Status | Text token | Background token | Icon (lucide) | Contrast |
+|---|---|---|---|---|
+| End-of-life | `eol` `#B42318` | `eol-soft` `#FEF3F2` | `OctagonAlert` | 6.1 |
+| Nearing end-of-life | `nearing` `#B54708` | `nearing-soft` `#FFFAEB` | `Clock` | 5.2 |
+| Supported | `supported` `#067647` | `supported-soft` `#ECFDF3` | `CircleCheck` | 5.4 |
+| Less used in industry | `declining` `#3E5372` | `declining-soft` `#EEF2F7` | `TrendingDown` | 7.0 |
+| Unverified | `unverified` `#475467` | `unverified-soft` `#F2F4F7` | `CircleHelp` | 7.0 |
+| AI suggestion | `ai` `#6941C6` | `ai-soft` `#F4F3FF` + dashed `#B9A6EC` border | `Sparkles` | 6.0 |
 
-## 4. Typography
+### Priority (a ranking, not a status)
+Uses the neutral ink scale, never status colours:
+- **High:** solid `ink`, white text
+- **Medium:** `ink` outline
+- **Low:** `line` outline, `ink-muted` text
 
-| Role | Font | Class | Size / weight |
+Thresholds come from the backend (`score.priority`: High ≥ 80, Medium ≥ 50, else Low). Supported items show "No action needed" instead.
+
+## 6. Typography
+
+| Role | Font | Size / line-height | Weight · tracking | Use |
+|---|---|---|---|---|
+| Display | Inter | 64 / 1.05 (40 on phones) | 700 · −0.035em | Landing hero headline only |
+| Section display | Inter | 44 / 1.1 (32 on phones) | 700 · −0.03em | Landing section titles |
+| H1 | Inter | 32 / 1.15 | 700 · −0.02em | App page titles |
+| H2 | Inter | 24 / 1.25 | 650 · −0.015em | Section titles in the app |
+| H3 | Inter | 18 / 1.4 | 600 | Card and finding titles |
+| Body | Inter | **16 / 1.6** | 400 | All running text |
+| Small | Inter | 14 / 1.5 | 400 | Metadata, helper text |
+| Label | Inter | 12 / 1.2, +0.06em, uppercase | 600 | Section labels ("IN YOUR MODULE") |
+| Quote | Source Serif 4 italic | 16 / 1.55 | 400 | **Only** text quoted from a module or source |
+| Data | JetBrains Mono, tabular | 14 / 1.2 | 500 | Scores, versions, dates in tables |
+
+- **Bold sans for every heading** (confident and modern). **Serif means "quoted from a module or source", nothing else**, so evidence stands out instantly. Mono is numbers.
+- Big headlines are short (≤ 6 words), centred on the landing page, left-aligned in the app.
+- Line length: 60–75 characters for reading text (`max-w-prose`).
+- Never smaller than 12 px; never grey text below 14 px except labels.
+
+## 7. Space, shape, elevation, motion, layout
+
+| Token | Value | Use |
+|---|---|---|
+| Spacing scale | 4 · 8 · 12 · 16 · 20 · 24 · 32 · 48 · 64 · 96 px | Tailwind 1–24 |
+| Card padding | 20 px (24 px on detail panels) | Comfortable density |
+| Gap between findings | 12 px | |
+| Section spacing | 120 px (landing) · 32 px (app pages) | Generous white space on the landing |
+| Radius | `sm` 8 px (badges inside cards) · `md` 10 px (buttons, inputs) · `lg` 16 px (cards) · **`xl` 24 px (panels)** · `full` (pills, header) | |
+| Elevation | `0`: flat (grey panels need no border) · `1`: `0 1px 2px rgb(23 33 58 / .06)` + `line` border (white cards) · `2`: `0 12px 32px rgb(23 33 58 / .10)` (floating header, menus, drawers, hero cards) | |
+| Motion | 150 ms ease-out (hover, expand) · 250 ms (drawer) · none when `prefers-reduced-motion` | No looping animation |
+| Breakpoints | `sm` 640 · `md` 768 · `lg` 1024 · `xl` 1280 | Designed at 1280, stacked below `lg` |
+| Content width | 1200 px app · 720 px reading pages | |
+| Z-index | header 20 · drawer 40 · menu/popover 50 · toast 60 | |
+
+**Layout patterns**
+- **App shell:**
+  - **Floating pill header:** sticky, 12 px from the top, `full` radius, white at 85% with a backdrop blur, elevation 2. It holds: logo · How it works · Reports · Feedback, then Sign in · **Analyze a module** (the only filled button).
+  - White canvas; footer with Methodology, Sources, GitHub, Feedback.
+- **Report:**
+  - Header band: module name, "as of" date, headline, priority counts, Export.
+  - Tabs: **Findings | Document**.
+- **Finding detail:**
+  - Wide screens: two columns, *In your module* (quote, page, open in document) and *Source* (tier, publisher, passage, dates, link).
+  - Below them: Why this priority (score), Help (upgrade / AI draft), Decision.
+  - Below `lg`, the columns stack.
+- **Document tab:**
+  - Module pages on the left with highlights.
+  - Findings panel on the right (320 px).
+  - Clicking a highlight selects the finding in the panel.
+- **Print:** header and controls hidden; status label text always present; link URLs printed; the provenance stamp in the footer.
+
+### Landing page structure (inspired by letters.app; principles only)
+| Order | Section | Pattern | Content |
 |---|---|---|---|
-| Display (landing hero) | Source Serif 4 | `font-serif` | `text-4xl sm:text-5xl` / 600 |
-| Page title (h1) | Source Serif 4 | `font-serif` | `text-3xl` / 600 |
-| Section title (h2) | Inter | `font-sans` | `text-xl` / 600 |
-| Card title (h3) | Inter | | `text-lg` / 600 |
-| Body | Inter | | `text-base` / 400, line-height 1.6 |
-| Small / meta | Inter | | `text-sm` / 400, `text-ink-muted` |
-| Numbers (scores, dates) | JetBrains Mono | `font-mono` | `tabular-nums` |
-| Quoted syllabus snippet | Source Serif 4 italic | `font-serif italic` | `text-base` |
+| 1 | **Hero** | Centred short headline + 2–3 line subhead + one primary button (+ "Try a sample" text link) on the **horizon band** | Below the text, a **before → after** pair: a module page with a highlighted quote ("In your module"), overlapped by our finding card with its source ("With GroundEd"). Real UI, not an illustration. |
+| 2 | **Problem** | One short statement + one cited fact | Curricula lag industry (Dobslaw et al., 2023); faculty validation in the Philippines |
+| 3 | **Live mini-UI panels** | 2-column grid of `panel` blocks (24 px), each with a small label chip, a 2-line title and a live UI fragment | Progress steps · Finding card with source · Score breakdown · Decision control (Update / Keep / Dismiss) |
+| 4 | **See it work** | Section title + **tabs** (Findings / Document) above an embedded demo video in a browser frame | Our demo video (a hackathon deliverable); falls back to screenshots if no video yet |
+| 5 | **How it works** | **3 numbered step cards** in a row; the first is highlighted (lapis tint) | Upload a module → Check the evidence → Decide what to update |
+| 6 | **Built to be trusted** | 4 short principles with icons | Cited sources · No guessing · Transparent priority · You decide |
+| 7 | **Voices** | Quote cards | **Only real feedback quotes with consent.** Until we have them, show validation facts instead. Never invent testimonials or signatures. |
+| 8 | **Closing CTA + device shot** | Sprout illustration + headline + button; the Report page on a laptop frame | "Ready for next term?" style headline |
 
-Fonts are loaded from Google Fonts in `frontend/index.html`. Serif signals "academic source"; that's why snippets from the syllabus use it.
+## 8. Iconography
 
-## 5. Spacing, radius, elevation
+[lucide](https://lucide.dev) icons, 16 px in text and badges, 20 px in buttons, stroke 1.75. One meaning per icon:
 
-- Spacing follows Tailwind's 4 px scale. Common: card padding `p-5`, gaps between cards `gap-4`, section spacing `py-16` (landing) / `space-y-8` (app pages).
-- Content width: `max-w-6xl` for app pages, `max-w-3xl` for reading text. Page side gutter: `px-4 sm:px-6`.
-- Radius: `rounded-lg` (8 px) for inputs and buttons, `rounded-xl` (12 px) for cards, `rounded-full` for badges.
-- Elevation: cards use a 1 px `border-line` plus `shadow-sm`. No heavy shadows. Hover: `hover:border-ink/30`.
+| Meaning | Icon | Meaning | Icon |
+|---|---|---|---|
+| End-of-life | `OctagonAlert` | Source / external link | `ExternalLink` |
+| Nearing end-of-life | `Clock` | Module quote | `BookOpen` |
+| Supported | `CircleCheck` | Source record | `Library` |
+| Less used in industry | `TrendingDown` | Upload | `Upload` |
+| Unverified | `CircleHelp` | Export | `Download` |
+| AI suggestion | `Sparkles` | Undo | `Undo2` |
+| Help / definition | `Info` | Low confidence | `TriangleAlert` |
 
-## 6. Components
+Icons never stand alone for meaning: always with a visible label, or an `aria-label` for icon-only buttons.
 
-All reusable building blocks are in `frontend/src/components/ui/`. Use them; don't restyle ad hoc.
+## 9. Showing data and evidence
 
-| Component | File | Rules |
-|---|---|---|
-| `Button` | `ui/Button.tsx` | Variants: `primary` (ink bg), `secondary` (outlined), `ghost` (text), `ai` (violet, only for AI actions). Sizes `sm`, `md`. One primary per view. |
-| `StatusBadge` | `ui/StatusBadge.tsx` | Always icon + label. Use for finding status only. |
-| `PriorityBadge` | `ui/PriorityBadge.tsx` | High / Medium / Low. Neutral ink scale only. Use `priorityOf(score)` from `lib/priority.ts`. |
-| `Notice` | `ui/Notice.tsx` | Tones `info`, `warning`, `error`. For page-level messages, not finding status. |
-| `AiSuggestion` | `ui/AiSuggestion.tsx` | Wraps **any** AI-generated content. Violet dashed border + label. Mandatory. |
-| `SourceLink` | `ui/SourceLink.tsx` | External source links: opens in new tab, shows `ExternalLink` icon, `rel="noreferrer"`. |
-| `Card` | `ui/Card.tsx` | White surface, border, `rounded-xl`, `p-5`. |
+- **Scores:** `86/100` in mono. Breakdown as bars: points/max per factor (Lifecycle 40, Frequency 30, Labs 20, Activities 10) with one plain-sentence reason each.
+- **Dates:** "1 Jan 2020" (en-GB day-month-year) plus a relative hint when useful: "(6 years ago)". Reports say "As of {date}".
+- **Module evidence:** quote style, "Page 4", and a link "View in module" (opens the Document tab at that highlight).
+- **Source evidence:**
+  - Tier label in words (*Support data*, *Official documentation*, *Curriculum standard*, *Industry trend*)
+  - Publisher, then the passage in quote style
+  - "Published {date} · Checked {date}", then the link
+- **Kind and usage:** a small uppercase label before the name (TOOL, LANGUAGE, PRACTICE, TOPIC) and a summary line ("Taught in labs · pages 4, 6").
+- **Confidence:** hidden when high. When low, a `TriangleAlert` note with what's missing.
+- **Provenance:** "As of {date} · Details" in the report header; the full stamp is in a popover and the print footer.
+- **Document highlights:** status-tinted underline + soft background (`eol-soft`, etc.), 2 px solid underline when selected. Highlights never rely on colour alone, so a hover/focus label names the finding.
 
-Domain components (`components/`): `FindingCard`, `EvidencePanel`, `ScoreBreakdown`, `ReportExport`, `Layout`.
+## 10. Components
 
-### FindingCard anatomy
+### Inventory
+| Component | File | Status | Notes |
+|---|---|---|---|
+| Button | `ui/Button.tsx` | Have → restyle | Variants: `primary` (lapis), `secondary` (outlined), `ghost`, `ai` (violet). Sizes `sm` 36 px, `md` 44 px. One primary per view. |
+| Card | `ui/Card.tsx` | Have → restyle | White, `line` border, `lg` (16 px) radius, elevation 1 |
+| **Panel** | `ui/Panel.tsx` | **Must** | Soft grey `panel` block, `xl` (24 px) radius, no border; optional label chip + title |
+| **PillHeader** | `components/Layout.tsx` | **Must** (restyle) | Floating rounded sticky header |
+| **HorizonBand** | `ui/HorizonBand.tsx` | **Must** | Landing hero background: sky → canvas gradient + groundline |
+| **StepCards** | `ui/StepCards.tsx` | **Should** | Numbered how-it-works cards, first highlighted |
+| **VideoFrame** | `ui/VideoFrame.tsx` | **Should** | Browser-frame wrapper for the demo video, with tabs above |
+| Notice | `ui/Notice.tsx` | Have → restyle | Tones `info` (sky), `warning`, `error`. Page-level messages only. |
+| StatusBadge | `ui/StatusBadge.tsx` | Have → add "Less used in industry" | Icon + label always |
+| PriorityBadge | `ui/PriorityBadge.tsx` | Have | Neutral ink scale |
+| AiSuggestion | `ui/AiSuggestion.tsx` | Have | Mandatory wrapper for AI text |
+| SourceLink | `ui/SourceLink.tsx` | Have | New tab + icon + screen-reader note |
+| **Logo** | `ui/Logo.tsx` | **Must** | Horizon mark + wordmark; `mark` / `full` variants |
+| **Field set** (Input, Select, Textarea, Radio, Checkbox) | `ui/Field.tsx` | **Must** | Label always visible; help text; error text with `role="alert"` |
+| **Tabs** | `ui/Tabs.tsx` | **Must** | Findings / Document; help levels. Keyboard arrows. |
+| **ProgressSteps** | `ui/ProgressSteps.tsx` | **Must** | Reading → Detecting → Checking sources → Scoring; done / current / waiting / failed |
+| **QuoteBlock** | `ui/QuoteBlock.tsx` | **Must** | Serif italic quote + page/source caption |
+| **SourceCard** | `ui/SourceCard.tsx` | **Must** | Tier, publisher, passage, dates, link |
+| **DecisionControl** | `ui/DecisionControl.tsx` | **Must** | Update / Keep intentionally / Dismiss + reason + undo |
+| **EmptyState** | `ui/EmptyState.tsx` | **Must** | Icon or sprout, title, text, action |
+| **Tooltip / Definition** | `ui/Definition.tsx` | **Should** | Dotted-underline term + popover explanation (students, reviewers) |
+| **Toast** | `ui/Toast.tsx` | **Should** | "Copied", "Decision saved" |
+| **FilterChips** | `ui/FilterChips.tsx` | **Should** | Status / priority / kind filters with counts |
+| **Drawer** | `ui/Drawer.tsx` | **Should** | Finding detail beside the list on wide screens |
+| **Skeleton** | `ui/Skeleton.tsx` | **Later** | Loading placeholders |
+| **DocumentViewer** | `components/DocumentViewer.tsx` | **Should** | Module pages + highlights (PDF.js); falls back to page text with highlights |
+| **Sprout** | `ui/Sprout.tsx` | **Must** | The completion illustration (inline SVG) |
+
+### States (every interactive component)
+default · hover · focus-visible (2 px lapis outline, 2 px offset) · active · disabled (50% opacity, no pointer) ·
+loading (spinner + label, e.g. "Drafting…") · error (eol text + message).
+
+### FindingCard anatomy (Findings tab)
 ```
-┌──────────────────────────────────────────────────────────────┐
-│ [StatusBadge]  Python 2.7     [High priority]   82/100  [▼]  │  collapsed header
-│ No longer supported since 1 Jan 2020; may warrant review · p. 2, 5 │
-├──────────────────────────────────────────────────────────────┤
-│ IN YOUR SYLLABUS            │ LIFECYCLE RECORD               │  EvidencePanel
-│ "Lab exercises use Py 2.7"  │ Cycle 2.7 · EOL 2020-01-01     │
-│  p. 2                       │ endoflife.date ↗               │
-├──────────────────────────────────────────────────────────────┤
-│ Why 82/100?  ▇▇▇▇ 40/40 Lifecycle · 12/30 Frequency · …      │  ScoreBreakdown
-├──────────────────────────────────────────────────────────────┤
-│ How much help do you want?                                   │  Help levels
-│ (•) Review evidence ( ) Accept upgrade ( ) Draft section     │
-│ [Mark as reviewed]                                           │
-└──────────────────────────────────────────────────────────────┘
+┌───────────────────────────────────────────────────────────────────────┐
+│ PRACTICE  mysql_connect()      [● End-of-life]   [High]  86/100   ▾  │
+│ Taught in labs · pages 4, 6 · No longer supported since 1 Dec 2015;   │
+│ may warrant review                                    [To review]    │
+└───────────────────────────────────────────────────────────────────────┘
 ```
 
-## 7. Interaction patterns
+### Finding detail anatomy
+```
+IN YOUR MODULE (p. 4)              │ SOURCE · Official documentation
+"Lab 3: Connect to the database    │ PHP Group · php.net
+ using mysql_connect()"            │ "The original MySQL extension was removed in PHP 7.0.0."
+View in module →                   │ Published 3 Dec 2015 · Checked 10 Nov 2026 ↗
+─────────────────────────────────────────────────────────────────────────
+Why High priority (86/100)?  ▇▇▇▇ Lifecycle 40/40 · Frequency 12/30 · Labs 20/20 · Activities 10/10
+How can GroundEd help?  [Review evidence] [Suggested upgrade] [AI draft]
+Your decision:  (Update) (Keep intentionally) (Dismiss)   Why? ________   [Save]
+```
 
-- **Help levels** are a segmented control: *Review evidence* → *Accept upgrade* (only if a sourced upgrade exists) → *Draft section* (AI).
-- **Decisions**: `reviewed`, `upgrade_accepted`, `draft_approved`. Shown as a badge on the card; "Undo" is always available.
-  Decisions are stored per analysis in `localStorage` (`grounded:decisions:{analysisId}`) and included in the export.
-- **Loading**: long tasks show named steps (Reading PDF → Finding technologies → Checking lifecycle records → Scoring) and never a bare spinner.
-- **Errors**: inline `Notice` near the action, with a recovery path (try again / use a sample).
-- **External links** always open in a new tab with an icon.
-- **Sorting**: findings default to highest score first; unverified last.
+## 11. Accessibility (WCAG 2.2 AA)
 
-## 8. Accessibility checklist
+- Contrast ≥ 4.5:1 for text, ≥ 3:1 for UI graphics (see the tables above).
+- Status, priority and highlights are never shown by colour alone.
+- Keyboard: every action reachable; visible focus; tabs use arrow keys; Esc closes drawers and popovers; focus returns to the trigger.
+- Semantics: real `<button>` and `<a>`; `aria-expanded` on expanders; `aria-live` for progress; `role="alert"` for errors.
+- Forms: visible labels, never placeholder-only; errors next to the field.
+- Text resizes to 200% without loss; layout works at 320 px width.
+- Targets ≥ 24 × 24 px (WCAG 2.2), with 40 px+ preferred for main actions.
+- Respect `prefers-reduced-motion`.
+- **Testing:** Lighthouse accessibility ≥ 95; keyboard-only walkthrough; 200% zoom check; colour-blindness simulation in Chrome DevTools.
 
-- Text contrast ≥ 4.5:1; status by label + icon, never colour alone.
-- Visible focus ring: `focus-visible:outline-2 outline-brand outline-offset-2` (built into `Button` and inputs).
-- Every interactive element is a real `<button>` or `<a>`; expandable cards use `aria-expanded`.
-- Form fields have `<label>`s; errors are announced with `role="alert"`.
-- Works at 375 px width; no horizontal scroll; tap targets ≥ 40 px.
-- Respect `prefers-reduced-motion` (only subtle transitions are used).
+## 12. Checklist for any new UI
 
-## 9. Layout and pages
-
-| Route | Page | Purpose |
-|---|---|---|
-| `/` | Landing | Problem, how it works, trust principles, call to action |
-| `/analyze` | Analyze | Upload a PDF or choose a sample |
-| `/results/:id` | Results | Summary, filters, findings, export |
-| `/feedback` | Feedback | Role, country, rating, comments (Reach evidence) |
-| `*` | NotFound | Friendly 404 with links home |
-
-Every page sets its own `<title>` with `usePageTitle("…")` → "… · GroundEd".
-
-## 10. Print / export
-
-The report uses the same tokens but prints in black-and-white friendly form: status label text is always present,
-links print their URL, the app header and controls are hidden (`print:hidden`).
-
-## 11. Checklist for new UI
-
-- [ ] Uses tokens, not hex values
+- [ ] Uses tokens, not hex values or default Tailwind palette classes (`slate-`, `blue-`…)
 - [ ] Uses `ui/` components where one exists
-- [ ] Any AI text is inside `AiSuggestion`
-- [ ] Every fact has a visible source
-- [ ] Looks right at 375 px and 1280 px
-- [ ] Keyboard-navigable with visible focus
+- [ ] Words come from the glossary and microcopy library
+- [ ] Every fact has a visible source; any AI text is inside `AiSuggestion`
+- [ ] Clay and moss used only as decoration; sprout only at completion moments
+- [ ] Headings in bold sans; serif only for quoted evidence
+- [ ] Inspiration from other sites is adapted as principles, never copied (no copied layouts, imagery, icons or wording)
+- [ ] Works at 1280 px and stacks cleanly below 1024 px
+- [ ] Keyboard-navigable with visible focus; passes the accessibility list above
