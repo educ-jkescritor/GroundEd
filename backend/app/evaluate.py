@@ -27,6 +27,8 @@ class Report:
     backed: int = 0
     page_ok: int = 0
     consistent_modules: int = 0
+    fact_passages: int = 0
+    fact_passages_ok: int = 0
     modules: int = 0
     skipped: list[str] = field(default_factory=list)
 
@@ -40,6 +42,7 @@ class Report:
             f"Claims backed         {pct(self.backed, self.scored)}  (scored findings with source URL + verified quote)",
             f"Citation page match   {pct(self.page_ok, self.found)}",
             f"Consistency           {pct(self.consistent_modules, self.modules)}  (identical findings+scores across reruns)",
+            f"Retrieved fact passage contains the registry quote  {pct(self.fact_passages_ok, self.fact_passages)}",
         ]
 
 
@@ -73,6 +76,10 @@ def run(runs: int = 3, modules_dir: Path = MODULES_DIR, today: date | None = Non
                 rep.missed.append(f"{name}:{item_id}")
         rep.false_alarms += [f"{name}:{fid}" for fid in got if fid not in want]
         for f in a.findings:
+            for p in f.passages or []:
+                if p.role == "fact":
+                    rep.fact_passages += 1
+                    rep.fact_passages_ok += p.contains_fact_quote
             if f.score is not None:
                 rep.scored += 1
                 if f.lifecycle and f.lifecycle.source_url and f.citations:
