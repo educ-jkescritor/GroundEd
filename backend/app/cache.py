@@ -38,6 +38,12 @@ def put(cache_key: str, analysis: Analysis) -> None:
         conn.execute("INSERT OR REPLACE INTO analysis_cache (key, analysis_id) VALUES (?, ?)", (cache_key, analysis.id))
 
 
+def save_report(analysis: Analysis) -> None:
+    """Store a report without changing which report the cache key points to."""
+    db.init_db()
+    db.save_analysis(analysis)
+
+
 def get_draft(cache_key: str) -> Optional[tuple[str, str]]:
     with closing(_connect()) as conn:
         row = conn.execute("SELECT text, model FROM draft_cache WHERE key = ?", (cache_key,)).fetchone()

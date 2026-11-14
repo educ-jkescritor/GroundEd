@@ -105,7 +105,17 @@ def analyze(pdf_path: Path, filename: str, kind: str = "upload", today: Optional
     cache_key = cache.key(file_hash, reg.version, rules_version, library_version, PIPELINE_VERSION, detector,
                           today.isoformat())
     if use_cache and (hit := cache.get(cache_key)):
-        return hit
+        if (hit.source.filename, hit.source.kind) == (filename, kind):
+            return hit  # identical re-upload: same report, so decisions saved for it in the browser reappear
+        # Same content under another name: reuse the findings (instant, deterministic) but give this upload its own
+        # report with its own name, id and time. The cache entry keeps pointing at the original report.
+        report = hit.model_copy(update={
+            "id": uuid.uuid4().hex[:12],
+            "created_at": datetime.now(timezone.utc),
+            "source": hit.source.model_copy(update={"filename": filename, "kind": kind}),
+        })
+        cache.save_report(report)
+        return report
 
     pages = extract_pages(pdf_path)
     entries = {e.id: e for e in reg.entries}
