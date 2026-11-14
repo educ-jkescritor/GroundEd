@@ -1,0 +1,53 @@
+{
+ "id": "mdn-marquee",
+ "title": "<marquee>: The Marquee element (deprecated)",
+ "url": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/marquee",
+ "publisher": "MDN Web Docs (Mozilla)",
+ "tier": 2,
+ "license": "CC-BY-SA-2.5",
+ "store": "full",
+ "tags": [
+  "html",
+  "deprecated",
+  "element"
+ ],
+ "fetched_at": "2026-11-14T09:23:04+00:00",
+ "content_sha256": "822b843a64516e7c45ddc0b83a4b9a96f126ad996c7c1d645453c2ba4a36188d",
+ "passages": [
+  {
+   "n": 0,
+   "heading": "<marquee> HTML marquee element",
+   "text": "Avoid using this feature in new projects. This feature may be a candidate for removal from web standards or browsers. See full compatibility Learn more The <marquee> HTML element is used to insert a scrolling area of text. You can control what happens when the text reaches the edges of its content area using its attributes. The HTML <marquee> element is deprecated and its use is strongly discouraged. If you must create the effect of scrolling text or continuous elements, consider using CSS animations with CSS transforms instead of <marquee> elements to smoothly animate content. Additionally, include the prefers-reduced-motion CSS @media query to stop the animation based on user preference, thereby improving user experience and accessibility."
+  },
+  {
+   "n": 1,
+   "heading": "Attributes",
+   "text": "behavior Sets how the text is scrolled within the marquee. Possible values are scroll, slide and alternate. If no value is specified, the default value is scroll. bgcolor Sets the background color through color name or hexadecimal value. direction Sets the direction of the scrolling within the marquee. Possible values are left, right, up and down. If no value is specified, the default value is left. height Sets the height in pixels or percentage value. hspace Sets the horizontal margin loop Sets the number of times the marquee will scroll. If no value is specified, the default value is −1, which means the marquee will scroll continuously. scrollamount Sets the amount of scrolling at each interval in pixels. The default value is 6. scrolldelay Sets the interval between each scroll movement in milliseconds. The default value is 85. Note that any value smaller than 60 is ignored and the value 60 is used instead unless truespeed is specified. truespeed By default, scrolldelay values lower than 60 are ignored. If truespeed is present, those values are not ignored. vspace Sets the vertical margin in pixels or percentage value. width Sets the width in pixels or percentage value."
+  },
+  {
+   "n": 2,
+   "heading": "Examples",
+   "text": "<marquee>This text will scroll from right to left</marquee> <marquee direction=\"up\">This text will scroll from bottom to top</marquee> <marquee direction=\"down\" width=\"250\" height=\"200\" behavior=\"alternate\" class=\"outlined\"> <marquee behavior=\"alternate\">This text will bounce</marquee> </marquee> .outlined { border: solid; }"
+  },
+  {
+   "n": 3,
+   "heading": "Technical summary",
+   "text": "DOM interface HTMLMarqueeElement"
+  },
+  {
+   "n": 4,
+   "heading": "Specifications",
+   "text": "Specification HTML # the-marquee-element-2"
+  },
+  {
+   "n": 5,
+   "heading": "See also",
+   "text": "CSS transform property CSS translate property CSS transforms module CSS animations module HTMLMarqueeElement"
+  },
+  {
+   "n": 6,
+   "heading": "Help improve MDN",
+   "text": "This page was last modified on Aug 21, 2026 by MDN contributors."
+  }
+ ]
+}

@@ -1,0 +1,122 @@
+# Source library — trusted documents for web development (tiers: docs/design-brief.md §6).
+# Build with:  uv run python -m app.cli library build      (writes library/snapshot/, reviewed in a PR)
+#
+# store:
+#   full     — keep the whole main text (licence allows reuse with attribution)
+#   excerpt  — keep only passages matching `excerpt_terms` (licence unclear or restrictive: cite, don't copy)
+# selector: CSS selector for the page's main content (menus, footers and scripts are dropped).
+#
+# Licences (checked 2026-11-14): PHP Manual CC BY 3.0 (php.net/copyright.php) · MDN CC BY-SA 2.5 ·
+# MySQL Reference Manual © Oracle, all rights reserved · Microsoft Learn: treated as restrictive (excerpt only).
+
+- id: php-migration70-incompatible
+  title: Backward incompatible changes (PHP 7.0)
+  url: https://www.php.net/manual/en/migration70.incompatible.php
+  publisher: PHP Manual (php.net)
+  tier: 2
+  license: CC-BY-3.0
+  store: full
+  selector: "#layout-content"
+  tags: [php, php7, removed, migration]
+
+- id: php-migration70-removed-exts
+  title: Removed extensions and SAPIs (PHP 7.0)
+  url: https://www.php.net/manual/en/migration70.removed-exts-sapis.php
+  publisher: PHP Manual (php.net)
+  tier: 2
+  license: CC-BY-3.0
+  store: full
+  selector: "#layout-content"
+  tags: [php, php7, removed, mysql, ereg]
+
+- id: php-mysqlinfo-api-choosing
+  title: Choosing an API (MySQL in PHP)
+  url: https://www.php.net/manual/en/mysqlinfo.api.choosing.php
+  publisher: PHP Manual (php.net)
+  tier: 2
+  license: CC-BY-3.0
+  store: full
+  selector: "#layout-content"
+  tags: [php, mysql, mysqli, pdo, replacement]
+
+- id: php-tags
+  title: PHP tags
+  url: https://www.php.net/manual/en/language.basic-syntax.phptags.php
+  publisher: PHP Manual (php.net)
+  tier: 2
+  license: CC-BY-3.0
+  store: full
+  selector: "#layout-content"
+  tags: [php, syntax, tags, replacement]
+
+- id: php-pcre
+  title: PCRE (Perl Compatible Regular Expressions)
+  url: https://www.php.net/manual/en/book.pcre.php
+  publisher: PHP Manual (php.net)
+  tier: 2
+  license: CC-BY-3.0
+  store: full
+  selector: "#layout-content"
+  tags: [php, regex, pcre, replacement]
+
+- id: php-supported-versions
+  title: Supported Versions
+  url: https://www.php.net/supported-versions.php
+  publisher: PHP (php.net)
+  tier: 1
+  license: CC-BY-3.0
+  store: full
+  selector: "#layout-content"
+  tags: [php, versions, support]
+
+- id: mysql-numeric-type-attributes
+  title: Numeric Data Type Attributes (MySQL 8.0)
+  url: https://dev.mysql.com/doc/refman/8.0/en/numeric-type-attributes.html
+  publisher: MySQL 8.0 Reference Manual (Oracle)
+  tier: 2
+  license: Oracle-all-rights-reserved
+  store: excerpt
+  excerpt_terms: ['display width', 'ZEROFILL']
+  selector: "#docs-body"
+  tags: [mysql, deprecated, int]
+
+- id: ms-ie-retirement-faq
+  title: Lifecycle FAQ — Internet Explorer and Microsoft Edge
+  url: https://learn.microsoft.com/lifecycle/faq/internet-explorer-microsoft-edge
+  publisher: Microsoft Learn
+  tier: 1
+  license: Microsoft-terms
+  store: excerpt
+  excerpt_terms: ['retire', 'retired', 'out of support', 'Microsoft Edge']
+  selector: "main"
+  tags: [browser, internet-explorer, edge, replacement]
+
+- id: mdn-center
+  title: "<center>: The Centered Text element (deprecated)"
+  url: https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/center
+  publisher: MDN Web Docs (Mozilla)
+  tier: 2
+  license: CC-BY-SA-2.5
+  store: full
+  selector: "main"
+  tags: [html, deprecated, element]
+
+- id: mdn-font
+  title: "<font> (deprecated)"
+  url: https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/font
+  publisher: MDN Web Docs (Mozilla)
+  tier: 2
+  license: CC-BY-SA-2.5
+  store: full
+  selector: "main"
+  tags: [html, deprecated, element]
+
+- id: mdn-marquee
+  title: "<marquee>: The Marquee element (deprecated)"
+  url: https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/marquee
+  publisher: MDN Web Docs (Mozilla)
+  tier: 2
+  license: CC-BY-SA-2.5
+  store: full
+  selector: "main"
+  tags: [html, deprecated, element]

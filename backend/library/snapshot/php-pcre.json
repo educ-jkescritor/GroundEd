@@ -1,0 +1,29 @@
+{
+ "id": "php-pcre",
+ "title": "PCRE (Perl Compatible Regular Expressions)",
+ "url": "https://www.php.net/manual/en/book.pcre.php",
+ "publisher": "PHP Manual (php.net)",
+ "tier": 2,
+ "license": "CC-BY-3.0",
+ "store": "full",
+ "tags": [
+  "php",
+  "regex",
+  "pcre",
+  "replacement"
+ ],
+ "fetched_at": "2026-11-14T09:22:57+00:00",
+ "content_sha256": "a66f625be30ae5da99a9cfbb2294244de6901483913e1b770f2b9651428adfb5",
+ "passages": [
+  {
+   "n": 0,
+   "heading": "Introduction",
+   "text": "This extension integrates regular expression pattern matching support into PHP. It is based on the free and open-source » PCRE2 library. This library implements regular expression pattern matching using syntax and semantics compatible with Perl, with a few » documented differences. See Pattern Syntax and Pattern Modifiers for a detailed explanation. To improve performance, the extension caches compiled regular expressions. Each thread has its own dedicated cache, capable of holding up to 4096 expressions. When the cache is full, a batch of the oldest entries that are not currently in use is discarded to make room for new ones. The cache size is not configurable. PCRE2 imposes » size and other limits that may be relevant in some cases. Installation Runtime Configuration Predefined Constants Examples PCRE regex syntax — Pattern Syntax Possible modifiers in regex patterns — Pattern Modifiers Differences From Perl — Perl Differences preg_filter — Perform a regular expression search and replace preg_grep — Return array entries that match the pattern preg_last_error — Returns the error code of the last PCRE regex execution preg_last_error_msg — Returns the error message of the last PCRE regex execution preg_match — Perform a regular expression match preg_match_all — Perform a global regular expression match preg_quote — Quote regular expression characters preg_replace — Perform a regular expression search and replace preg_replace_callback — Perform"
+  },
+  {
+   "n": 1,
+   "heading": "Introduction",
+   "text": "a regular expression search and replace using a callback preg_replace_callback_array — Perform a regular expression search and replace using callbacks preg_split — Split string by a regular expression"
+  }
+ ]
+}

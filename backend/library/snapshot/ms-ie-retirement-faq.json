@@ -1,0 +1,39 @@
+{
+ "id": "ms-ie-retirement-faq",
+ "title": "Lifecycle FAQ — Internet Explorer and Microsoft Edge",
+ "url": "https://learn.microsoft.com/lifecycle/faq/internet-explorer-microsoft-edge",
+ "publisher": "Microsoft Learn",
+ "tier": 1,
+ "license": "Microsoft-terms",
+ "store": "excerpt",
+ "tags": [
+  "browser",
+  "internet-explorer",
+  "edge",
+  "replacement"
+ ],
+ "fetched_at": "2026-11-14T09:23:01+00:00",
+ "content_sha256": "66b2fdaadcd5a858f428d340c890eda4af4f0f311557dfbc216d9bffdf72439a",
+ "passages": [
+  {
+   "n": 0,
+   "heading": "What is the Lifecycle policy for Microsoft Edge?",
+   "text": "Microsoft Edge follows the Modern Policy. Go here for Microsoft Edge Lifecycle Policy details. Support for the legacy version of the Microsoft Edge desktop app ended on March 9, 2021. The Microsoft Edge Legacy application will no longer receive security updates after that date. Go here to learn more. For additional lifecycle information, see servicing guidelines by channel along with a list of supported operating systems. Microsoft recommends using Microsoft Edge as your default browser. Go here to download."
+  },
+  {
+   "n": 1,
+   "heading": "What is the Lifecycle policy for Internet Explorer?",
+   "text": "Internet Explorer is a component of the Windows operating system (OS) and follows the Lifecycle Policy for the product on which it is installed and supported. Please note that the Internet Explorer (IE) 11 desktop application ended support for certain operating systems on June 15, 2022. Customers are encouraged to move to Microsoft Edge with IE mode. IE mode enables backward compatibility and will be supported through at least 2029. Additionally, Microsoft will provide notice one year prior to retiring IE mode. Please go here to learn more. Some versions of Internet Explorer may be supported past the latest Windows OS end date when Extended Security Updates (ESUs) are available. Go here for a list of products offering ESUs. For help migrating from IE 11 to Edge, go here. For information about Teams and Office 365/Microsoft 365 support on IE11, go here. For information on Azure DevOps support on IE11, go here. The tables below show the supported version of Internet Explorer for each operating system. Windows Desktop operating systems Operating system Internet Explorer version Notes Windows 7 ESU Internet Explorer 11 Windows 8.1 Update Internet Explorer 11 Windows 10 Semi-Annual Channel (SAC) Internet Explorer 11 As of June 15, 2022, the IE11 desktop application is no longer supported*. Windows 10 IoT Internet Explorer 11 As of June 15, 2022,"
+  },
+  {
+   "n": 2,
+   "heading": "Is Internet Explorer 11 the last version of Internet Explorer?",
+   "text": "Yes, Internet Explorer 11 is the last major version of Internet Explorer. The Internet Explorer 11 desktop application went out of support for certain operating systems starting June 15, 2022*. Customers are encouraged to move to Microsoft Edge with Internet Explorer (IE) mode. IE mode provides built-in legacy browser support for sites requiring Internet Explorer. For supported operating systems, Internet Explorer 11 will continue receiving security updates and technical support for the lifecycle of the Windows version on which it is installed. See above for a list of supported operating systems for Internet Explorer by version. *The retired, out-of-support Internet Explorer 11 (IE11) desktop application has been permanently disabled on certain versions of Windows 10. Go here to learn more."
+  },
+  {
+   "n": 3,
+   "heading": "What if my enterprise line-of-business (LOB) application has a dependency on a version of Internet Explorer that reached end of support?",
+   "text": "Microsoft is committed to supporting Internet Explorer mode in Microsoft Edge through at least 2029, on supported operating systems. Additionally, Microsoft will provide a minimum of one year notice prior to end of support for IE mode. Windows support dates are documented on the Product Lifecycle page and may require an Extended Security Updates (ESU) license, if available, to receive operating system security updates beyond its End of Support date."
+  }
+ ]
+}
