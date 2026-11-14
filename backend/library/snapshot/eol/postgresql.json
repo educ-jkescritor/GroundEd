@@ -1,0 +1,268 @@
+{
+ "last_modified": "2026-11-12T00:08:23+00:00",
+ "result": {
+  "name": "postgresql",
+  "label": "PostgreSQL",
+  "links": {
+   "html": "https://endoflife.date/postgresql"
+  },
+  "releases": [
+   {
+    "name": "18",
+    "label": "18",
+    "releaseDate": "2025-09-25",
+    "isEol": false,
+    "eolFrom": "2030-11-14",
+    "isMaintained": true
+   },
+   {
+    "name": "17",
+    "label": "17",
+    "releaseDate": "2024-09-26",
+    "isEol": false,
+    "eolFrom": "2029-11-08",
+    "isMaintained": true
+   },
+   {
+    "name": "16",
+    "label": "16",
+    "releaseDate": "2023-09-14",
+    "isEol": false,
+    "eolFrom": "2028-11-09",
+    "isMaintained": true
+   },
+   {
+    "name": "15",
+    "label": "15",
+    "releaseDate": "2022-10-13",
+    "isEol": false,
+    "eolFrom": "2027-11-11",
+    "isMaintained": true
+   },
+   {
+    "name": "14",
+    "label": "14",
+    "releaseDate": "2021-09-30",
+    "isEol": true,
+    "eolFrom": "2026-11-12",
+    "isMaintained": false
+   },
+   {
+    "name": "13",
+    "label": "13",
+    "releaseDate": "2020-09-24",
+    "isEol": true,
+    "eolFrom": "2025-11-13",
+    "isMaintained": false
+   },
+   {
+    "name": "12",
+    "label": "12",
+    "releaseDate": "2019-10-03",
+    "isEol": true,
+    "eolFrom": "2024-11-21",
+    "isMaintained": false
+   },
+   {
+    "name": "11",
+    "label": "11",
+    "releaseDate": "2018-10-18",
+    "isEol": true,
+    "eolFrom": "2023-11-09",
+    "isMaintained": false
+   },
+   {
+    "name": "10",
+    "label": "10",
+    "releaseDate": "2017-10-05",
+    "isEol": true,
+    "eolFrom": "2022-11-10",
+    "isMaintained": false
+   },
+   {
+    "name": "9.6",
+    "label": "9.6",
+    "releaseDate": "2016-09-29",
+    "isEol": true,
+    "eolFrom": "2021-11-11",
+    "isMaintained": false
+   },
+   {
+    "name": "9.5",
+    "label": "9.5",
+    "releaseDate": "2016-01-07",
+    "isEol": true,
+    "eolFrom": "2021-02-11",
+    "isMaintained": false
+   },
+   {
+    "name": "9.4",
+    "label": "9.4",
+    "releaseDate": "2014-12-18",
+    "isEol": true,
+    "eolFrom": "2020-02-13",
+    "isMaintained": false
+   },
+   {
+    "name": "9.3",
+    "label": "9.3",
+    "releaseDate": "2013-09-09",
+    "isEol": true,
+    "eolFrom": "2018-11-08",
+    "isMaintained": false
+   },
+   {
+    "name": "9.2",
+    "label": "9.2",
+    "releaseDate": "2012-09-10",
+    "isEol": true,
+    "eolFrom": "2017-11-09",
+    "isMaintained": false
+   },
+   {
+    "name": "9.1",
+    "label": "9.1",
+    "releaseDate": "2011-09-12",
+    "isEol": true,
+    "eolFrom": "2016-10-27",
+    "isMaintained": false
+   },
+   {
+    "name": "9.0",
+    "label": "9.0",
+    "releaseDate": "2010-09-20",
+    "isEol": true,
+    "eolFrom": "2015-10-08",
+    "isMaintained": false
+   },
+   {
+    "name": "8.4",
+    "label": "8.4",
+    "releaseDate": "2009-07-01",
+    "isEol": true,
+    "eolFrom": "2014-07-24",
+    "isMaintained": false
+   },
+   {
+    "name": "8.3",
+    "label": "8.3",
+    "releaseDate": "2008-02-04",
+    "isEol": true,
+    "eolFrom": "2013-02-07",
+    "isMaintained": false
+   },
+   {
+    "name": "8.2",
+    "label": "8.2",
+    "releaseDate": "2006-12-05",
+    "isEol": true,
+    "eolFrom": "2011-12-05",
+    "isMaintained": false
+   },
+   {
+    "name": "8.1",
+    "label": "8.1",
+    "releaseDate": "2005-11-08",
+    "isEol": true,
+    "eolFrom": "2010-11-08",
+    "isMaintained": false
+   },
+   {
+    "name": "8.0",
+    "label": "8.0",
+    "releaseDate": "2005-01-19",
+    "isEol": true,
+    "eolFrom": "2010-10-01",
+    "isMaintained": false
+   },
+   {
+    "name": "7.4",
+    "label": "7.4",
+    "releaseDate": "2003-11-17",
+    "isEol": true,
+    "eolFrom": "2010-10-01",
+    "isMaintained": false
+   },
+   {
+    "name": "7.3",
+    "label": "7.3",
+    "releaseDate": "2002-11-27",
+    "isEol": true,
+    "eolFrom": "2007-11-27",
+    "isMaintained": false
+   },
+   {
+    "name": "7.2",
+    "label": "7.2",
+    "releaseDate": "2002-02-04",
+    "isEol": true,
+    "eolFrom": "2007-02-04",
+    "isMaintained": false
+   },
+   {
+    "name": "7.1",
+    "label": "7.1",
+    "releaseDate": "2001-04-13",
+    "isEol": true,
+    "eolFrom": "2006-04-13",
+    "isMaintained": false
+   },
+   {
+    "name": "7.0",
+    "label": "7.0",
+    "releaseDate": "2000-05-08",
+    "isEol": true,
+    "eolFrom": "2005-05-08",
+    "isMaintained": false
+   },
+   {
+    "name": "6.5",
+    "label": "6.5",
+    "releaseDate": "1999-06-09",
+    "isEol": true,
+    "eolFrom": "2004-06-09",
+    "isMaintained": false
+   },
+   {
+    "name": "6.4",
+    "label": "6.4",
+    "releaseDate": "1998-10-30",
+    "isEol": true,
+    "eolFrom": "2003-10-30",
+    "isMaintained": false
+   },
+   {
+    "name": "6.3",
+    "label": "6.3",
+    "releaseDate": "1998-03-01",
+    "isEol": true,
+    "eolFrom": "2003-03-01",
+    "isMaintained": false
+   },
+   {
+    "name": "6.2",
+    "label": "6.2",
+    "releaseDate": "1997-10-02",
+    "isEol": true,
+    "eolFrom": null,
+    "isMaintained": false
+   },
+   {
+    "name": "6.1",
+    "label": "6.1",
+    "releaseDate": "1997-06-08",
+    "isEol": true,
+    "eolFrom": null,
+    "isMaintained": false
+   },
+   {
+    "name": "6.0",
+    "label": "6.0",
+    "releaseDate": "1997-01-29",
+    "isEol": true,
+    "eolFrom": null,
+    "isMaintained": false
+   }
+  ]
+ }
+}

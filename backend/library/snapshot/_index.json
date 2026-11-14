@@ -1,0 +1,81 @@
+{
+ "sources": [
+  {
+   "id": "mdn-center",
+   "status": "ok",
+   "reason": "",
+   "tried_at": "2026-11-14T09:26:46+00:00",
+   "passages": 9
+  },
+  {
+   "id": "mdn-font",
+   "status": "ok",
+   "reason": "",
+   "tried_at": "2026-11-14T09:26:47+00:00",
+   "passages": 5
+  },
+  {
+   "id": "mdn-marquee",
+   "status": "ok",
+   "reason": "",
+   "tried_at": "2026-11-14T09:26:48+00:00",
+   "passages": 7
+  },
+  {
+   "id": "ms-ie-retirement-faq",
+   "status": "ok",
+   "reason": "",
+   "tried_at": "2026-11-14T09:26:45+00:00",
+   "passages": 4
+  },
+  {
+   "id": "mysql-numeric-type-attributes",
+   "status": "ok",
+   "reason": "",
+   "tried_at": "2026-11-14T09:26:44+00:00",
+   "passages": 3
+  },
+  {
+   "id": "php-migration70-incompatible",
+   "status": "ok",
+   "reason": "",
+   "tried_at": "2026-11-14T09:26:37+00:00",
+   "passages": 51
+  },
+  {
+   "id": "php-migration70-removed-exts",
+   "status": "ok",
+   "reason": "",
+   "tried_at": "2026-11-14T09:26:38+00:00",
+   "passages": 2
+  },
+  {
+   "id": "php-mysqlinfo-api-choosing",
+   "status": "ok",
+   "reason": "",
+   "tried_at": "2026-11-14T09:26:39+00:00",
+   "passages": 2
+  },
+  {
+   "id": "php-pcre",
+   "status": "ok",
+   "reason": "",
+   "tried_at": "2026-11-14T09:26:41+00:00",
+   "passages": 2
+  },
+  {
+   "id": "php-supported-versions",
+   "status": "ok",
+   "reason": "",
+   "tried_at": "2026-11-14T09:26:42+00:00",
+   "passages": 3
+  },
+  {
+   "id": "php-tags",
+   "status": "ok",
+   "reason": "",
+   "tried_at": "2026-11-14T09:26:40+00:00",
+   "passages": 2
+  }
+ ]
+}

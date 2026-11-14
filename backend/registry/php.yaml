@@ -1,0 +1,48 @@
+# Facts Registry — PHP language features. Every fact = a library document + a verbatim quote from it.
+# Code checks the quote against library/snapshot/<doc>.json; dates come from the endoflife.date snapshot.
+# Schema: backend/app/registry.py (Entry). Reviewed via PR; never edited by the LLM.
+- id: php-ext-mysql
+  technology: PHP mysql extension (mysql_* functions)
+  patterns:
+    - '\bmysql_[a-z_]+\s*\('
+  fact:
+    stage: eol
+    product: php
+    removed_in: {product: php, cycle: "7.0"}
+    doc: php-migration70-incompatible
+    quote: "All ext/mysql functions were removed. For details about choosing a different MySQL API, see Choosing a MySQL API."
+  upgrade:
+    target: mysqli or PDO (with prepared statements)
+    source_url: https://www.php.net/manual/en/mysqlinfo.api.choosing.php
+
+- id: php-asp-script-tags
+  technology: ASP-style and <script language="php"> PHP tags
+  patterns:
+    - '<%=?'
+    - '<script\s+language\s*=\s*["“”'']?php'
+  context:  # `<% %>` is normal in EJS (Node.js) and JSP (Java): only flag it on pages that are about PHP
+    - '<\?php'
+    - '\bphp\b'
+  fact:
+    stage: eol
+    product: php
+    removed_in: {product: php, cycle: "7.0"}
+    doc: php-migration70-incompatible
+    quote: "Support for using ASP and script tags to delimit PHP code has been removed."
+  upgrade:
+    target: "Standard <?php ... ?> tags"
+    source_url: https://www.php.net/manual/en/language.basic-syntax.phptags.php
+
+- id: php-ext-ereg
+  technology: PHP POSIX regex (ereg* functions)
+  patterns:
+    - '\beregi?(_replace)?\s*\('
+  fact:
+    stage: eol
+    product: php
+    removed_in: {product: php, cycle: "7.0"}
+    doc: php-migration70-incompatible
+    quote: "All ereg functions were removed. PCRE is a recommended alternative."
+  upgrade:
+    target: PCRE preg_* functions
+    source_url: https://www.php.net/manual/en/book.pcre.php

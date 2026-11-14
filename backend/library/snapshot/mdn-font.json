@@ -1,0 +1,43 @@
+{
+ "id": "mdn-font",
+ "title": "<font> (deprecated)",
+ "url": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/font",
+ "publisher": "MDN Web Docs (Mozilla)",
+ "tier": 2,
+ "license": "CC-BY-SA-2.5",
+ "store": "full",
+ "tags": [
+  "html",
+  "deprecated",
+  "element"
+ ],
+ "fetched_at": "2026-11-14T09:23:03+00:00",
+ "content_sha256": "b7555c92ed66dd9ca3a52a7e2ad06e61c4f979cb6ffdf0eb16c8e3c023bf0365",
+ "passages": [
+  {
+   "n": 0,
+   "heading": "<font> HTML font element",
+   "text": "Avoid using this feature in new projects. This feature may be a candidate for removal from web standards or browsers. See full compatibility Learn more The <font> HTML element defines the font size, color and face for its content. Warning: Do not use this element. Use the CSS Fonts properties to style text."
+  },
+  {
+   "n": 1,
+   "heading": "Attributes",
+   "text": "Like all other HTML elements, this element supports the global attributes. color This attribute sets the text color using either a named color or a color specified in the hexadecimal #RRGGBB format. face This attribute contains a comma-separated list of one or more font names. The document text in the default style is rendered in the first font face that the client's browser supports. If no font listed is installed on the local system, the browser typically defaults to the proportional or fixed-width font for that system. size This attribute specifies the font size as either a numeric or relative value. Numeric values range from 1 to 7 with 1 being the smallest and 3 the default. It can be defined using a relative value, like +2 or -3, which sets it relative to 3, the default value."
+  },
+  {
+   "n": 2,
+   "heading": "DOM interface",
+   "text": "This element implements the HTMLFontElement interface."
+  },
+  {
+   "n": 3,
+   "heading": "Specifications",
+   "text": "Specification HTML # font"
+  },
+  {
+   "n": 4,
+   "heading": "Help improve MDN",
+   "text": "This page was last modified on Aug 21, 2026 by MDN contributors."
+  }
+ ]
+}

@@ -1,0 +1,252 @@
+{
+ "last_modified": "2026-11-05T00:08:40+00:00",
+ "result": {
+  "name": "symfony",
+  "label": "Symfony",
+  "links": {
+   "html": "https://endoflife.date/symfony"
+  },
+  "releases": [
+   {
+    "name": "8.1",
+    "label": "8.1",
+    "releaseDate": "2026-05-29",
+    "isEol": false,
+    "eolFrom": "2027-01-31",
+    "isMaintained": true
+   },
+   {
+    "name": "8.0",
+    "label": "8.0",
+    "releaseDate": "2025-11-27",
+    "isEol": true,
+    "eolFrom": "2026-07-31",
+    "isMaintained": false
+   },
+   {
+    "name": "7.4",
+    "label": "7.4 (LTS)",
+    "releaseDate": "2025-11-27",
+    "isEol": false,
+    "eolFrom": "2029-11-30",
+    "isMaintained": true
+   },
+   {
+    "name": "7.3",
+    "label": "7.3",
+    "releaseDate": "2025-05-29",
+    "isEol": true,
+    "eolFrom": "2026-01-31",
+    "isMaintained": false
+   },
+   {
+    "name": "7.2",
+    "label": "7.2",
+    "releaseDate": "2024-11-29",
+    "isEol": true,
+    "eolFrom": "2025-07-31",
+    "isMaintained": false
+   },
+   {
+    "name": "7.1",
+    "label": "7.1",
+    "releaseDate": "2024-05-31",
+    "isEol": true,
+    "eolFrom": "2025-01-31",
+    "isMaintained": false
+   },
+   {
+    "name": "7.0",
+    "label": "7.0",
+    "releaseDate": "2023-11-29",
+    "isEol": true,
+    "eolFrom": "2024-07-31",
+    "isMaintained": false
+   },
+   {
+    "name": "6.4",
+    "label": "6.4 (LTS)",
+    "releaseDate": "2023-11-29",
+    "isEol": false,
+    "eolFrom": "2027-11-30",
+    "isMaintained": true
+   },
+   {
+    "name": "6.3",
+    "label": "6.3",
+    "releaseDate": "2023-05-30",
+    "isEol": true,
+    "eolFrom": "2024-01-31",
+    "isMaintained": false
+   },
+   {
+    "name": "6.2",
+    "label": "6.2",
+    "releaseDate": "2022-11-30",
+    "isEol": true,
+    "eolFrom": "2023-07-31",
+    "isMaintained": false
+   },
+   {
+    "name": "6.1",
+    "label": "6.1",
+    "releaseDate": "2022-05-27",
+    "isEol": true,
+    "eolFrom": "2023-01-31",
+    "isMaintained": false
+   },
+   {
+    "name": "6.0",
+    "label": "6.0",
+    "releaseDate": "2021-11-29",
+    "isEol": true,
+    "eolFrom": "2023-01-31",
+    "isMaintained": false
+   },
+   {
+    "name": "5.4",
+    "label": "5.4 (LTS)",
+    "releaseDate": "2021-11-29",
+    "isEol": false,
+    "eolFrom": "2029-02-28",
+    "isMaintained": true
+   },
+   {
+    "name": "5.3",
+    "label": "5.3",
+    "releaseDate": "2021-05-31",
+    "isEol": true,
+    "eolFrom": "2022-01-01",
+    "isMaintained": false
+   },
+   {
+    "name": "5.2",
+    "label": "5.2",
+    "releaseDate": "2020-11-30",
+    "isEol": true,
+    "eolFrom": "2021-07-21",
+    "isMaintained": false
+   },
+   {
+    "name": "5.1",
+    "label": "5.1",
+    "releaseDate": "2020-05-31",
+    "isEol": true,
+    "eolFrom": "2021-01-21",
+    "isMaintained": false
+   },
+   {
+    "name": "5.0",
+    "label": "5.0",
+    "releaseDate": "2019-11-21",
+    "isEol": true,
+    "eolFrom": "2020-07-21",
+    "isMaintained": false
+   },
+   {
+    "name": "4.4",
+    "label": "4.4 (LTS)",
+    "releaseDate": "2019-11-21",
+    "isEol": true,
+    "eolFrom": "2023-11-21",
+    "isMaintained": false
+   },
+   {
+    "name": "4.3",
+    "label": "4.3",
+    "releaseDate": "2019-05-30",
+    "isEol": true,
+    "eolFrom": "2020-07-01",
+    "isMaintained": false
+   },
+   {
+    "name": "4.2",
+    "label": "4.2",
+    "releaseDate": "2018-11-30",
+    "isEol": true,
+    "eolFrom": "2020-01-01",
+    "isMaintained": false
+   },
+   {
+    "name": "4.1",
+    "label": "4.1",
+    "releaseDate": "2018-05-30",
+    "isEol": true,
+    "eolFrom": "2019-07-01",
+    "isMaintained": false
+   },
+   {
+    "name": "4.0",
+    "label": "4.0",
+    "releaseDate": "2017-11-30",
+    "isEol": true,
+    "eolFrom": "2019-01-01",
+    "isMaintained": false
+   },
+   {
+    "name": "3.4",
+    "label": "3.4 (LTS)",
+    "releaseDate": "2017-11-30",
+    "isEol": true,
+    "eolFrom": "2021-11-01",
+    "isMaintained": false
+   },
+   {
+    "name": "3.3",
+    "label": "3.3",
+    "releaseDate": "2017-05-29",
+    "isEol": true,
+    "eolFrom": "2018-07-01",
+    "isMaintained": false
+   },
+   {
+    "name": "3.2",
+    "label": "3.2",
+    "releaseDate": "2016-11-30",
+    "isEol": true,
+    "eolFrom": "2018-01-01",
+    "isMaintained": false
+   },
+   {
+    "name": "3.1",
+    "label": "3.1",
+    "releaseDate": "2016-05-30",
+    "isEol": true,
+    "eolFrom": "2017-07-01",
+    "isMaintained": false
+   },
+   {
+    "name": "3.0",
+    "label": "3.0",
+    "releaseDate": "2015-11-30",
+    "isEol": true,
+    "eolFrom": "2017-01-01",
+    "isMaintained": false
+   },
+   {
+    "name": "2.8",
+    "label": "2.8 (LTS)",
+    "releaseDate": "2015-11-30",
+    "isEol": true,
+    "eolFrom": "2019-11-01",
+    "isMaintained": false
+   },
+   {
+    "name": "2.7",
+    "label": "2.7 (LTS)",
+    "releaseDate": "2015-05-30",
+    "isEol": true,
+    "eolFrom": "2019-05-01",
+    "isMaintained": false
+   },
+   {
+    "name": "2.3",
+    "label": "2.3 (LTS)",
+    "releaseDate": "2013-06-03",
+    "isEol": true,
+    "eolFrom": "2017-05-01",
+    "isMaintained": false
+   }
+  ]
+ }
+}

@@ -25,6 +25,9 @@ class Lifecycle(BaseModel):
     eol_date: Optional[str] = None  # ISO date, or None if no EOL announced
     latest_cycle: Optional[str] = None
     source_url: str  # e.g. https://endoflife.date/python
+    # Additive (registry facts): who published the fact and the exact sentence that proves it.
+    source_name: Optional[str] = None  # e.g. "PHP Manual (php.net)" or "endoflife.date"
+    source_quote: Optional[str] = None  # verbatim passage from source_url
 
 
 class ScorePart(BaseModel):
@@ -48,6 +51,20 @@ class Upgrade(BaseModel):
     source_url: str
 
 
+class SourcePassage(BaseModel):
+    """A passage retrieved from the source library (RAG). Additive: frontend may ignore it."""
+    role: Literal["fact", "replacement"]  # fact = context around the registry quote; replacement = what to use instead
+    doc_id: str
+    title: str
+    publisher: str
+    url: str
+    heading: str
+    text: str
+    fetched_at: str  # when the library saved this document
+    license: str
+    contains_fact_quote: bool = False  # code-checked: the registry's quote appears in this passage
+
+
 class Finding(BaseModel):
     id: str
     technology: str  # as written in the syllabus
@@ -57,8 +74,9 @@ class Finding(BaseModel):
     lifecycle: Optional[Lifecycle] = None  # None => unverified
     score: Optional[Score] = None  # None => unverified, "needs manual check"
     upgrade: Optional[Upgrade] = None
-    kind: Optional[ItemKind] = None  # what sort of item (for labels and filters)
-    usage: Optional[Usage] = None  # taught in labs / in an activity / only mentioned
+    passages: Optional[list[SourcePassage]] = None  # additive: supporting passages from the source library
+    kind: Optional[ItemKind] = None  # additive: what sort of item (for labels and filters)
+    usage: Optional[Usage] = None  # additive: how the module uses it (for labels)
 
 
 class PageText(BaseModel):
@@ -81,15 +99,28 @@ class Summary(BaseModel):
     unverified: int = 0
 
 
+class Provenance(BaseModel):
+    """Set by code, never by the LLM. Same stamp => same result (served from cache)."""
+    file_sha256: str
+    registry_version: str  # hash of backend/registry/*.yaml
+    pipeline_version: str
+    detector: str  # e.g. "registry" or "registry+gemini-2.5-flash"
+    rules_version: Optional[str] = None  # hash of backend/rules/teaching.yaml (scoring signals)
+    library_version: Optional[str] = None  # hash of the source library snapshot (documents + lifecycle data)
+    eol_data: dict[str, str] = {}  # endoflife.date product -> last_modified of the data used
+    analysis_date: str  # ISO date used for "time past EOL" and status
+
+
 class Analysis(BaseModel):
     id: str
     created_at: datetime
     source: SourceInfo
     summary: Summary
     findings: list[Finding]
-    pages: list[PageText] = []  # optional: module text per page for the side-by-side Report
+    provenance: Optional[Provenance] = None  # additive
+    pages: list[PageText] = []  # additive: module text per page, for the side-by-side Report
     # "not_covered": the module is outside technology courses (e.g. GED), so there are no findings by design.
-    coverage: Literal["covered", "not_covered"] = "covered"  # optional: module text per page for the side-by-side Report
+    coverage: Literal["covered", "not_covered"] = "covered"
 
 
 class Draft(BaseModel):
