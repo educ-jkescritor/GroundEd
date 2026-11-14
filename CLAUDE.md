@@ -34,10 +34,12 @@ must yield "no evidence / not covered", not invented claims.
 
 ## Stack
 
-Next.js + TypeScript + Tailwind + shadcn/ui (PDF.js evidence viewer) · Python + FastAPI + Pydantic, managed
-with `uv` · PostgreSQL + pgvector · Docling or PyMuPDF (+OCR) — PyMuPDF is AGPL · embeddings: text-embedding-3-small
-or BGE/E5 · one pinned LLM + one fallback, strict JSON schema, temperature 0, no heavy LLM frameworks ·
-Langfuse tracing · pytest + evaluation scripts · Docker Compose for local dev. Verify library versions at setup.
+React + Vite + TypeScript + Tailwind + React Router (PDF.js evidence viewer; UI rules in `DESIGN.md`) · Python +
+FastAPI + Pydantic, managed with `uv` · PostgreSQL + pgvector · Docling or PyMuPDF (+OCR) — PyMuPDF is AGPL ·
+LLM: **Google Gemini** (pinned model, strict JSON schema, temperature 0; all calls in one module) · embeddings:
+**Gemini embedding model** (e.g. `gemini-embedding-001`; store model name with vectors) · no heavy LLM frameworks ·
+Langfuse tracing · pytest + evaluation scripts · Docker Compose (local dev and production) · **hosted on a Vultr
+Compute instance** (Caddy for HTTPS) — required by the hackathon. Verify library and model versions at setup.
 
 ## Build order
 

@@ -20,7 +20,7 @@ backend/    FastAPI API (Python)
   app/detect.py    all Gemini calls (detection, drafts)
   app/eol.py       endoflife.date lookups + cache
   app/score.py     100-point priority score
-  app/db.py        SQLite (analyses, feedback)
+  app/db.py        database access (PostgreSQL + pgvector; SQLite stub until migrated)
   data/            aliases.json, public sample syllabi, cache
 frontend/   React + Vite + TypeScript + Tailwind
   src/pages/       Landing, Analyze, Results, Feedback

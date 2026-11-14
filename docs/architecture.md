@@ -8,7 +8,7 @@ flowchart LR
     A --> P[PyMuPDF<br/>page text + positions]
     A --> G[Gemini<br/>detect mentions, draft text]
     A --> E[endoflife.date API<br/>cached lifecycle records]
-    A --> D[(SQLite<br/>analyses, feedback)]
+    A --> D[(PostgreSQL + pgvector<br/>registry, source passages,<br/>reports, feedback)]
 ```
 
 ## Analysis pipeline
@@ -46,7 +46,7 @@ sequenceDiagram
     participant P as PyMuPDF
     participant G as Gemini
     participant E as endoflife.date
-    participant D as SQLite
+    participant D as PostgreSQL
 
     F->>W: Upload PDF (or pick sample)
     W->>C: POST /api/analyze
@@ -85,8 +85,8 @@ flowchart LR
       subgraph be[container: backend]
         A[FastAPI :8000]
       end
-      VOL[(volume: backend_state<br/>SQLite)]
-      A --- VOL
+      PG[(container: postgres<br/>PostgreSQL + pgvector)]
+      A --- PG
     end
     B -->|HTTPS 443| C
     C -->|/api/* → :8000| A
