@@ -384,3 +384,12 @@ def test_hands_on_looks_one_page_back_but_never_forward(tmp_path):
     assert _hands_on_for(tmp_path, ["Laboratory Exercise 3: PHP and MySQL", code]) == 10
     assert _hands_on_for(tmp_path, [code, "Laboratory Exercise 4: forms"]) == 0
     assert _hands_on_for(tmp_path, ["Lecture notes", code]) == 0
+
+
+def test_pages_that_only_name_the_lab_are_not_hands_on():
+    from app.signals import is_hands_on
+    for text in ["Lab Setup\nOperating System: Windows 7", "Web Systems Lab Manual (sample)", "Lab Requirements",
+                 "Lab Computers: Windows 10"]:
+        assert not is_hands_on(text), text
+    for text in ["Lab 3: Connect to MySQL", "Laboratory Exercise 2", "Lab Activity: forms", "Exercise 4"]:
+        assert is_hands_on(text), text
