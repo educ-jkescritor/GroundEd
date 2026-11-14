@@ -56,7 +56,7 @@ def test_mysql_functions_detected_but_not_mysqli_or_pdo():
 
 def test_windows_versions_are_not_confused():
     assert _ids(["Windows 11 or Linux"]) == set()
-    assert _ids(["Windows 8.1"]) == set()
+    assert _ids(["Windows 8.1"]) == {"windows-8-1"}  # 8.1 is its own release, never reported as Windows 8
     assert {"windows-7", "windows-8"} <= _ids(["Windows 7 / Windows 8"])
 
 
@@ -95,6 +95,13 @@ def test_option_c_parts_sum_and_are_deterministic():
     assert {p.key: p.points for p in s.breakdown} == {"lifecycle": 40, "teaching": 15, "frequency": 8, "hands_on": 10}
     assert s.total == sum(p.points for p in s.breakdown) == 73 and s.priority == "medium"
     assert s == compute("2015-12-03", False, "explained", 2, True, TODAY)
+
+
+def test_ended_without_published_date_counts_as_eol():
+    from app.score import compute
+    s = compute(None, False, "code", 1, False, TODAY, ended=True)
+    assert s.breakdown[0].points == 40 and "no end date published" in s.breakdown[0].reason
+    assert status_for(None, False, TODAY, ended=True) == "eol"
 
 
 def test_supported_items_are_not_scored():
