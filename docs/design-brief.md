@@ -176,7 +176,7 @@ private/copyrighted modules (auth, deletion, check provider data-use policy).
 | Files | S3-compatible storage (local folder in dev) | |
 | Auth | Auth.js / Clerk / Supabase Auth | |
 | Local dev | Docker Compose | |
-| Hosting | Vercel (frontend) + Render/Fly/Railway (backend) | |
+| Hosting | **Vultr Compute** instance (frontend + backend via Docker Compose, Caddy for HTTPS) | Required by the hackathon: backend must run on Vultr Compute |
 
 Verify exact library versions at setup time; use endoflife.date **v1** API endpoints.
 

@@ -231,7 +231,7 @@ for i, (fg, bg, lbl, desc) in enumerate(lg):
 text(60, 1200, "Principle: the AI can only say what the sources prove — code finds, checks and scores the evidence; "
      "the AI explains it; the faculty decides.", size=15, color=C["ink"], weight="bold")
 text(60, 1228, "Not shown: login provider (Auth.js / Clerk / Supabase Auth), Docker Compose for local dev, "
-     "hosting (Vercel + Render/Fly/Railway).", size=13, color=C["muted"])
+     "hosting (Vultr Compute instance, Docker Compose + Caddy).", size=13, color=C["muted"])
 
 svg = (f'<svg xmlns="http://www.w3.org/2000/svg" width="{W}" height="{H}" viewBox="0 0 {W} {H}">'
        + "".join(out) + "</svg>")
