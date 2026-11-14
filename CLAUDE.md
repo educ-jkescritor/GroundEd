@@ -26,6 +26,9 @@ Docs: `README.md` (setup, layout, scoring) · `docs/api.md` (API contract) · `d
 Pipeline: `pdf.py` (PyMuPDF page text) → `detect.py` (registry pattern matching in code; every snippet must appear
 on its page) → `registry.py` / `eol.py` (facts) → `signals.py` + `score.py` → saved analysis.
 All LLM (Gemini) calls live in `llm.py` (drafts only); `main.py` only receives requests and returns responses.
+Source library (RAG): `backend/library/sources.yaml` → `library build` → committed snapshot (`library/snapshot/`, incl.
+endoflife.date data). Registry facts = library doc + verbatim quote, checked by code; findings get retrieved passages
+(`fact` around the quote, `replacement` from the upgrade's doc) via SQLite FTS5 search in `library.py`.
 
 Scoring (100 pts, Option C): lifecycle 40 · how it is taught 30 (code > explained > listed) · frequency 20 (4/page) ·
 hands-on 10. Supported and unverified items are not scored. Priority: high ≥ 80 · medium ≥ 50 · else low.
