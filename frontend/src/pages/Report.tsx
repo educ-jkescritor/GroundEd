@@ -3,14 +3,13 @@ import { Link, useParams } from "react-router-dom";
 import { Check, ChevronDown, CircleSlash, Copy, Download, FileText, Info, Loader2, Plus, Printer, X } from "lucide-react";
 import { ApiError, api, errorMessage } from "../api";
 import type { Analysis } from "../types";
-import { AccountMenu } from "../components/Layout";
 import DetailsDialog from "../components/DetailsDialog";
 import FindingItem from "../components/FindingItem";
 import ModuleView from "../components/ModuleView";
 import type { Focus, PdfSource } from "../components/PdfViewer";
 import { PrintReport, buildMarkdown } from "../components/ReportExport";
 import SourcesList from "../components/SourcesList";
-import { ButtonLink, buttonClass } from "../components/ui/Button";
+import { Button, ButtonLink, buttonClass } from "../components/ui/Button";
 import { HorizonMark } from "../components/ui/Logo";
 import { Notice } from "../components/ui/Notice";
 import { PRIORITY_STYLE } from "../components/ui/PriorityBadge";
@@ -18,7 +17,7 @@ import { Sprout } from "../components/ui/Sprout";
 import { useDecisions, type Decision } from "../lib/decisions";
 import { recallFile } from "../lib/fileStore";
 import { needsReview, rankFindings, toneOf, type Tone } from "../lib/findings";
-import { getDemoUser, recordReport, useStored } from "../lib/history";
+import { getDemoUser, recordReport, signOutDemo, useStored } from "../lib/history";
 import { usePageTitle } from "../lib/usePageTitle";
 import NotFound from "./NotFound";
 
@@ -192,7 +191,16 @@ export default function Report() {
           <button type="button" onClick={() => setShowDetails(true)} className={buttonClass("secondary", "sm")}>
             <Info size={15} aria-hidden /> <span className="hidden sm:inline">Details</span>
           </button>
-          {user ? <AccountMenu name={user.name} /> : <ButtonLink to="/sign-in" variant="ghost" size="sm" className="hidden sm:inline-flex">Sign in</ButtonLink>}
+          <span aria-hidden className="hidden h-4 w-px bg-line sm:inline-block" />
+          {user ? (
+            <Button variant="ghost" size="sm" onClick={() => signOutDemo()} className="hidden sm:inline-flex">
+              Log out
+            </Button>
+          ) : (
+            <ButtonLink to="/sign-in" variant="ghost" size="sm" className="hidden sm:inline-flex">
+              Log in
+            </ButtonLink>
+          )}
         </header>
 
         <div className="flex gap-1 border-b border-line bg-panel p-1.5 lg:hidden" role="tablist" aria-label="View">
@@ -285,11 +293,11 @@ export default function Report() {
                       </div>
                     )}
 
-                    {/* Sign-in note: only after the first decision, once; dismissible */}
+                    {/* Log-in note: only after the first decision when logged out, once; dismissible */}
                     {showNudge && (
                       <div className="flex items-start gap-3 rounded-[var(--radius-card)] border border-line bg-sky/40 p-3 text-sm" role="status">
                         <p className="flex-1 text-ink">
-                          Your decisions are saved in this browser only. <Link to="/sign-in" className="font-semibold">Sign in</Link> to keep this report in My reports.
+                          Browsing as guest — upload history isn't saved. <Link to="/sign-in" className="font-semibold">Log in</Link> to keep this report in your History of uploads.
                         </p>
                         <button type="button" onClick={dismissNudge} aria-label="Dismiss" className="rounded-full p-1 text-ink-muted hover:bg-surface"><X size={15} /></button>
                       </div>

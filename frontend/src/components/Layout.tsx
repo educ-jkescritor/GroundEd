@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
-import { ChevronDown, FileText, LogOut } from "lucide-react";
-import { ButtonLink } from "./ui/Button";
+import { ArrowRight, ChevronDown, FileText, LogOut } from "lucide-react";
+import { Button, ButtonLink } from "./ui/Button";
 import { Logo } from "./ui/Logo";
 import { getDemoUser, signOutDemo, useStored } from "../lib/history";
 
@@ -23,7 +23,7 @@ function ScrollManager() {
   return null;
 }
 
-/** Signed-in account menu: name ▾ → My reports, Sign out. */
+/** Account dropdown (used if a compact menu is needed). */
 export function AccountMenu({ name }: { name: string }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -59,12 +59,12 @@ export function AccountMenu({ name }: { name: string }) {
       </button>
       {open && (
         <div role="menu" className="absolute right-0 top-11 z-50 w-52 rounded-[var(--radius-card)] border border-line bg-surface p-1.5 shadow-[var(--shadow-float)]">
-          <p className="px-3 py-2 text-xs text-ink-subtle">Signed in as {name} (demo)</p>
+          <p className="px-3 py-2 text-xs text-ink-subtle">Logged in as {name} (demo)</p>
           <button role="menuitem" type="button" onClick={() => { setOpen(false); navigate("/reports"); }} className="flex w-full items-center gap-2 rounded-[var(--radius-control)] px-3 py-2 text-left text-sm text-ink hover:bg-panel">
-            <FileText size={15} aria-hidden /> My reports
+            <FileText size={15} aria-hidden /> Upload history
           </button>
           <button role="menuitem" type="button" onClick={() => { setOpen(false); signOutDemo(); navigate("/"); }} className="flex w-full items-center gap-2 rounded-[var(--radius-control)] px-3 py-2 text-left text-sm text-ink hover:bg-panel">
-            <LogOut size={15} aria-hidden /> Sign out
+            <LogOut size={15} aria-hidden /> Log out
           </button>
         </div>
       )}
@@ -79,20 +79,41 @@ export default function Layout() {
     <div className="flex min-h-screen flex-col">
       <ScrollManager />
 
-      {/* Floating pill header (DESIGN.md §7): logo · actions */}
+      {/* Floating pill header: Notion-inspired auth state (Log in / Log out) + divider + primary CTA */}
       <header className="sticky top-3 z-20 px-3 sm:px-6 print:hidden">
         <nav
           aria-label="Main"
           className="mx-auto flex max-w-6xl items-center justify-between gap-4 rounded-full border border-line bg-surface/85 px-2 py-2 shadow-[var(--shadow-float)] backdrop-blur"
         >
           <div className="pl-3"><Logo /></div>
-          <div className="flex items-center justify-end gap-1.5">
+
+          <div className="flex items-center justify-end gap-2">
             {user ? (
-              <AccountMenu name={user.name} />
+              <Button
+                variant="ghost"
+                size="sm"
+                shape="pill"
+                onClick={() => signOutDemo()}
+                className="text-ink hover:bg-panel"
+              >
+                Log out
+              </Button>
             ) : (
-              <ButtonLink to="/sign-in" variant="ghost" size="sm" shape="pill" className="hidden sm:inline-flex">Sign in</ButtonLink>
+              <ButtonLink
+                to="/sign-in"
+                variant="ghost"
+                size="sm"
+                shape="pill"
+                className="text-ink hover:bg-panel"
+              >
+                Log in
+              </ButtonLink>
             )}
-            <ButtonLink to="/analyze" size="sm" shape="pill">Analyze a module</ButtonLink>
+            <span aria-hidden className="hidden h-4 w-px bg-line sm:inline-block" />
+            <ButtonLink to="/analyze" size="sm" shape="pill">
+              <span>Analyze a module</span>
+              {user && <ArrowRight size={14} aria-hidden />}
+            </ButtonLink>
           </div>
         </nav>
       </header>
@@ -115,7 +136,7 @@ function Footer({ signedIn }: { signedIn: boolean }) {
         { label: "Analyze a module", to: "/analyze" },
         { label: "Try a sample", to: "/analyze#samples" },
         { label: "How it works", to: "/#how-it-works" },
-        signedIn ? { label: "My reports", to: "/reports" } : { label: "Sign in", to: "/sign-in" },
+        signedIn ? { label: "Upload history", to: "/reports" } : { label: "Log in", to: "/sign-in" },
       ],
     },
     {
