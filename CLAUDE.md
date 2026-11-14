@@ -26,7 +26,9 @@ Docs: `README.md` (setup, layout, scoring) · `docs/api.md` (API contract) · `d
 Pipeline: `pdf.py` (PyMuPDF page text) → `detect.py` (registry alias matching in code first, Gemini for extras;
 every snippet must appear verbatim on its page) → `registry.py` / `eol.py` (facts) → `score.py` → saved analysis.
 
-Scoring (100 pts): lifecycle status 50 · time past EOL 20 · version lag 15 · prominence 15. Unverified = not scored.
+Scoring (100 pts, Option C): lifecycle 40 · how it is taught 30 (code > explained > listed) · frequency 20 (4/page) ·
+hands-on 10. Supported and unverified items are not scored. Priority: high ≥ 80 · medium ≥ 50 · else low.
+Weights in `config.py`; teaching/lab patterns in `backend/rules/teaching.yaml` (data, no AI).
 
 ## API contract
 
