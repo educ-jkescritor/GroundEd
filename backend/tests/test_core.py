@@ -165,3 +165,37 @@ def test_draft_errors_are_specific(client, monkeypatch):
     r = client.post(f"/api/analysis/{a['id']}/findings/windows-7/draft")
     assert r.status_code == 503 and "m1" in r.json()["detail"] and "m2" in r.json()["detail"]
     assert client.post(f"/api/analysis/{a['id']}/findings/nope/draft").status_code == 404
+
+
+# ---------- audit fixes ----------
+
+def test_asp_tags_not_flagged_in_ejs_or_jsp():
+    """Fix 2: `<% %>` is current syntax in EJS (Node.js) and JSP (Java); only outdated in PHP."""
+    assert _ids(["<% if (user) { %> Hello <%= user.name %> <% } %>"]) == set()
+    assert _ids(['<%@ page language="java" %>']) == set()
+    assert "php-asp-script-tags" in _ids(["PHP tags: <?php ... ?> or <% ... %> (asp style tag)"])
+
+
+def test_draft_cache_key_changes_when_fact_changes(client, monkeypatch):
+    """Fix 3: a corrected registry fact must produce a fresh draft, not the cached old one."""
+    from app import db, detect
+    calls = []
+    monkeypatch.setattr(detect, "draft_section", lambda t, s, fact, h: (calls.append(fact) or f"draft for {fact}", "fake"))
+    a = client.post("/api/analyze", data={"sample_id": "legacy-php-lab"}).json()
+    url = f"/api/analysis/{a['id']}/findings/php-ext-mysql/draft"
+    client.post(url)
+    stored = db.get_analysis(a["id"])
+    f = next(x for x in stored.findings if x.id == "php-ext-mysql")
+    f.lifecycle.source_quote = "Corrected fact."
+    db.save_analysis(stored)
+    assert client.post(url).json()["text"] == "draft for Corrected fact."
+    assert len(calls) == 2
+
+
+def test_old_reports_are_purged(client):
+    """Fix 6: reports contain module quotes, so they are deleted after the retention period."""
+    from app import cache, db
+    a = client.post("/api/analyze", data={"sample_id": "legacy-php-lab"}).json()
+    assert cache.purge_expired(hours=0) >= 1
+    assert db.get_analysis(a["id"]) is None
+    assert client.get(f"/api/analysis/{a['id']}").status_code == 404

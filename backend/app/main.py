@@ -1,5 +1,6 @@
 """GroundEd API. Response shapes are the contract in models.py / docs/api.md."""
 import uuid
+from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Optional
 
@@ -13,7 +14,14 @@ from .models import Analysis, Draft, FeedbackIn, FeedbackOut, Sample
 from .pdf import PdfError
 from .pipeline import analyze as run_pipeline
 
-app = FastAPI(title="GroundEd API", version="0.2.0")
+@asynccontextmanager
+async def lifespan(_: FastAPI):
+    db.init_db()
+    cache.purge_expired()
+    yield
+
+
+app = FastAPI(title="GroundEd API", version="0.2.0", lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware, allow_origins=config.CORS_ORIGINS, allow_methods=["*"], allow_headers=["*"],
 )
@@ -26,11 +34,6 @@ def _samples() -> list[Sample]:
         return []
     items = yaml.safe_load(SAMPLES_META.read_text()) or []
     return [Sample(**s) for s in items if (config.SAMPLES_DIR / f"{s['id']}.pdf").exists()]
-
-
-@app.on_event("startup")
-def startup() -> None:
-    db.init_db()
 
 
 @app.get("/api/health")
@@ -54,6 +57,7 @@ async def _analyze_path(path: Path, filename: str, kind: str) -> Analysis:
 async def analyze(file: Optional[UploadFile] = File(None), sample_id: Optional[str] = Form(None)) -> Analysis:
     if not file and not sample_id:
         raise HTTPException(400, "Provide a PDF file or a sample_id.")
+    await run_in_threadpool(cache.purge_expired)
 
     if sample_id:
         if sample_id not in {s.id for s in _samples()}:
@@ -100,13 +104,15 @@ def draft_update(analysis_id: str, finding_id: str) -> Draft:
         f"{lc.source_name or 'endoflife.date'}: {finding.technology} {lc.cycle or ''} end of life {lc.eol_date or 'not announced'}"
     )
     file_hash = analysis.provenance.file_sha256 if analysis.provenance else analysis.id
-    key = cache.key(file_hash, finding.id, config.GEMINI_MODEL, config.GEMINI_FALLBACK_MODEL, detect.DRAFT_PROMPT_VERSION)
+    hint = finding.upgrade.target_cycle if finding.upgrade else None
+    # Everything the draft depends on is in the key: a corrected fact or replacement => a fresh draft.
+    key = cache.key(file_hash, finding.id, fact, hint or "", config.GEMINI_MODEL, config.GEMINI_FALLBACK_MODEL,
+                    detect.DRAFT_PROMPT_VERSION)
     if hit := cache.get_draft(key):
         text, model = hit
     else:
         try:
-            text, model = detect.draft_section(finding.technology, [c.snippet for c in finding.citations], fact,
-                                               finding.upgrade.target_cycle if finding.upgrade else None)
+            text, model = detect.draft_section(finding.technology, [c.snippet for c in finding.citations], fact, hint)
         except detect.LlmError as e:
             status = e.status if e.status in (429, 503, 504) else 502
             raise HTTPException(status, f"AI draft failed: {e}") from e

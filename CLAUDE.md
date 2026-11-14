@@ -46,6 +46,8 @@ Web development (PHP/MySQL test modules first). Out-of-scope content must yield 
 
 - Never commit `.env`, databases, or real course modules (they live in git-ignored `private/`).
 - Errors must say what actually failed (no blanket "429"); uploads have size/type limits.
+- Endpoints that expose module data should require auth. **Known gap (hackathon):** no login yet; report IDs are
+  random and reports are purged after `UPLOAD_RETENTION_HOURS`. State this openly; real auth needs the frontend team.
 - Sources that can't be fetched are flagged (`needs_manual` / `failed` + reason), never guessed.
 
 ## Dev

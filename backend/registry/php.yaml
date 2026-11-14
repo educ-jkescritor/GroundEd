@@ -20,6 +20,9 @@
   patterns:
     - '<%=?'
     - '<script\s+language\s*=\s*["“”'']?php'
+  context:  # `<% %>` is normal in EJS (Node.js) and JSP (Java): only flag it on pages that are about PHP
+    - '<\?php'
+    - '\bphp\b'
   fact:
     stage: eol
     product: php

@@ -46,6 +46,9 @@ class Entry(BaseModel):
     id: str
     technology: str
     patterns: list[str]
+    # Optional: the page must ALSO match one of these, else the hit is ignored. Prevents false alarms when the
+    # same syntax is valid elsewhere (e.g. `<% %>` is current EJS/JSP syntax, only outdated in PHP).
+    context: list[str] = []
     fact: Optional[StaticFact] = None
     eol: Optional[EolRef] = None
     upgrade: Optional[UpgradeRef] = None
@@ -54,12 +57,15 @@ class Entry(BaseModel):
     def _check(self) -> "Entry":
         if (self.fact is None) == (self.eol is None):
             raise ValueError(f"{self.id}: exactly one of `fact` or `eol` is required")
-        for p in self.patterns:
+        for p in self.patterns + self.context:
             re.compile(p)
         return self
 
     def compiled(self) -> list[re.Pattern[str]]:
         return [re.compile(p, re.IGNORECASE) for p in self.patterns]
+
+    def compiled_context(self) -> list[re.Pattern[str]]:
+        return [re.compile(p, re.IGNORECASE) for p in self.context]
 
 
 class Registry(BaseModel):

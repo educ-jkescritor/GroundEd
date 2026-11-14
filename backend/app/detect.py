@@ -51,11 +51,13 @@ def detect_registry(pages: list[Page], entries: list[Entry]) -> list[Mention]:
     """One mention per (entry, page): the first match on that page."""
     out: list[Mention] = []
     for entry in entries:
-        pats = entry.compiled()
+        pats, ctx = entry.compiled(), entry.compiled_context()
         for page in pages:
             hits = [m for p in pats if (m := p.search(page.text))]
             if not hits:
                 continue
+            if ctx and not any(c.search(page.text) for c in ctx):
+                continue  # pattern found, but the page does not look like the right language
             m = min(hits, key=lambda h: h.start())
             mention = Mention(technology=entry.technology, version=None, page=page.number,
                               snippet=_snippet(page.text, m.start(), m.end()), entry_id=entry.id)
