@@ -13,7 +13,7 @@ import SourcesList from "../components/SourcesList";
 import { ButtonLink, buttonClass } from "../components/ui/Button";
 import { HorizonMark } from "../components/ui/Logo";
 import { Notice } from "../components/ui/Notice";
-import { PriorityBadge } from "../components/ui/PriorityBadge";
+import { PRIORITY_STYLE } from "../components/ui/PriorityBadge";
 import { Sprout } from "../components/ui/Sprout";
 import { useDecisions, type Decision } from "../lib/decisions";
 import { recallFile } from "../lib/fileStore";
@@ -41,7 +41,6 @@ export default function Report() {
   const [focus, setFocus] = useState<Focus | null>(null); // where the document pane should scroll
   const [tab, setTab] = useState<"findings" | "sources">("findings");
   const [tone, setTone] = useState<Tone | "all">("all");
-  const [hideReviewed, setHideReviewed] = useState(false);
   const [mobilePane, setMobilePane] = useState<"document" | "findings">("findings");
   const [pdfFailed, setPdfFailed] = useState<string | null>(null);
   const [showDetails, setShowDetails] = useState(false);
@@ -83,7 +82,7 @@ export default function Report() {
   }, [analysis, sampleId]);
 
   const ranked = useMemo(() => (analysis ? rankFindings(analysis.findings).filter(needsReview) : []), [analysis]);
-  const visible = ranked.filter((f) => (tone === "all" || toneOf(f) === tone) && (!hideReviewed || !decisions[f.id] || f.id === selectedId));
+  const visible = ranked.filter((f) => tone === "all" || toneOf(f) === tone);
 
   const scrollCardIntoView = (fid: string) =>
     setTimeout(() => document.getElementById(`card-${fid}`)?.scrollIntoView({ behavior: "smooth", block: "nearest" }), 60);
@@ -218,9 +217,8 @@ export default function Report() {
             )}
           </section>
 
-          {/* Right: results. One scroll area: the summary scrolls away, the tabs stay pinned. */}
+          {/* Right: results. The top (summary, filters, tabs) is fixed; only the findings / sources list scrolls. */}
           <aside aria-label="Results" className={`${pane("findings")} min-h-0 flex-col bg-surface`}>
-            <div ref={listRef} className="min-h-0 flex-1 overflow-y-auto">
               {notCovered ? (
                 <div className="m-5 space-y-4 rounded-[var(--radius-panel)] bg-panel p-6 text-center">
                   <span className="inline-flex items-center gap-1.5 rounded-full bg-surface px-3 py-1 text-xs font-semibold text-unverified"><CircleSlash size={14} aria-hidden /> Not covered yet</span>
@@ -230,44 +228,32 @@ export default function Report() {
                 </div>
               ) : (
                 <>
-                  {/* Summary */}
-                  <div className="space-y-4 px-5 pb-4 pt-5">
+                  {/* Fixed top: summary */}
+                  <div className="shrink-0 space-y-3 px-5 pb-3 pt-4">
                     <div className="flex items-start gap-4">
                       <div className="min-w-0 flex-1">
-                        <h2 className="text-[30px] leading-[1.1]">
+                        <h2 className="text-[28px] leading-[1.1]">
                           {ranked.length === 0 ? "Nothing to review" : allDone ? `All ${ranked.length} findings reviewed` : `${ranked.length} finding${ranked.length === 1 ? "" : "s"} to be reviewed`}
                         </h2>
                         <p className="mt-1 text-sm text-ink-muted">
-                          {ranked.length === 0 ? "We didn't find tools or practices that may be outdated." : "Most important first. Select one to see it in your module."}
+                          {ranked.length === 0 ? "We didn't find tools or practices that may be outdated." : "Most important first."}
                         </p>
                       </div>
                       {ranked.length > 0 && (
                         <div className="shrink-0 text-right" aria-label={`${pct}% reviewed`}>
-                          <p className={`font-display text-[44px] leading-none [-webkit-text-stroke:0.02em_currentColor] ${allDone ? "text-supported" : "text-lapis-deep"}`}>{pct}%</p>
+                          <p className={`font-display text-[40px] leading-none [-webkit-text-stroke:0.02em_currentColor] ${allDone ? "text-supported" : "text-lapis-deep"}`}>{pct}%</p>
                           <p className="mt-1 text-xs font-semibold uppercase tracking-[0.06em] text-ink-subtle">reviewed</p>
                         </div>
                       )}
                     </div>
 
-                    {/* Summary by priority = the filters */}
+                    {/* Summary by priority = the filters: identical pills */}
                     {ranked.length > 0 && (
-                      <div className="space-y-2.5">
-                        <div className="flex flex-wrap gap-2" role="group" aria-label="Show findings by priority">
-                          <button type="button" aria-pressed={tone === "all"} onClick={() => setTone("all")}
-                            className={`rounded-full border px-3 py-1 text-xs font-semibold ${tone === "all" ? "border-ink bg-ink text-white" : "border-line text-ink-muted hover:text-ink"}`}>
-                            All {ranked.length}
-                          </button>
-                          {TONES.filter((t) => counts[t] > 0).map((t) => (
-                            <button key={t} type="button" aria-pressed={tone === t} onClick={() => setTone(tone === t ? "all" : t)}
-                              className={`rounded-full transition-shadow ${tone === t ? "shadow-[0_0_0_2px_var(--color-ink)]" : "hover:shadow-[0_0_0_1px_var(--color-ink)]"}`}>
-                              <PriorityBadge priority={t} count={counts[t]} />
-                            </button>
-                          ))}
-                        </div>
-                        <label className="flex w-fit cursor-pointer items-center gap-2 text-xs font-semibold text-ink-muted">
-                          <input type="checkbox" checked={hideReviewed} onChange={(e) => setHideReviewed(e.target.checked)} className="h-3.5 w-3.5 accent-lapis" />
-                          Hide reviewed ({decided})
-                        </label>
+                      <div className="flex flex-wrap gap-2" role="group" aria-label="Show findings by priority">
+                        <FilterPill active={tone === "all"} onClick={() => setTone("all")} label="All" count={ranked.length} />
+                        {TONES.filter((t) => counts[t] > 0).map((t) => (
+                          <FilterPill key={t} tone={t} active={tone === t} onClick={() => setTone(tone === t ? "all" : t)} label={PRIORITY_STYLE[t].short} count={counts[t]} />
+                        ))}
                       </div>
                     )}
 
@@ -289,8 +275,8 @@ export default function Report() {
                     )}
                   </div>
 
-                  {/* Tabs: pinned while scrolling */}
-                  <div className="sticky top-0 z-[2] flex gap-6 border-b border-line bg-surface px-5" role="tablist" aria-label="Report sections">
+                  {/* Fixed top: tabs */}
+                  <div className="flex shrink-0 gap-6 border-b border-line bg-surface px-5" role="tablist" aria-label="Report sections">
                     {(["findings", "sources"] as const).map((t) => (
                       <button key={t} type="button" role="tab" aria-selected={tab === t} onClick={() => setTab(t)}
                         className={`-mb-px border-b-2 py-2.5 text-sm font-semibold ${tab === t ? "border-ink text-ink" : "border-transparent text-ink-subtle hover:text-ink"}`}>
@@ -299,13 +285,14 @@ export default function Report() {
                     ))}
                   </div>
 
-                  <div className="px-4 pb-8 pt-4" role="tabpanel">
+                  {/* The only scrolling part */}
+                  <div ref={listRef} className="min-h-0 flex-1 overflow-y-auto px-4 pb-8 pt-4" role="tabpanel">
                     {tab === "sources" ? (
                       <SourcesList analysis={analysis} />
                     ) : (
                       <>
                         {visible.length === 0 && ranked.length > 0 && (
-                          <p className="rounded-[var(--radius-card)] bg-panel p-4 text-sm text-ink-muted">No findings match. <button type="button" className="font-semibold text-lapis-deep" onClick={() => { setTone("all"); setHideReviewed(false); }}>Show all</button></p>
+                          <p className="rounded-[var(--radius-card)] bg-panel p-4 text-sm text-ink-muted">No findings match. <button type="button" className="font-semibold text-lapis-deep" onClick={() => setTone("all")}>Show all</button></p>
                         )}
                         <ol className="space-y-2.5">
                           {visible.map((f) => (
@@ -330,7 +317,6 @@ export default function Report() {
                   </div>
                 </>
               )}
-            </div>
           </aside>
         </div>
       </div>
@@ -388,5 +374,23 @@ function DownloadMenu({ analysis, decisions, primary }: { analysis: Analysis; de
         </div>
       )}
     </div>
+  );
+}
+
+/** Filter pill: every option has the same size; priority options carry their colour dot. */
+function FilterPill({ label, count, active, onClick, tone }: { label: string; count: number; active: boolean; onClick: () => void; tone?: Tone }) {
+  return (
+    <button
+      type="button"
+      aria-pressed={active}
+      onClick={onClick}
+      className={`inline-flex h-8 min-w-[92px] items-center justify-center gap-2 rounded-full border px-3 text-xs font-semibold transition-colors ${
+        active ? "border-ink bg-ink text-white" : "border-line bg-surface text-ink hover:border-ink/40"
+      }`}
+    >
+      {tone && <span aria-hidden className={`h-2 w-2 rounded-full ${PRIORITY_STYLE[tone].bar}`} />}
+      {label}
+      <span className={`tabular-nums ${active ? "text-white/80" : "text-ink-subtle"}`}>{count}</span>
+    </button>
   );
 }

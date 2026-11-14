@@ -4,7 +4,6 @@ import { ButtonLink } from "../components/ui/Button";
 import { Panel } from "../components/ui/Card";
 import { HorizonBand } from "../components/ui/HorizonBand";
 import { PriorityBadge } from "../components/ui/PriorityBadge";
-import { ProgressSteps } from "../components/ui/ProgressSteps";
 import { QuoteBlock } from "../components/ui/QuoteBlock";
 import { Sprout } from "../components/ui/Sprout";
 import { StatusBadge } from "../components/ui/StatusBadge";
@@ -102,16 +101,15 @@ export default function Landing() {
           <p className="text-lg text-ink-muted">Everything you need to judge a finding, in one place.</p>
         </div>
         <div className="grid gap-5 md:grid-cols-2">
-          <Panel label="Progress" title="See every step">
-            <div className="rounded-[var(--radius-card)] bg-surface p-5">
-              <ProgressSteps
-                steps={[
-                  { label: "Reading the module", detail: "14 pages", state: "done" },
-                  { label: "Finding technologies and practices", detail: "9 found", state: "done" },
-                  { label: "Checking sources", detail: "5 of 9", state: "current" },
-                  { label: "Scoring priorities", state: "waiting" },
-                ]}
-              />
+          <Panel label="Fast" title="Results in under a minute">
+            {/* Mirrors the real loading screen (no fake step checklist). */}
+            <div className="space-y-4 rounded-[var(--radius-card)] bg-surface p-5 text-center" aria-hidden>
+              <p className="text-xs font-semibold uppercase tracking-[0.06em] text-ink-subtle">Analyzing your module</p>
+              <p className="font-semibold">WST2-Lab-Manual.pdf</p>
+              <div className="mx-auto h-1.5 w-full max-w-xs overflow-hidden rounded-full bg-line">
+                <div className="indeterminate h-full w-1/3 rounded-full bg-lapis" />
+              </div>
+              <p className="text-sm text-ink-muted">Checking trusted sources…</p>
             </div>
           </Panel>
           <Panel label="Evidence" title="Quote and source, side by side">

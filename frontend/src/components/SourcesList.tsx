@@ -44,7 +44,6 @@ export default function SourcesList({ analysis }: { analysis: Analysis }) {
 
   return (
     <div className="space-y-3">
-      <p className="text-sm text-ink-muted">Every claim in this report comes from one of these sources. AI never supplies these facts.</p>
       <ul className="space-y-2.5">
         {list.map((r) => (
           <li key={r.url} className="space-y-1.5 rounded-[var(--radius-card)] border border-line p-4">

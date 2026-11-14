@@ -92,7 +92,7 @@ export function PrintReport({ analysis, decisions }: { analysis: Analysis; decis
             </h2>
             <p>{summaryLine(f)}</p>
             {f.citations.map((c, i) => (
-              <p key={i} className="font-serif italic">Module p. {c.page}: “{c.snippet}”</p>
+              <p key={i} className="italic">Module p. {c.page}: “{c.snippet}”</p>
             ))}
             {f.lifecycle && <p>Source: <a href={f.lifecycle.source_url}>{f.lifecycle.source_url}</a></p>}
             {d && <p><strong>Decision:</strong> {decisionText(d)}{d.text && `: “${d.text}”`}</p>}

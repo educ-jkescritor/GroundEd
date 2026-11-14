@@ -1,18 +1,22 @@
 import { useEffect, useRef, useState, type DragEvent } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowRight, FileText, Upload } from "lucide-react";
+import { ArrowRight, Check, FileText, Upload } from "lucide-react";
 import { ApiError, api, errorMessage } from "../api";
 import type { Analysis, Sample } from "../types";
 import { Page } from "../components/Layout";
 import { Button } from "../components/ui/Button";
 import { Panel } from "../components/ui/Card";
 import { Notice } from "../components/ui/Notice";
-import { ProgressSteps, type StepState } from "../components/ui/ProgressSteps";
+import { HorizonMark } from "../components/ui/Logo";
 import { usePageTitle } from "../lib/usePageTitle";
 import { rememberFile } from "../lib/fileStore";
 
 const MAX_MB = 10;
-const STEPS = ["Reading the module", "Finding technologies and practices", "Checking sources", "Scoring priorities"];
+// Plain descriptions of what happens, shown one at a time. They are NOT progress steps: the analysis is a single
+// request, so we never claim a step is done (DESIGN.md: honest system status).
+const MESSAGES = ["Reading your module…", "Looking for technologies and practices…", "Checking trusted sources…", "Ranking findings by priority…"];
+const MIN_LOADING_MS = 900; // never flash the loader
+const DONE_MS = 750; // show "Done" briefly so the jump to results feels finished
 
 /** Turn API errors into the DESIGN.md microcopy, with a way forward. */
 function friendlyError(e: unknown): { title: string; body: string } {
@@ -34,7 +38,9 @@ export default function Analyze() {
   const inputRef = useRef<HTMLInputElement>(null);
   const [samples, setSamples] = useState<Sample[]>([]);
   const [busy, setBusy] = useState<string | null>(null);
-  const [step, setStep] = useState(0);
+  const [message, setMessage] = useState(0);
+  const [done, setDone] = useState<string | null>(null);
+  const [slow, setSlow] = useState(false);
   const [error, setError] = useState<{ title: string; body: string } | null>(null);
   const [dragging, setDragging] = useState(false);
 
@@ -46,20 +52,31 @@ export default function Analyze() {
       .catch((e) => setError(friendlyError(e)));
   }, []);
 
-  // The analysis is one request, so steps advance on a timer as an indication of progress.
-  // TODO (backend): switch to real job status with per-step counts when available.
+  // Rotate the description; after 10 s, reassure that long modules take longer.
+  // TODO (backend): real per-step progress once the API reports job status.
   useEffect(() => {
     if (!busy) return;
-    setStep(0);
-    const t = setInterval(() => setStep((s) => Math.min(s + 1, STEPS.length - 1)), 2200);
-    return () => clearInterval(t);
+    setMessage(0);
+    setSlow(false);
+    const t = setInterval(() => setMessage((m) => (m + 1) % MESSAGES.length), 2600);
+    const s = setTimeout(() => setSlow(true), 10_000);
+    return () => {
+      clearInterval(t);
+      clearTimeout(s);
+    };
   }, [busy]);
 
   async function run(label: string, task: () => Promise<Analysis>) {
     setBusy(label);
+    setDone(null);
     setError(null);
+    const started = Date.now();
     try {
       const analysis = await task();
+      await new Promise((r) => setTimeout(r, Math.max(0, MIN_LOADING_MS - (Date.now() - started))));
+      const n = analysis.findings.filter((f) => f.status !== "supported").length;
+      setDone(analysis.coverage === "not_covered" ? "Done" : n === 0 ? "Done: nothing to review" : `Done: ${n} finding${n === 1 ? "" : "s"} to review`);
+      await new Promise((r) => setTimeout(r, DONE_MS));
       navigate(`/reports/${encodeURIComponent(analysis.id)}`);
     } catch (e) {
       setError(friendlyError(e));
@@ -91,18 +108,26 @@ export default function Analyze() {
   }
 
   if (busy) {
-    const states: StepState[] = STEPS.map((_, i) => (i < step ? "done" : i === step ? "current" : "waiting"));
     return (
       <Page narrow>
-        <Panel className="mx-auto max-w-xl space-y-6">
+        <Panel className="mx-auto max-w-xl space-y-6 py-10 text-center" aria-live="polite">
+          <div className="flex justify-center">
+            {done ? (
+              <span className="flex h-14 w-14 items-center justify-center rounded-full bg-supported text-white"><Check size={28} strokeWidth={3} aria-hidden /></span>
+            ) : (
+              <span className="flex h-14 w-14 items-center justify-center rounded-full bg-surface shadow-[var(--shadow-card)]"><HorizonMark size={34} /></span>
+            )}
+          </div>
           <div className="space-y-1">
-            <p className="text-xs font-semibold uppercase tracking-[0.06em] text-ink-subtle">Analyzing</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.06em] text-ink-subtle">{done ? "Analysis complete" : "Analyzing your module"}</p>
             <h1 className="break-words text-2xl">{busy}</h1>
           </div>
-          <div className="rounded-[var(--radius-card)] bg-surface p-5">
-            <ProgressSteps steps={STEPS.map((label, i) => ({ label, state: states[i] }))} />
+          {/* Indeterminate bar: activity, not a fake percentage */}
+          <div className="mx-auto h-1.5 w-full max-w-sm overflow-hidden rounded-full bg-line" aria-hidden>
+            {done ? <div className="h-full w-full bg-supported" /> : <div className="indeterminate h-full w-1/3 rounded-full bg-lapis" />}
           </div>
-          <p className="text-sm text-ink-muted">This usually takes under a minute.</p>
+          <p className="text-ink-muted">{done ?? MESSAGES[message]}</p>
+          {slow && !done && <p className="text-sm text-ink-subtle">Large modules can take up to a minute. You can keep this tab open.</p>}
         </Panel>
       </Page>
     );

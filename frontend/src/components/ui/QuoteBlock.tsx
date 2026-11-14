@@ -14,7 +14,7 @@ export function QuoteBlock({
 }) {
   return (
     <blockquote className={`border-l-2 pl-3 ${tone === "module" ? "border-clay" : "border-lapis"}`}>
-      <p className={`font-serif italic text-ink ${size === "sm" ? "text-sm leading-snug" : "text-base leading-relaxed"}`}>
+      <p className={`text-ink ${size === "sm" ? "text-sm leading-snug" : "text-base leading-relaxed"}`}>
         “{children}”
       </p>
       {caption && <p className="mt-1 text-xs text-ink-subtle">{caption}</p>}

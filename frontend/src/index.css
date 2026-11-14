@@ -137,3 +137,12 @@ html.workspace {
 .skeleton {
   animation: skeleton 1.4s ease-in-out infinite;
 }
+
+/* Indeterminate progress bar (analysis loading): shows activity without claiming a percentage. */
+@keyframes indeterminate {
+  0% { transform: translateX(-110%); }
+  100% { transform: translateX(310%); }
+}
+.indeterminate {
+  animation: indeterminate 1.4s ease-in-out infinite;
+}

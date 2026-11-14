@@ -2,11 +2,11 @@ import { useState } from "react";
 import { ArrowRight, Check, ChevronDown, Crosshair, Sparkles } from "lucide-react";
 import { api, errorMessage } from "../api";
 import type { Finding } from "../types";
-import ScoreBreakdown from "./ScoreBreakdown";
 import { AiSuggestion } from "./ui/AiSuggestion";
 import { DecisionControl } from "./ui/DecisionControl";
 import { Notice } from "./ui/Notice";
 import { PRIORITY_STYLE, PriorityBadge } from "./ui/PriorityBadge";
+import { PriorityInfo } from "./ui/PriorityInfo";
 import { SourceLink } from "./ui/SourceLink";
 import { DECISION_DONE, type Decision } from "../lib/decisions";
 import { formatDate } from "../lib/format";
@@ -31,7 +31,7 @@ const LABEL = "text-[11px] font-semibold uppercase tracking-[0.07em] text-ink-su
  *   collapsed: name + priority tag → bold status · what to use instead → pages and decision state
  *   expanded:  three KEY FACTS (status · in your module · use instead, values in bold)
  *              → THE EVIDENCE (what your module says ⇄ what the source says)
- *              → help (AI draft) → why this priority (folded) → YOUR DECISION (pinned at the bottom)
+ *              → help (AI draft) → YOUR DECISION (pinned at the bottom). "Why this priority" is a tooltip on the tag.
  */
 export default function FindingItem({ analysisId, finding: f, decision, open, aiAvailable, onToggle, onDecide, onUndo, onShowInDocument }: Props) {
   const [draft, setDraft] = useState<string | null>(null);
@@ -58,32 +58,37 @@ export default function FindingItem({ analysisId, finding: f, decision, open, ai
 
   return (
     <article className={`rounded-[var(--radius-card)] border bg-surface transition-shadow ${open ? "border-lapis shadow-[0_0_0_1px_var(--color-lapis),var(--shadow-float)]" : "border-line hover:border-ink/30"}`}>
-      {/* Collapsed: what, how urgent, what to do */}
-      <button type="button" onClick={onToggle} aria-expanded={open} aria-controls={panelId} className="grid w-full gap-1.5 p-4 text-left">
-        <span className="flex items-start gap-2">
-          <span className="min-w-0 flex-1 text-[15.5px] font-semibold leading-snug text-ink">
+      {/* Collapsed: what, how urgent, what to do. The text area toggles; the tag cluster sits beside it. */}
+      <div className="flex items-start gap-2 p-4">
+        <button type="button" onClick={onToggle} aria-expanded={open} aria-controls={panelId} className="grid min-w-0 flex-1 gap-1.5 text-left">
+          <span className="text-[15.5px] font-semibold leading-snug text-ink">
             {f.technology}
             {f.version && <span className="ml-1 font-mono text-sm font-medium text-ink-muted">{f.version}</span>}
           </span>
+          <span className="text-sm leading-snug">
+            <span className="font-medium text-ink">{statusShort(f)}</span>
+            {replacement && (
+              <span className="text-ink-muted"> · Use <span className="font-semibold text-ink">{replacement}</span> instead</span>
+            )}
+          </span>
+          <span className="flex flex-wrap items-center gap-x-2 text-xs text-ink-subtle">
+            <span>{pages.length > 1 ? "Pages" : "Page"} {pages.join(", ")}</span>
+            <span aria-hidden>·</span>
+            {decision ? (
+              <span className="inline-flex items-center gap-1 font-semibold text-lapis-deep"><Check size={13} aria-hidden /> {DECISION_DONE[decision.kind]}</span>
+            ) : (
+              <span>To review</span>
+            )}
+          </span>
+        </button>
+        <span className="flex shrink-0 items-center gap-0.5">
           <PriorityBadge priority={tone} short />
-          <ChevronDown size={16} className={`mt-0.5 shrink-0 text-ink-subtle transition-transform ${open ? "rotate-180" : ""}`} aria-hidden />
+          <PriorityInfo score={f.score} tone={tone} />
+          <button type="button" onClick={onToggle} aria-label={open ? "Collapse" : "Expand"} className="flex h-6 w-6 items-center justify-center rounded-full text-ink-subtle hover:bg-panel">
+            <ChevronDown size={16} className={`transition-transform ${open ? "rotate-180" : ""}`} aria-hidden />
+          </button>
         </span>
-        <span className="text-sm leading-snug">
-          <span className="font-medium text-ink">{statusShort(f)}</span>
-          {replacement && (
-            <span className="text-ink-muted"> · Use <span className="font-semibold text-ink">{replacement}</span> instead</span>
-          )}
-        </span>
-        <span className="flex flex-wrap items-center gap-x-2 text-xs text-ink-subtle">
-          <span>{pages.length > 1 ? "Pages" : "Page"} {pages.join(", ")}</span>
-          <span aria-hidden>·</span>
-          {decision ? (
-            <span className="inline-flex items-center gap-1 font-semibold text-lapis-deep"><Check size={13} aria-hidden /> {DECISION_DONE[decision.kind]}</span>
-          ) : (
-            <span>To review</span>
-          )}
-        </span>
-      </button>
+      </div>
 
       {open && (
         <div id={panelId} className="border-t border-line">
@@ -118,7 +123,7 @@ export default function FindingItem({ analysisId, finding: f, decision, open, ai
                 <p className="text-xs font-semibold text-ink-muted">Your module says</p>
                 {f.citations.slice(0, 3).map((c, i) => (
                   <div key={i} className="flex items-start gap-3 rounded-[var(--radius-control)] border border-line p-3">
-                    <blockquote className="min-w-0 flex-1 border-l-2 border-clay pl-3 font-serif text-[15px] italic leading-snug text-ink">“{c.snippet}”</blockquote>
+                    <blockquote className="min-w-0 flex-1 border-l-2 border-clay pl-3 text-[15px] leading-snug text-ink">“{c.snippet}”</blockquote>
                     <button
                       type="button"
                       onClick={() => onShowInDocument(i)}
@@ -134,7 +139,7 @@ export default function FindingItem({ analysisId, finding: f, decision, open, ai
                 <p className="text-xs font-semibold text-ink-muted">{who ? `${who} says` : "Source"}</p>
                 {lc ? (
                   <div className="rounded-[var(--radius-control)] border border-line p-3">
-                    <blockquote className="border-l-2 border-lapis pl-3 font-serif text-[15px] italic leading-snug text-ink">
+                    <blockquote className="border-l-2 border-lapis pl-3 text-[15px] leading-snug text-ink">
                       “{lc.source_quote ?? summaryLine(f)}”
                     </blockquote>
                     <p className="mt-2 text-xs text-ink-subtle">
@@ -177,14 +182,6 @@ export default function FindingItem({ analysisId, finding: f, decision, open, ai
               </section>
             )}
 
-            {f.score && (
-              <details className="rounded-[var(--radius-control)] border border-line px-3 py-2">
-                <summary className="cursor-pointer text-sm font-semibold text-ink-muted">
-                  Why {tone === "unverified" ? "isn't this scored" : `is this ${tone} priority`}? ({f.score.total} of {f.score.max})
-                </summary>
-                <div className="pt-3"><ScoreBreakdown score={f.score} /></div>
-              </details>
-            )}
           </div>
 
           {/* YOUR DECISION: pinned to the bottom of the open card while you read */}

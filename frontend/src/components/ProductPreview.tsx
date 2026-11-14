@@ -110,7 +110,7 @@ function ReportPreviewTall() {
               <PriorityBadge priority="high" short />
             </div>
             <StatusBadge status="eol" compact />
-            <p className="border-l-2 border-lapis pl-2 font-serif italic">“The original MySQL extension was removed in PHP 7.0.0.”</p>
+            <p className="border-l-2 border-lapis pl-2">“The original MySQL extension was removed in PHP 7.0.0.”</p>
           </div>
           {rows.map((r) => (
             <div key={r.name} className="flex items-center gap-1.5 rounded-[10px] border border-line px-2.5 py-2">
