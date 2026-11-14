@@ -203,6 +203,7 @@ def build(sources: Optional[list[Source]] = None, only: Optional[set[str]] = Non
         time.sleep(1)  # be polite to documentation sites
     _write_index(statuses)
     load_documents.cache_clear()
+    _index.cache_clear()
     return statuses
 
 
@@ -246,3 +247,55 @@ def version() -> str:
 def by_url(url: str) -> Optional[Document]:
     norm = lambda u: u.rstrip("/").lower()
     return next((d for d in load_documents() if norm(d.url) == norm(url)), None)
+
+
+# ---------------------------------------------------------------- search (keyword, BM25)
+
+class Hit(BaseModel):
+    doc_id: str
+    title: str
+    url: str
+    publisher: str
+    tier: int
+    license: str
+    fetched_at: str
+    heading: str
+    text: str
+    n: int
+    rank: float  # BM25 from SQLite FTS5: lower is more relevant
+
+
+_TOKEN = re.compile(r"[A-Za-z0-9_]{2,}")
+
+
+@lru_cache(maxsize=1)
+def _index():
+    """In-memory SQLite FTS5 index over every snapshot passage. Built once per process (~90 passages: instant)."""
+    import sqlite3
+
+    conn = sqlite3.connect(":memory:", check_same_thread=False)
+    conn.execute("CREATE VIRTUAL TABLE passages USING fts5(doc_id UNINDEXED, n UNINDEXED, heading, text, "
+                 "tokenize='porter unicode61')")
+    conn.executemany("INSERT INTO passages (doc_id, n, heading, text) VALUES (?, ?, ?, ?)",
+                     [(d.id, p.n, p.heading, p.text) for d in load_documents() for p in d.passages])
+    return conn
+
+
+def search(query: str, doc_ids: Optional[list[str]] = None, k: int = 3) -> list[Hit]:
+    """Keyword search over the library. Any query word may match (OR); BM25 ranks passages with more and rarer
+    matching words higher. `doc_ids` restricts the search to those documents."""
+    terms = sorted({t.lower() for t in _TOKEN.findall(query)})
+    if not terms:
+        return []
+    match = " OR ".join(f'"{t}"' for t in terms)
+    sql = "SELECT doc_id, n, heading, text, bm25(passages) AS r FROM passages WHERE passages MATCH ?"
+    args: list = [match]
+    if doc_ids:
+        sql += f" AND doc_id IN ({','.join('?' * len(doc_ids))})"
+        args += list(doc_ids)
+    sql += " ORDER BY r, doc_id, n LIMIT ?"  # ties broken deterministically
+    rows = _index().execute(sql, args + [k]).fetchall()
+    docs = {d.id: d for d in load_documents()}
+    return [Hit(doc_id=did, title=docs[did].title, url=docs[did].url, publisher=docs[did].publisher,
+                tier=docs[did].tier, license=docs[did].license, fetched_at=docs[did].fetched_at,
+                heading=h, text=t, n=int(n), rank=round(r, 4)) for did, n, h, t, r in rows]
