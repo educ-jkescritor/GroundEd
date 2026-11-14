@@ -5,7 +5,7 @@
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-serif: "Source Serif 4", ui-serif, Georgia, serif; /* ONLY for text quoted from a module or source */
   --font-mono: "JetBrains Mono", ui-monospace, monospace;
-  --font-display: "Inter", ui-sans-serif, system-ui, sans-serif; /* headings; see DESIGN.md §6 */
+  --font-display: "Instrument Serif", ui-serif, Georgia, serif; /* headings; see DESIGN.md §6 */
 
   /* Neutrals: white canvas with soft grey panels */
   --color-canvas: #ffffff;
@@ -62,9 +62,14 @@
   h1,
   h2,
   h3 {
+    /* Instrument Serif has a single weight; a thin stroke in the text colour makes it slightly bolder
+       without the smeared look of browser-synthesised bold. */
     font-family: var(--font-display);
-    @apply font-bold text-balance;
-    letter-spacing: -0.02em;
+    font-weight: 400;
+    -webkit-text-stroke: 0.022em currentColor;
+    paint-order: stroke fill;
+    letter-spacing: -0.005em;
+    @apply text-balance;
   }
   a {
     @apply text-lapis-deep underline-offset-2 hover:underline;

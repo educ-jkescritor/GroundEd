@@ -12,7 +12,7 @@ import { BrowserFrame, DecisionPreview, ReportPreview } from "../components/Prod
 import { usePageTitle } from "../lib/usePageTitle";
 
 const section = "mx-auto max-w-6xl px-4 sm:px-6";
-const sectionTitle = "text-[32px] leading-[1.1] tracking-[-0.03em] sm:text-[44px]";
+const sectionTitle = "text-[36px] leading-[1.05] sm:text-[52px]";
 
 const steps = [
   { title: "Upload a module", body: "A syllabus, module or lesson guide as a PDF. Or start with a sample; no account needed." },
@@ -40,7 +40,7 @@ export default function Landing() {
             <p className="mx-auto inline-flex items-center gap-2 rounded-full bg-surface/80 px-3.5 py-1.5 text-sm font-semibold text-lapis-deep">
               <BookOpenCheck size={16} aria-hidden /> For IT and computing courses
             </p>
-            <h1 className="mx-auto mt-6 max-w-3xl text-[40px] leading-[1.05] tracking-[-0.035em] sm:text-[64px]">
+            <h1 className="mx-auto mt-6 max-w-3xl text-[46px] leading-[1.02] sm:text-[76px]">
               Teach what's current. With proof.
             </h1>
             <p className="mx-auto mt-5 max-w-2xl text-lg text-ink-muted">
