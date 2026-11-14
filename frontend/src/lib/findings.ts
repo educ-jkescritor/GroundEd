@@ -91,18 +91,18 @@ export function toneOf(f: Finding): Tone {
 
 /** Highlight styles on the document, per tone (same red/amber/green as the priority tags). */
 export const TONE_HIGHLIGHT: Record<Tone, string> = {
-  high: "bg-high/15 decoration-high",
-  medium: "bg-medium/15 decoration-medium",
-  low: "bg-low/15 decoration-low",
-  unverified: "bg-unverified/10 decoration-unverified",
+  high: "bg-high-line/40 decoration-high outline-high",
+  medium: "bg-medium-line/50 decoration-medium outline-medium",
+  low: "bg-low-line/40 decoration-low outline-low",
+  unverified: "bg-unverified/20 decoration-unverified outline-unverified",
 };
 
-/** Overlay boxes drawn on the PDF, per tone. */
+/** Overlay boxes drawn on the PDF, per tone (aligned with the priority tags). */
 export const TONE_BOX: Record<Tone, string> = {
-  high: "bg-high/20 border-high",
-  medium: "bg-medium/20 border-medium",
-  low: "bg-low/20 border-low",
-  unverified: "bg-unverified/15 border-unverified",
+  high: "bg-high-line/35 border-high text-high outline-high",
+  medium: "bg-medium-line/45 border-medium text-medium outline-medium",
+  low: "bg-low-line/35 border-low text-low outline-low",
+  unverified: "bg-unverified/20 border-unverified text-unverified outline-unverified",
 };
 
 const yearOf = (iso?: string | null) => (iso ? new Date(iso).getFullYear() : null);

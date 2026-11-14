@@ -199,7 +199,7 @@ export default function PdfViewer({ source, findings, selectedId, focus, onSelec
                   tabIndex={-1}
                   onClick={() => onSelect(b.finding.id)}
                   title={`${b.finding.technology} (page ${c.page})`}
-                  className={`pointer-events-auto absolute right-0 h-[5px] rounded-full ${PRIORITY_STYLE[toneOf(b.finding)].bar} ${sel ? "w-3 ring-2 ring-lapis" : "w-2 opacity-80"}`}
+                  className={`pointer-events-auto absolute right-0 h-[5px] rounded-full ${PRIORITY_STYLE[toneOf(b.finding)].bar} ${sel ? `w-3 ring-2 ${TONE_BOX[toneOf(b.finding)]}` : "w-2 opacity-80"}`}
                   style={{ top: `calc(${y * 100}% - 2px)` }}
                 />
               );
@@ -264,8 +264,8 @@ function PdfPage({ doc, page, top, width, height, scale, root, boxes, selectedId
             title={b.finding.technology}
             aria-label={`Finding on page ${page}: ${b.finding.technology}`}
             aria-pressed={sel}
-            className={`absolute rounded-[3px] border-b-2 mix-blend-multiply ${TONE_BOX[toneOf(b.finding)]} ${
-              focused ? "focus-pulse outline-[3px] outline-offset-2 outline-lapis" : sel ? "outline-2 outline-offset-2 outline-lapis" : "hover:brightness-90"
+            className={`absolute rounded-[4px] border border-b-2 mix-blend-multiply transition-all ${TONE_BOX[toneOf(b.finding)]} ${
+              focused ? "focus-pulse outline-[3px] outline-offset-2" : sel ? "outline-2 outline-offset-2" : "hover:brightness-90"
             }`}
             style={{ left: x0 * scale - 3, top: y0 * scale - 3, width: (x1 - x0) * scale + 6, height: (y1 - y0) * scale + 6 }}
           />

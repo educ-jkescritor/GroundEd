@@ -121,10 +121,10 @@ html.workspace {
   overflow: hidden;
 }
 
-/* "Show in document": the quoted text pulses once so the eye finds it. */
+/* "Show in document": the quoted text pulses once in its priority colour so the eye finds it. */
 @keyframes focus-pulse {
-  0% { box-shadow: 0 0 0 0 rgb(58 111 208 / 0.55); }
-  100% { box-shadow: 0 0 0 14px rgb(58 111 208 / 0); }
+  0% { box-shadow: 0 0 0 0 currentColor; }
+  100% { box-shadow: 0 0 0 14px transparent; }
 }
 .focus-pulse {
   animation: focus-pulse 0.9s ease-out 2;
