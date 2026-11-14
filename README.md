@@ -61,14 +61,18 @@ Caddy serves the frontend, proxies `/api` to FastAPI, and gets HTTPS certificate
 `SITE_ADDRESS` is a domain pointing at the instance.
 
 ## Priority score (100 points)
+Fixed rules in code (never AI), so the same syllabus always gets the same score. Initial defaults from
+[docs/design-brief.md section 5.2](docs/design-brief.md); they will be refined after the first evaluation run.
+
 | Factor | Max | Rule |
 |---|---|---|
-| Lifecycle status | 50 | EOL already = 50 · EOL within 12 months = 35 · within 24 months = 15 · supported = 0 |
-| Time past EOL | 20 | 5 per full year past EOL |
-| Version lag | 15 | 5 per major cycle behind latest supported |
-| Prominence | 15 | How often the syllabus uses it |
+| Lifecycle | 40 | Support stage from the registry / endoflife.date |
+| Frequency | 30 | 6 points per page where the item appears, max 30 |
+| Labs | 20 | 0 or 20: used in a lab (quote verified in the module) |
+| Learning activities | 10 | 0 or 10: used in an activity (quote verified) |
 
-Unverified items are not scored; they are flagged "needs manual check". Weights: `backend/app/config.py`.
+**Priority:** High >= 80 · Medium >= 50 · Low below 50. Unverified items are not scored; they are flagged
+"needs manual check". Weights: `backend/app/config.py`.
 
 ## Team workflow
 - `main` holds the final, stable output. Work on `feature/*` branches, merge them into `develop` to test everything together, and merge `develop` into `main` only when it works.

@@ -35,6 +35,7 @@ class ScorePart(BaseModel):
 class Score(BaseModel):
     total: int
     max: int = 100
+    priority: Optional[Literal["high", "medium", "low"]] = None  # high >= 80, medium >= 50, else low
     breakdown: list[ScorePart]
 
 

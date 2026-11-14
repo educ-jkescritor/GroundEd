@@ -6,11 +6,12 @@ from .models import Lifecycle, Score, ScorePart
 
 
 def compute(lifecycle: Lifecycle, cycles_behind: int, pages_mentioned: int, today: date | None = None) -> Score:
-    """TODO: implement per README "Priority score":
-    - lifecycle_status: EOL already = 50, EOL <=12 months = 35, <=24 months = 15, else 0
-    - time_past_eol: 5 per full year past EOL, capped at 20
-    - version_lag: 5 per major cycle behind latest, capped at 15
-    - prominence: e.g. 5 per page mentioned, capped at 15
+    """TODO: implement per docs/design-brief.md section 5.2 (weights in config.SCORE_WEIGHTS):
+    - lifecycle: 0-40 from the support stage (EOL = 40)
+    - frequency: 6 points per page where the item's exact wording appears, max 30
+    - labs: 0 or 20 (AI label + quote that code verifies exists in the module)
+    - activities: 0 or 10 (same check)
+    Set Score.priority from config.PRIORITY_THRESHOLDS (high >= 80, medium >= 50, else low).
     Each ScorePart.reason must be a plain sentence a professor can read."""
     raise NotImplementedError
 

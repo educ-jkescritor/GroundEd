@@ -24,9 +24,14 @@ export interface ScorePart {
   reason: string;
 }
 
+export type Priority = "high" | "medium" | "low";
+
 export interface Score {
   total: number;
   max: number;
+  // High >= 80, Medium >= 50, else Low (docs/design-brief.md §5.2). Optional until the backend sends it;
+  // the frontend falls back to the same thresholds in lib/priority.ts.
+  priority?: Priority;
   breakdown: ScorePart[];
 }
 

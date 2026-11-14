@@ -19,13 +19,16 @@ GroundEd is used by busy faculty who only trust output they can check. Every scr
 ## 2. Voice and microcopy
 
 - Plain, respectful, short. We talk to professors, not developers. Say "end-of-life" (spelled out the first time), not "EOL" alone.
+- **Advisory, never commanding.** GroundEd advises; faculty decide. Say "may warrant review", never "must update" or "wrong".
+- Current scope is **web development and related courses**; say so where it sets expectations (landing, empty states).
 - Use the second person ("your syllabus"). Avoid hype ("revolutionary", "magic").
 - Never claim certainty we don't have. Use "No source found" rather than "Not outdated".
 
 | Situation | Copy |
 |---|---|
-| Status: EOL | **End-of-life**: "No longer supported since {date}." |
-| Status: nearing EOL | **Nearing end-of-life**: "Support ends {date}." |
+| Status: EOL | **End-of-life**: "No longer supported since {date}; may warrant review." |
+| Status: nearing EOL | **Nearing end-of-life**: "Support ends {date}; may warrant review." |
+| Priority | **High priority** (≥ 80) · **Medium priority** (≥ 50) · **Low priority** (< 50) |
 | Status: supported | **Supported**: "Currently supported." |
 | Status: unverified | **Unverified**: "No source found. GroundEd does not guess. Please check manually." |
 | AI draft label | "AI suggestion: not sourced. Review and edit before using." |
@@ -61,6 +64,12 @@ Defined in `frontend/src/index.css` under `@theme`. Use the token classes (`bg-s
 
 All text/background pairs meet WCAG AA (≥ 4.5:1). Status is **never** communicated by colour alone: always label + icon.
 
+### Priority (High / Medium / Low)
+Priority is a **ranking**, not a status, so it never uses status colours (a supported item can't be "red").
+It uses the neutral ink scale: **High** = solid `ink` with white text · **Medium** = `ink` outline · **Low** = `line` outline, `ink-muted` text.
+Thresholds come from the backend's `score.priority` (High ≥ 80, Medium ≥ 50, else Low; see `docs/design-brief.md` §5.2).
+Supported items show "No action needed" instead of a priority.
+
 ## 4. Typography
 
 | Role | Font | Class | Size / weight |
@@ -91,6 +100,7 @@ All reusable building blocks are in `frontend/src/components/ui/`. Use them; don
 |---|---|---|
 | `Button` | `ui/Button.tsx` | Variants: `primary` (ink bg), `secondary` (outlined), `ghost` (text), `ai` (violet, only for AI actions). Sizes `sm`, `md`. One primary per view. |
 | `StatusBadge` | `ui/StatusBadge.tsx` | Always icon + label. Use for finding status only. |
+| `PriorityBadge` | `ui/PriorityBadge.tsx` | High / Medium / Low. Neutral ink scale only. Use `priorityOf(score)` from `lib/priority.ts`. |
 | `Notice` | `ui/Notice.tsx` | Tones `info`, `warning`, `error`. For page-level messages, not finding status. |
 | `AiSuggestion` | `ui/AiSuggestion.tsx` | Wraps **any** AI-generated content. Violet dashed border + label. Mandatory. |
 | `SourceLink` | `ui/SourceLink.tsx` | External source links: opens in new tab, shows `ExternalLink` icon, `rel="noreferrer"`. |
@@ -101,14 +111,14 @@ Domain components (`components/`): `FindingCard`, `EvidencePanel`, `ScoreBreakdo
 ### FindingCard anatomy
 ```
 ┌──────────────────────────────────────────────────────────────┐
-│ [StatusBadge]  Python 2.7                       90/100  [▼]  │  collapsed header
-│ No longer supported since 1 Jan 2020 · p. 2                  │
+│ [StatusBadge]  Python 2.7     [High priority]   82/100  [▼]  │  collapsed header
+│ No longer supported since 1 Jan 2020; may warrant review · p. 2, 5 │
 ├──────────────────────────────────────────────────────────────┤
 │ IN YOUR SYLLABUS            │ LIFECYCLE RECORD               │  EvidencePanel
 │ "Lab exercises use Py 2.7"  │ Cycle 2.7 · EOL 2020-01-01     │
 │  p. 2                       │ endoflife.date ↗               │
 ├──────────────────────────────────────────────────────────────┤
-│ Why 90/100?  ▇▇▇▇▇ 50/50 Lifecycle status …                  │  ScoreBreakdown
+│ Why 82/100?  ▇▇▇▇ 40/40 Lifecycle · 12/30 Frequency · …      │  ScoreBreakdown
 ├──────────────────────────────────────────────────────────────┤
 │ How much help do you want?                                   │  Help levels
 │ (•) Review evidence ( ) Accept upgrade ( ) Draft section     │

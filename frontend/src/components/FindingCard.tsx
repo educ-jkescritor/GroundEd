@@ -9,6 +9,8 @@ import { AiSuggestion } from "./ui/AiSuggestion";
 import { Notice } from "./ui/Notice";
 import { SourceLink } from "./ui/SourceLink";
 import { StatusBadge } from "./ui/StatusBadge";
+import { PriorityBadge } from "./ui/PriorityBadge";
+import { priorityOf } from "../lib/priority";
 import { DECISION_LABEL, type Decision } from "../lib/decisions";
 import { formatDate } from "../lib/format";
 
@@ -18,9 +20,9 @@ export function summaryLine(f: Finding): string {
   const eol = f.lifecycle?.eol_date;
   switch (f.status) {
     case "eol":
-      return eol ? `No longer supported since ${formatDate(eol)}.` : "No longer supported.";
+      return eol ? `No longer supported since ${formatDate(eol)}; may warrant review.` : "No longer supported; may warrant review.";
     case "nearing_eol":
-      return eol ? `Support ends ${formatDate(eol)}.` : "Support ends soon.";
+      return eol ? `Support ends ${formatDate(eol)}; may warrant review.` : "Support ends soon; may warrant review.";
     case "supported":
       return "Currently supported.";
     default:
@@ -46,6 +48,7 @@ export default function FindingCard({ analysisId, finding, decision, onDecide, o
   const [error, setError] = useState<string | null>(null);
 
   const actionable = finding.status === "eol" || finding.status === "nearing_eol";
+  const priority = finding.status === "supported" ? null : priorityOf(finding.score);
   const pages = [...new Set(finding.citations.map((c) => c.page))];
   const panelId = `finding-${finding.id}`;
 
@@ -88,6 +91,7 @@ export default function FindingCard({ analysisId, finding, decision, onDecide, o
           </span>
         )}
         <span className="ml-auto flex items-center gap-3">
+          {priority && <PriorityBadge priority={priority} />}
           {finding.status === "supported" ? (
             <span className="text-sm text-ink-subtle">No action needed</span>
           ) : finding.score ? (

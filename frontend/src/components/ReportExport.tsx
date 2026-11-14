@@ -5,6 +5,7 @@ import { DECISION_LABEL, type Decisions } from "../lib/decisions";
 import { formatDate } from "../lib/format";
 import { STATUS_META } from "./ui/StatusBadge";
 import { summaryLine } from "./FindingCard";
+import { PRIORITY_LABEL, priorityOf } from "../lib/priority";
 import { Button } from "./ui/Button";
 
 export function sortFindings(a: Analysis) {
@@ -25,7 +26,8 @@ export function buildMarkdown(a: Analysis, decisions: Decisions): string {
     const d = decisions[f.id];
     lines.push(`## ${f.technology}${f.version ? ` ${f.version}` : ""}: ${STATUS_META[f.status].label}`);
     lines.push("", summaryLine(f));
-    if (f.score) lines.push("", `**Priority score:** ${f.score.total}/100 (${f.score.breakdown.map((p) => `${p.label} ${p.points}/${p.max}`).join(", ")})`);
+    const pr = f.status === "supported" ? null : priorityOf(f.score);
+    if (f.score && pr) lines.push("", `**${PRIORITY_LABEL[pr]}:** ${f.score.total}/100 (${f.score.breakdown.map((p) => `${p.label} ${p.points}/${p.max}`).join(", ")})`);
     lines.push("", "**Evidence**");
     for (const c of f.citations) lines.push(`- Syllabus p. ${c.page}: "${c.snippet}"`);
     if (f.lifecycle) lines.push(`- Lifecycle record: ${f.lifecycle.source_url}`);
@@ -84,7 +86,7 @@ export function PrintReport({ analysis, decisions }: { analysis: Analysis; decis
           <section key={f.id} className="break-inside-avoid space-y-1 border-t border-line pt-3">
             <h2 className="font-semibold">
               {f.technology} {f.version}: {STATUS_META[f.status].label}
-              {f.score && ` · ${f.score.total}/100`}
+              {f.score && f.status !== "supported" && ` · ${PRIORITY_LABEL[priorityOf(f.score)!]} (${f.score.total}/100)`}
             </h2>
             <p>{summaryLine(f)}</p>
             {f.citations.map((c, i) => (

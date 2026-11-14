@@ -2,11 +2,12 @@ import { BookOpenCheck, FileSearch, Gauge, Hand, Link2, ShieldQuestion, Upload, 
 import { ButtonLink } from "../components/ui/Button";
 import { Card } from "../components/ui/Card";
 import { StatusBadge } from "../components/ui/StatusBadge";
+import { PriorityBadge } from "../components/ui/PriorityBadge";
 import { usePageTitle } from "../lib/usePageTitle";
 
 const steps = [
   { icon: Upload, title: "Upload your syllabus", body: "Drop in a PDF, or try one of our sample syllabi. No account needed." },
-  { icon: FileSearch, title: "Get cited findings", body: "GroundEd finds every language, framework, database and tool, then checks each against endoflife.date." },
+  { icon: FileSearch, title: "Get cited findings", body: "GroundEd finds technologies and practices, then checks each against lifecycle records and official documentation." },
   { icon: UserCheck, title: "You decide", body: "Review the evidence, accept a suggested upgrade, or ask for a draft. Nothing changes without your approval." },
 ];
 
@@ -17,11 +18,12 @@ const principles = [
   { icon: Hand, title: "You stay in control", body: "AI drafts are clearly labelled suggestions. You edit and approve every change." },
 ];
 
+// Mirrors docs/design-brief.md §5.2 (initial defaults, to be refined after evaluation).
 const scoring = [
-  { factor: "Lifecycle status", max: 50, rule: "Already end-of-life = 50 · ends within 12 months = 35 · within 24 months = 15 · supported = 0" },
-  { factor: "Time past end-of-life", max: 20, rule: "5 points per full year since support ended" },
-  { factor: "Version lag", max: 15, rule: "5 points per major version behind the latest supported one" },
-  { factor: "Prominence", max: 15, rule: "How often and how centrally the syllabus uses it" },
+  { factor: "Lifecycle", max: 40, rule: "Support stage from the lifecycle record: the further past end-of-life, the higher" },
+  { factor: "Frequency", max: 30, rule: "6 points for each page where the item appears, up to 30" },
+  { factor: "Labs", max: 20, rule: "20 if students use it in a lab, confirmed by a quote from the syllabus" },
+  { factor: "Learning activities", max: 10, rule: "10 if it's part of an assignment or activity, confirmed by a quote" },
 ];
 
 export default function Landing() {
@@ -32,14 +34,15 @@ export default function Landing() {
       <section className="mx-auto grid max-w-6xl items-center gap-12 px-4 py-16 sm:px-6 lg:grid-cols-2 lg:py-24">
         <div className="space-y-6">
           <p className="inline-flex items-center gap-2 rounded-full bg-brand-soft px-3 py-1 text-sm font-medium text-brand">
-            <BookOpenCheck size={16} aria-hidden /> For faculty and curriculum reviewers
+            <BookOpenCheck size={16} aria-hidden /> For web development courses
           </p>
           <h1 className="font-serif text-4xl font-semibold leading-tight sm:text-5xl">
             Keep your syllabus current, with sources you can check.
           </h1>
           <p className="max-w-xl text-lg text-ink-muted">
-            GroundEd finds the languages, frameworks and tools in your syllabus and checks each one against an open
-            end-of-life database. Every finding cites its source. Nothing changes without your approval.
+            GroundEd reads your web development syllabus and finds languages, frameworks, tools and practices that
+            may be outdated. Every finding cites the page it came from and a trusted source. Nothing changes without
+            your approval.
           </p>
           <div className="flex flex-wrap gap-3">
             <ButtonLink to="/analyze">Analyze a syllabus</ButtonLink>
@@ -51,14 +54,17 @@ export default function Landing() {
         <Card className="space-y-4" aria-label="Example finding">
           <div className="flex items-center gap-3">
             <StatusBadge status="eol" />
-            <span className="ml-auto font-mono text-sm tabular-nums">90/100</span>
+            <span className="ml-auto flex items-center gap-2">
+              <PriorityBadge priority="high" />
+              <span className="font-mono text-sm tabular-nums">82/100</span>
+            </span>
           </div>
           <h2 className="text-lg font-semibold">Python 2.7</h2>
           <blockquote className="border-l-2 border-line pl-3 font-serif italic text-ink-muted">
             “Lab exercises use Python 2.7” <span className="not-italic text-ink-subtle">(p. 2)</span>
           </blockquote>
           <p className="text-sm text-ink-muted">
-            No longer supported since 1 Jan 2020 · source:{" "}
+            No longer supported since 1 Jan 2020; may warrant review · source:{" "}
             <a href="https://endoflife.date/python" target="_blank" rel="noreferrer">endoflife.date/python</a>
           </p>
         </Card>
@@ -126,9 +132,14 @@ export default function Landing() {
       <section id="scoring" className="mx-auto max-w-3xl scroll-mt-20 space-y-6 px-4 py-16 sm:px-6">
         <h2 className="font-serif text-3xl font-semibold">How the priority score works</h2>
         <p className="text-ink-muted">
-          Each verified technology gets up to 100 points. Higher means "update sooner". Unverified items are not
-          scored; they are flagged for a manual check.
+          Each verified item gets up to 100 points from fixed rules in code, never from AI, so the same syllabus
+          always gets the same score. Unverified items are not scored; they are flagged for a manual check.
         </p>
+        <div className="flex flex-wrap items-center gap-3 text-sm">
+          <PriorityBadge priority="high" /> <span className="text-ink-muted">80 and above</span>
+          <PriorityBadge priority="medium" /> <span className="text-ink-muted">50–79</span>
+          <PriorityBadge priority="low" /> <span className="text-ink-muted">below 50</span>
+        </div>
         <Card className="divide-y divide-line p-0">
           {scoring.map((s) => (
             <div key={s.factor} className="flex gap-4 p-4">

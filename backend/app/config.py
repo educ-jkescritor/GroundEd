@@ -20,10 +20,12 @@ UPLOAD_RETENTION_HOURS = int(os.getenv("UPLOAD_RETENTION_HOURS", "24"))
 
 CORS_ORIGINS = os.getenv("CORS_ORIGINS", "http://localhost:5173").split(",")
 
-# Transparent 100-point priority score. Keep in sync with README "Priority score".
+# Transparent 100-point priority score (docs/design-brief.md section 5.2, initial defaults; to be refined).
+# Keep in sync with README "Priority score" and frontend/src/pages/Landing.tsx.
 SCORE_WEIGHTS = {
-    "lifecycle_status": 50,  # EOL already = 50, EOL <=12 months = 35, <=24 months = 15, supported = 0
-    "time_past_eol": 20,     # +5 per full year past EOL, capped
-    "version_lag": 15,       # +5 per major cycle behind latest supported, capped
-    "prominence": 15,        # how often / how centrally the syllabus uses it
+    "lifecycle": 40,    # registry / endoflife.date support stage
+    "frequency": 30,    # 6 points per page where the item's wording appears, max 30
+    "labs": 20,         # 0 or 20: used in a lab (AI label + code-verified quote)
+    "activities": 10,   # 0 or 10: used in a learning activity (same check)
 }
+PRIORITY_THRESHOLDS = {"high": 80, "medium": 50}  # else "low"

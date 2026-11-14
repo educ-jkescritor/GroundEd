@@ -26,9 +26,12 @@ Interactive docs: run the backend and open http://localhost:8000/docs
     "latest_cycle": "3.x", "source_url": "https://endoflife.date/python"
   },
   "score": {
-    "total": 90, "max": 100,
+    "total": 82, "max": 100, "priority": "high",
     "breakdown": [
-      { "key": "lifecycle_status", "label": "Lifecycle status", "points": 50, "max": 50, "reason": "Already end-of-life" }
+      { "key": "lifecycle", "label": "Lifecycle", "points": 40, "max": 40, "reason": "Support ended on 1 Jan 2020" },
+      { "key": "frequency", "label": "Frequency", "points": 12, "max": 30, "reason": "Appears on 2 pages (6 points each)" },
+      { "key": "labs", "label": "Labs", "points": 20, "max": 20, "reason": "Used in lab exercises (page 2)" },
+      { "key": "activities", "label": "Learning activities", "points": 10, "max": 10, "reason": "Used in Assignment 3 (page 5)" }
     ]
   },
   "upgrade": { "target_cycle": "3.x (latest)", "source_url": "https://endoflife.date/python" }
@@ -36,6 +39,8 @@ Interactive docs: run the backend and open http://localhost:8000/docs
 ```
 
 `status` is one of `eol | nearing_eol | supported | unverified`. For `unverified`, `lifecycle` and `score` are `null`.
+`score.priority` is `high` (>= 80), `medium` (>= 50) or `low`; if the backend omits it, the frontend derives it from `total`.
+Scoring rules: [docs/design-brief.md section 5.2](design-brief.md). The backend owns this format; the frontend follows it.
 
 ## `FeedbackIn` (POST `/api/feedback`)
 ```json

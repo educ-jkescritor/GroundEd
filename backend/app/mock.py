@@ -18,14 +18,15 @@ def mock_analysis(analysis_id: str = "demo", filename: str = "sample.pdf", kind:
     findings = [
         Finding(
             id="f1", technology="Python", version="2.7", status="eol",
-            citations=[Citation(page=2, snippet="Lab exercises use Python 2.7", bbox=[72, 300, 320, 314])],
+            citations=[Citation(page=2, snippet="Lab exercises use Python 2.7", bbox=[72, 300, 320, 314]),
+                       Citation(page=5, snippet="Assignment 3: data processing script in Python 2.7")],
             lifecycle=Lifecycle(product="python", cycle="2.7", eol_date="2020-01-01",
                                 latest_cycle="3.x", source_url="https://endoflife.date/python"),
-            score=Score(total=90, breakdown=[
-                ScorePart(key="lifecycle_status", label="Lifecycle status", points=50, max=50, reason="Already end-of-life"),
-                ScorePart(key="time_past_eol", label="Time past EOL", points=20, max=20, reason="More than 4 years past EOL"),
-                ScorePart(key="version_lag", label="Version lag", points=15, max=15, reason="Major version behind"),
-                ScorePart(key="prominence", label="Prominence", points=5, max=15, reason="Mentioned on 1 page"),
+            score=Score(total=82, priority="high", breakdown=[
+                ScorePart(key="lifecycle", label="Lifecycle", points=40, max=40, reason="Support ended on 1 Jan 2020"),
+                ScorePart(key="frequency", label="Frequency", points=12, max=30, reason="Appears on 2 pages (6 points each)"),
+                ScorePart(key="labs", label="Labs", points=20, max=20, reason="Used in lab exercises (page 2)"),
+                ScorePart(key="activities", label="Learning activities", points=10, max=10, reason="Used in Assignment 3 (page 5)"),
             ]),
             upgrade=Upgrade(target_cycle="3.x (latest)", source_url="https://endoflife.date/python"),
         ),
@@ -34,22 +35,22 @@ def mock_analysis(analysis_id: str = "demo", filename: str = "sample.pdf", kind:
             citations=[Citation(page=3, snippet="Front-end framework: AngularJS 1.x")],
             lifecycle=Lifecycle(product="angularjs", cycle="1.8", eol_date="2021-12-31",
                                 source_url="https://endoflife.date/angularjs"),
-            score=Score(total=80, breakdown=[
-                ScorePart(key="lifecycle_status", label="Lifecycle status", points=50, max=50, reason="Already end-of-life"),
-                ScorePart(key="time_past_eol", label="Time past EOL", points=15, max=20, reason="About 3 years past EOL"),
-                ScorePart(key="version_lag", label="Version lag", points=0, max=15, reason="No newer cycle of this product"),
-                ScorePart(key="prominence", label="Prominence", points=15, max=15, reason="Used in 3 labs"),
+            score=Score(total=58, priority="medium", breakdown=[
+                ScorePart(key="lifecycle", label="Lifecycle", points=40, max=40, reason="Support ended on 31 Dec 2021"),
+                ScorePart(key="frequency", label="Frequency", points=18, max=30, reason="Appears on 3 pages (6 points each)"),
+                ScorePart(key="labs", label="Labs", points=0, max=20, reason="No lab use found"),
+                ScorePart(key="activities", label="Learning activities", points=0, max=10, reason="No activity use found"),
             ]),
         ),
         Finding(
             id="f3", technology="React", version=None, status="supported",
             citations=[Citation(page=4, snippet="Final project built with React")],
             lifecycle=Lifecycle(product="react", source_url="https://endoflife.date/react"),
-            score=Score(total=0, breakdown=[
-                ScorePart(key="lifecycle_status", label="Lifecycle status", points=0, max=50, reason="Supported"),
-                ScorePart(key="time_past_eol", label="Time past EOL", points=0, max=20, reason="Not EOL"),
-                ScorePart(key="version_lag", label="Version lag", points=0, max=15, reason="No version stated"),
-                ScorePart(key="prominence", label="Prominence", points=0, max=15, reason="Not scored when supported"),
+            score=Score(total=6, priority="low", breakdown=[
+                ScorePart(key="lifecycle", label="Lifecycle", points=0, max=40, reason="Currently supported"),
+                ScorePart(key="frequency", label="Frequency", points=6, max=30, reason="Appears on 1 page"),
+                ScorePart(key="labs", label="Labs", points=0, max=20, reason="No lab use found"),
+                ScorePart(key="activities", label="Learning activities", points=0, max=10, reason="No activity use found"),
             ]),
         ),
         Finding(
