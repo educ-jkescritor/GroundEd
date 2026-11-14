@@ -1,35 +1,32 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { api, errorMessage } from "../api";
+import { Navigate, useNavigate } from "react-router-dom";
+import { errorMessage } from "../api";
 import { Page } from "../components/Layout";
 import { Button } from "../components/ui/Button";
 import { Panel } from "../components/ui/Card";
 import { HorizonMark } from "../components/ui/Logo";
 import { Notice } from "../components/ui/Notice";
-import { getDemoUser, recordReport, signInDemo, signOutDemo, useStored } from "../lib/history";
+import { getDemoUser, logInWithDemoHistory, useStored } from "../lib/history";
 import { usePageTitle } from "../lib/usePageTitle";
 
-/** Browser-only demo account for the hackathon: one click, no password (docs/ux/information-architecture.md). */
+/** Single clean Log in view. Once logged in, redirects straight to /analyze where upload history is shown. */
 export default function SignIn() {
-  usePageTitle("Sign in");
+  usePageTitle("Log in");
   const navigate = useNavigate();
   const user = useStored(getDemoUser);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  async function continueAsDemo() {
+  if (user) {
+    return <Navigate to="/analyze" replace />;
+  }
+
+  async function handleLogIn() {
     setBusy(true);
     setError(null);
     try {
-      // Give the demo account a couple of sample reports to explore.
-      signInDemo(); // the demo account lives only in this browser, so signing in never needs the server
-      try {
-        const samples = await api.samples();
-        for (const s of samples.slice(0, 2)) recordReport(await api.analyzeSample(s.id));
-      } catch {
-        // Couldn't add the sample reports (backend not running). Still signed in; My reports starts empty.
-      }
-      navigate("/reports");
+      await logInWithDemoHistory();
+      navigate("/analyze");
     } catch (e) {
       setError(errorMessage(e));
     } finally {
@@ -41,23 +38,17 @@ export default function SignIn() {
     <Page narrow>
       <Panel className="mx-auto max-w-md space-y-5 text-center">
         <div className="flex justify-center"><HorizonMark size={44} /></div>
-        {user ? (
-          <>
-            <h1 className="text-2xl">Signed in as {user.name}</h1>
-            <p className="text-ink-muted">Demo account: for trying GroundEd only. Reports are saved in this browser.</p>
-            <Button variant="secondary" onClick={() => signOutDemo()}>Sign out</Button>
-          </>
-        ) : (
-          <>
-            <h1 className="text-2xl">Sign in to GroundEd</h1>
-            <p className="text-ink-muted">You don't need an account to analyze a module. Signing in keeps a list of your reports.</p>
-            <Button onClick={continueAsDemo} disabled={busy} className="w-full">
-              {busy ? "Preparing demo…" : "Continue with demo account"}
-            </Button>
-            <p className="text-xs text-ink-subtle">Demo account: for trying GroundEd only. Reports are saved in this browser.</p>
-            {error && <Notice tone="error">{error}</Notice>}
-          </>
-        )}
+        <h1 className="text-2xl">Log in to GroundEd</h1>
+        <p className="text-ink-muted">
+          You don't need an account to upload and analyze a module. Logging in saves your history of uploads in this browser.
+        </p>
+        <Button onClick={handleLogIn} disabled={busy} className="w-full">
+          {busy ? "Logging in…" : "Log in with demo account"}
+        </Button>
+        <p className="text-xs text-ink-subtle">
+          Demo account: for trying GroundEd only. Upload history is stored in this browser.
+        </p>
+        {error && <Notice tone="error">{error}</Notice>}
       </Panel>
     </Page>
   );
