@@ -92,3 +92,9 @@ def load(directory: Path = REGISTRY_DIR) -> Registry:
 @lru_cache(maxsize=1)
 def get() -> Registry:
     return load()
+
+
+def eol_products(reg: Optional[Registry] = None) -> list[str]:
+    """endoflife.date products the registry depends on (snapshotted by `library build`)."""
+    reg = reg or load()
+    return sorted({e.eol.product for e in reg.entries if e.eol} | {e.fact.product for e in reg.entries if e.fact})

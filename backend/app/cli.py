@@ -13,7 +13,7 @@ import argparse
 import sys
 from pathlib import Path
 
-from . import evaluate, library, registry
+from . import eol, evaluate, library, registry
 from .pdf import PdfError
 from .pipeline import analyze
 
@@ -75,8 +75,14 @@ def main(argv: list[str] | None = None) -> int:
         for h in library.search(args.query, k=5):
             print(f"\n[{h.rank:+.2f}] {h.publisher} — {h.title} › {h.heading}\n  {h.url}\n  {h.text[:220]}")
     elif args.cmd == "library":
-        rows = (library.build(only=set(filter(None, args.only.split(","))) or None) if args.action == "build"
-                else library.status())
+        only = set(filter(None, args.only.split(","))) or None
+        rows = library.build(only=only) if args.action == "build" else library.status()
+        if args.action == "build" and not only:
+            products = registry.eol_products()
+            print("endoflife.date snapshot:")
+            for product, st, reason in eol.snapshot_products(products):
+                print(f"  {'OK  ' if st == 'ok' else 'FAIL'} eol/{product:28} {reason}")
+            print("documents:")
         icon = {"ok": "OK  ", "failed": "FAIL", "needs_manual": "MANU"}
         for r in rows:
             print(f"  {icon[r.status]} {r.id:32} {r.passages:>3} passages  {r.reason}")

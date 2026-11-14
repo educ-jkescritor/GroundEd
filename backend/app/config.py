@@ -20,6 +20,8 @@ GEMINI_FALLBACK_MODEL = os.getenv("GEMINI_FALLBACK_MODEL", "gemini-3.5-flash-lit
 
 EOL_API_BASE = os.getenv("EOL_API_BASE", "https://endoflife.date/api/v1")
 EOL_CACHE_HOURS = int(os.getenv("EOL_CACHE_HOURS", "24"))
+# "snapshot" (default): committed library/snapshot/eol data — reproducible, offline. "live": API first.
+EOL_SOURCE = os.getenv("EOL_SOURCE", "snapshot")
 
 MAX_UPLOAD_MB = int(os.getenv("MAX_UPLOAD_MB", "10"))
 UPLOAD_RETENTION_HOURS = int(os.getenv("UPLOAD_RETENTION_HOURS", "24"))
