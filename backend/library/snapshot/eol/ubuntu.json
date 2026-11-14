@@ -1,0 +1,372 @@
+{
+ "last_modified": "2026-11-07T02:38:08+00:00",
+ "result": {
+  "name": "ubuntu",
+  "label": "Ubuntu",
+  "links": {
+   "html": "https://endoflife.date/ubuntu"
+  },
+  "releases": [
+   {
+    "name": "26.10",
+    "label": "26.10 'Stonking Stingray'",
+    "releaseDate": "2026-10-15",
+    "isEol": false,
+    "eolFrom": "2027-07-01",
+    "isMaintained": true
+   },
+   {
+    "name": "26.04",
+    "label": "26.04 'Resolute Raccoon' (LTS)",
+    "releaseDate": "2026-04-23",
+    "isEol": false,
+    "eolFrom": "2031-05-29",
+    "isMaintained": true
+   },
+   {
+    "name": "25.10",
+    "label": "25.10 'Questing Quokka'",
+    "releaseDate": "2025-10-09",
+    "isEol": true,
+    "eolFrom": "2026-07-01",
+    "isMaintained": false
+   },
+   {
+    "name": "25.04",
+    "label": "25.04 'Plucky Puffin'",
+    "releaseDate": "2025-04-17",
+    "isEol": true,
+    "eolFrom": "2026-01-17",
+    "isMaintained": false
+   },
+   {
+    "name": "24.10",
+    "label": "24.10 'Oracular Oriole'",
+    "releaseDate": "2024-10-10",
+    "isEol": true,
+    "eolFrom": "2025-07-10",
+    "isMaintained": false
+   },
+   {
+    "name": "24.04",
+    "label": "24.04 'Noble Numbat' (LTS)",
+    "releaseDate": "2024-04-25",
+    "isEol": false,
+    "eolFrom": "2029-05-31",
+    "isMaintained": true
+   },
+   {
+    "name": "23.10",
+    "label": "23.10 'Mantic Minotaur'",
+    "releaseDate": "2023-10-12",
+    "isEol": true,
+    "eolFrom": "2024-07-12",
+    "isMaintained": false
+   },
+   {
+    "name": "23.04",
+    "label": "23.04 'Lunar Lobster'",
+    "releaseDate": "2023-04-20",
+    "isEol": true,
+    "eolFrom": "2024-01-20",
+    "isMaintained": false
+   },
+   {
+    "name": "22.10",
+    "label": "22.10 'Kinetic Kudu'",
+    "releaseDate": "2022-10-20",
+    "isEol": true,
+    "eolFrom": "2023-07-20",
+    "isMaintained": false
+   },
+   {
+    "name": "22.04",
+    "label": "22.04 'Jammy Jellyfish' (LTS)",
+    "releaseDate": "2022-04-21",
+    "isEol": false,
+    "eolFrom": "2027-06-01",
+    "isMaintained": true
+   },
+   {
+    "name": "21.10",
+    "label": "21.10 'Impish Indri'",
+    "releaseDate": "2021-10-14",
+    "isEol": true,
+    "eolFrom": "2022-07-14",
+    "isMaintained": false
+   },
+   {
+    "name": "21.04",
+    "label": "21.04 'Hirsute Hippo'",
+    "releaseDate": "2021-04-22",
+    "isEol": true,
+    "eolFrom": "2022-01-20",
+    "isMaintained": false
+   },
+   {
+    "name": "20.10",
+    "label": "20.10 'Groovy Gorilla'",
+    "releaseDate": "2020-10-22",
+    "isEol": true,
+    "eolFrom": "2021-07-22",
+    "isMaintained": false
+   },
+   {
+    "name": "20.04",
+    "label": "20.04 'Focal Fossa' (LTS)",
+    "releaseDate": "2020-04-23",
+    "isEol": true,
+    "eolFrom": "2025-05-31",
+    "isMaintained": true
+   },
+   {
+    "name": "19.10",
+    "label": "19.10 'Eoan Ermine'",
+    "releaseDate": "2019-10-17",
+    "isEol": true,
+    "eolFrom": "2020-07-06",
+    "isMaintained": false
+   },
+   {
+    "name": "19.04",
+    "label": "19.04 'Disco Dingo'",
+    "releaseDate": "2019-04-18",
+    "isEol": true,
+    "eolFrom": "2020-01-23",
+    "isMaintained": false
+   },
+   {
+    "name": "18.10",
+    "label": "18.10 'Cosmic Cuttlefish'",
+    "releaseDate": "2018-10-18",
+    "isEol": true,
+    "eolFrom": "2019-07-18",
+    "isMaintained": false
+   },
+   {
+    "name": "18.04",
+    "label": "18.04 'Bionic Beaver' (LTS)",
+    "releaseDate": "2018-04-26",
+    "isEol": true,
+    "eolFrom": "2023-05-31",
+    "isMaintained": true
+   },
+   {
+    "name": "17.10",
+    "label": "17.10 'Artful Aardvark'",
+    "releaseDate": "2017-10-19",
+    "isEol": true,
+    "eolFrom": "2018-07-19",
+    "isMaintained": false
+   },
+   {
+    "name": "17.04",
+    "label": "17.04 'Zesty Zapus'",
+    "releaseDate": "2017-04-13",
+    "isEol": true,
+    "eolFrom": "2018-01-13",
+    "isMaintained": false
+   },
+   {
+    "name": "16.10",
+    "label": "16.10 'Yakkety Yak'",
+    "releaseDate": "2016-10-13",
+    "isEol": true,
+    "eolFrom": "2017-07-20",
+    "isMaintained": false
+   },
+   {
+    "name": "16.04",
+    "label": "16.04 'Xenial Xerus' (LTS)",
+    "releaseDate": "2016-04-21",
+    "isEol": true,
+    "eolFrom": "2021-04-02",
+    "isMaintained": false
+   },
+   {
+    "name": "15.10",
+    "label": "15.10 'Wily Werewolf'",
+    "releaseDate": "2015-10-22",
+    "isEol": true,
+    "eolFrom": "2016-07-28",
+    "isMaintained": false
+   },
+   {
+    "name": "15.04",
+    "label": "15.04 'Vivid Vervet'",
+    "releaseDate": "2015-04-23",
+    "isEol": true,
+    "eolFrom": "2016-02-04",
+    "isMaintained": false
+   },
+   {
+    "name": "14.10",
+    "label": "14.10 'Utopic Unicorn'",
+    "releaseDate": "2014-10-23",
+    "isEol": true,
+    "eolFrom": "2015-07-23",
+    "isMaintained": false
+   },
+   {
+    "name": "14.04",
+    "label": "14.04 'Trusty Tahr' (LTS)",
+    "releaseDate": "2014-04-17",
+    "isEol": true,
+    "eolFrom": "2019-04-02",
+    "isMaintained": false
+   },
+   {
+    "name": "13.10",
+    "label": "13.10 'Saucy Salamander'",
+    "releaseDate": "2013-10-17",
+    "isEol": true,
+    "eolFrom": "2014-07-17",
+    "isMaintained": false
+   },
+   {
+    "name": "13.04",
+    "label": "13.04 'Raring Ringtail'",
+    "releaseDate": "2013-04-25",
+    "isEol": true,
+    "eolFrom": "2014-01-27",
+    "isMaintained": false
+   },
+   {
+    "name": "12.10",
+    "label": "12.10 'Quantal Quetzal'",
+    "releaseDate": "2012-10-18",
+    "isEol": true,
+    "eolFrom": "2014-05-16",
+    "isMaintained": false
+   },
+   {
+    "name": "12.04",
+    "label": "12.04 'Precise Pangolin' (LTS)",
+    "releaseDate": "2012-04-26",
+    "isEol": true,
+    "eolFrom": "2017-04-28",
+    "isMaintained": false
+   },
+   {
+    "name": "11.10",
+    "label": "11.10 'Oneiric Ocelot'",
+    "releaseDate": "2011-10-13",
+    "isEol": true,
+    "eolFrom": "2013-05-09",
+    "isMaintained": false
+   },
+   {
+    "name": "11.04",
+    "label": "11.04 'Natty Narwhal'",
+    "releaseDate": "2011-04-28",
+    "isEol": true,
+    "eolFrom": "2012-10-28",
+    "isMaintained": false
+   },
+   {
+    "name": "10.10",
+    "label": "10.10 'Maverick Meerkat'",
+    "releaseDate": "2010-10-10",
+    "isEol": true,
+    "eolFrom": "2012-04-10",
+    "isMaintained": false
+   },
+   {
+    "name": "10.04",
+    "label": "10.04 'Lucid Lynx' (LTS)",
+    "releaseDate": "2010-04-29",
+    "isEol": true,
+    "eolFrom": "2013-05-09",
+    "isMaintained": false
+   },
+   {
+    "name": "9.10",
+    "label": "9.10 'Karmic Koala'",
+    "releaseDate": "2009-10-29",
+    "isEol": true,
+    "eolFrom": "2011-04-30",
+    "isMaintained": false
+   },
+   {
+    "name": "9.04",
+    "label": "9.04 'Jaunty Jackalope'",
+    "releaseDate": "2009-04-23",
+    "isEol": true,
+    "eolFrom": "2010-10-23",
+    "isMaintained": false
+   },
+   {
+    "name": "8.10",
+    "label": "8.10 'Intrepid Ibex'",
+    "releaseDate": "2008-10-30",
+    "isEol": true,
+    "eolFrom": "2010-04-30",
+    "isMaintained": false
+   },
+   {
+    "name": "8.04",
+    "label": "8.04 'Hardy Heron' (LTS)",
+    "releaseDate": "2008-04-24",
+    "isEol": true,
+    "eolFrom": "2013-05-09",
+    "isMaintained": false
+   },
+   {
+    "name": "7.10",
+    "label": "7.10 'Gutsy Gibbon'",
+    "releaseDate": "2007-10-18",
+    "isEol": true,
+    "eolFrom": "2009-04-18",
+    "isMaintained": false
+   },
+   {
+    "name": "7.04",
+    "label": "7.04 'Feisty Fawn'",
+    "releaseDate": "2007-04-19",
+    "isEol": true,
+    "eolFrom": "2008-10-19",
+    "isMaintained": false
+   },
+   {
+    "name": "6.10",
+    "label": "6.10 'Edgy Eft'",
+    "releaseDate": "2006-10-26",
+    "isEol": true,
+    "eolFrom": "2008-04-26",
+    "isMaintained": false
+   },
+   {
+    "name": "6.06",
+    "label": "6.06 'Dapper Drake' (LTS)",
+    "releaseDate": "2006-06-01",
+    "isEol": true,
+    "eolFrom": "2011-06-01",
+    "isMaintained": false
+   },
+   {
+    "name": "5.10",
+    "label": "5.10 'Breezy Badger'",
+    "releaseDate": "2005-10-12",
+    "isEol": true,
+    "eolFrom": "2007-04-13",
+    "isMaintained": false
+   },
+   {
+    "name": "5.04",
+    "label": "5.04 'Hoary Hedgehog'",
+    "releaseDate": "2005-04-08",
+    "isEol": true,
+    "eolFrom": "2006-10-31",
+    "isMaintained": false
+   },
+   {
+    "name": "4.10",
+    "label": "4.10 'Warty Warthog'",
+    "releaseDate": "2004-10-26",
+    "isEol": true,
+    "eolFrom": "2006-04-30",
+    "isMaintained": false
+   }
+  ]
+ }
+}

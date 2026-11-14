@@ -138,6 +138,26 @@ def find_release(data: ProductData, cycle: str) -> Optional[Release]:
     return None
 
 
+def resolve_version(data: ProductData, text: str, versions: Optional[dict[str, str]] = None) -> Optional[Release]:
+    """Map a version as written in a module to an endoflife.date release, or None if it is not a known release.
+    "5.6" -> 5.6 · "5.6.40" -> 5.6 · "5" -> newest 5.x (5.6) · "2012" -> versions["2012"] · "7" -> "7-sp1" ·
+    jQuery "1.12.4" -> "1" (product names releases by major only). Unknown versions -> None (no claim)."""
+    text = " ".join(text.split())
+    text = (versions or {}).get(text, text)
+    if rel := find_release(data, text):
+        return rel
+    parts = text.split(".")
+    while len(parts) > 2:  # drop patch numbers: 5.6.40 -> 5.6
+        parts.pop()
+        if rel := find_release(data, ".".join(parts)):
+            return rel
+    if "." not in text:  # major only: newest release of that major line (releases are newest first)
+        return next((r for r in data.releases if r.name.startswith(text + ".")), None)
+    # Products that name releases by major only (jQuery "1", Bootstrap "3"): "1.12.4" -> "1". Exact name only,
+    # so "Laravel 5.4" is NOT mapped to a different minor line such as 5.5.
+    return next((r for r in data.releases if r.name == parts[0]), None)
+
+
 def latest_label(data: ProductData) -> Optional[str]:
     """Newest version as a plain number ("11", "8.5"), without edition suffixes like "26H2 (E)"."""
     if not data.releases:

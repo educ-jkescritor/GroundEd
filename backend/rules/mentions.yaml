@@ -1,0 +1,15 @@
+# Which product-version mentions are NOT taught content. Applied to endoflife.date (product/version) entries only:
+# "PHP 5 (July 13, 2004)" on a history slide is a mention, not something students are taught to use.
+# Data, not code: tune here, then re-run `python -m app.cli eval`.
+
+# A line matching any of these is ignored.
+history_line:
+  - '^\s*(19|20)\d{2}\b'                                            # starts with a year: "1997 (PHP 2.0)"
+  - '\(\s*(?:[A-Z][a-z]+\.?\s+\d{1,2},?\s*)?(19|20)\d{2}'           # "(July 13, 2004)", "(2007 not yet released)"
+  - '\b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.?\s+\d{1,2},?\s+(19|20)\d{2}\b'   # "May 22, 2000"
+  - '\b(added|introduced|available|new|deprecated|removed|changed)\s+(in|since|as\s+of)\b'          # changelog notes
+  - '\b(history|historically|released|release\s+date|launched|first\s+appeared)\b'
+
+# A page whose first line matches any of these (e.g. a "History" slide) is ignored for product versions.
+history_page:
+  - '^\s*history\b'

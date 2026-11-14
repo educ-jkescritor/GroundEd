@@ -13,7 +13,7 @@ from .models import Analysis, Citation, Finding, Lifecycle, Provenance, SourceIn
 from .pdf import Page, extract_pages, file_sha256, find_snippet_bbox
 from .score import compute, status_for
 
-PIPELINE_VERSION = "0.3.0"  # 0.3.0: library-backed facts + retrieved passages
+PIPELINE_VERSION = "0.4.0"  # 0.4.0: version-aware product entries
 MAX_CITATIONS = 5  # per finding; prominence still counts every page
 
 
@@ -38,7 +38,9 @@ def _static_lifecycle(f: registry.StaticFact, eol_data: dict[str, str]) -> Optio
 
 
 def _finding_for_entry(entry: registry.Entry, mentions: list[Mention], pages_by_no: dict[int, Page], pdf_path: Path,
-                       today: date, eol_data: dict[str, str]) -> Finding:
+                       today: date, eol_data: dict[str, str], product: Optional[eol.ProductData] = None,
+                       rel: Optional[eol.Release] = None) -> Optional[Finding]:
+    """One finding for one registry entry (and, for product entries, one release). None = nothing to claim."""
     pages = sorted({m.page for m in mentions})
     # Teaching signals: every line on those pages that mentions the item, and whether any page is hands-on.
     pats = entry.compiled()
@@ -50,35 +52,37 @@ def _finding_for_entry(entry: registry.Entry, mentions: list[Mention], pages_by_
         for m in sorted(mentions, key=lambda m: m.page)[:MAX_CITATIONS]
     ]
     upgrade = Upgrade(target_cycle=entry.upgrade.target, source_url=entry.upgrade.source_url) if entry.upgrade else None
-    base = dict(id=entry.id, technology=entry.technology, citations=citations, upgrade=upgrade)
+    # A versioned mention of a non-default release gets its own id, e.g. "php-5.6"; defaults keep the entry id.
+    fid = entry.id if rel is None or (entry.eol and rel.name == entry.eol.cycle) or not entry.versioned \
+        else f"{entry.id}-{rel.name}"
+    base = dict(id=fid, technology=entry.technology, citations=citations, upgrade=upgrade)
 
     if entry.fact:
         lifecycle = _static_lifecycle(entry.fact, eol_data)
         if lifecycle is None:  # quote not in the saved document, or date not sourceable: no source, no claim
             return Finding(**base, version=entry.fact.cycle, status="unverified")
-        deprecated, version = entry.fact.stage == "deprecated", entry.fact.cycle
+        deprecated, version, ended = entry.fact.stage == "deprecated", entry.fact.cycle, False
     else:
-        ref = entry.eol
-        try:
-            data = eol.get_product(ref.product)
-        except eol.EolError:
-            return Finding(**base, version=ref.cycle, status="unverified")
-        eol_data[data.product] = f"{data.last_modified} ({data.origin})"  # e.g. "2026-05-01T09:58:42+00:00 (snapshot)"
-        rel = eol.find_release(data, ref.cycle)
-        if rel is None:
-            return Finding(**base, version=ref.cycle, status="unverified")
-        lifecycle = Lifecycle(product=data.product, cycle=rel.label, eol_date=rel.eol_from,
-                              latest_cycle=eol.latest_label(data), source_url=data.html_url,
-                              source_name="endoflife.date")
-        deprecated, version = False, rel.label
+        if product is None or rel is None:  # lifecycle data unavailable: no claim
+            return Finding(**base, version=entry.eol.cycle, status="unverified")
+        eol_data[product.product] = f"{product.last_modified} ({product.origin})"
+        latest = eol.latest_label(product)
+        lifecycle = Lifecycle(product=product.product, cycle=rel.label, eol_date=rel.eol_from, latest_cycle=latest,
+                              source_url=product.html_url, source_name="endoflife.date")
+        deprecated, version, ended = False, rel.label, rel.is_eol
+        if upgrade is None and latest:  # product upgrades come from the same lifecycle record
+            base["upgrade"] = upgrade = Upgrade(target_cycle=f"{product.label} {latest} (latest)",
+                                                source_url=product.html_url)
 
     passages = library.passages_for(
         entry.technology,
         entry.fact.doc if entry.fact else None, entry.fact.quote if entry.fact else None,
         entry.upgrade.source_url if entry.upgrade else None, entry.upgrade.target if entry.upgrade else None,
     ) or None
-    status = status_for(lifecycle.eol_date, deprecated, today)
-    score = compute(lifecycle.eol_date, deprecated, depth, len(pages), hands_on, today)
+    status = status_for(lifecycle.eol_date, deprecated, today, ended)
+    if status == "supported":
+        return None  # still supported: not a finding (no claim to make)
+    score = compute(lifecycle.eol_date, deprecated, depth, len(pages), hands_on, today, ended)
     return Finding(**base, version=version, status=status, lifecycle=lifecycle, score=score, passages=passages)
 
 
@@ -88,22 +92,49 @@ def analyze(pdf_path: Path, filename: str, kind: str = "upload", today: Optional
     reg = registry.get()
     file_hash = file_sha256(pdf_path)
     detector = "registry"  # becomes "registry+<model>" once LLM detection is enabled
-    rules_version, library_version = signals.rules().version, library.version()
+    rules_version, library_version = signals.rules_version(), library.version()
     cache_key = cache.key(file_hash, reg.version, rules_version, library_version, PIPELINE_VERSION, detector,
                           today.isoformat())
     if use_cache and (hit := cache.get(cache_key)):
         return hit
 
     pages = extract_pages(pdf_path)
-    by_entry: dict[str, list[Mention]] = defaultdict(list)
+    entries = {e.id: e for e in reg.entries}
+    products: dict[str, Optional[eol.ProductData]] = {}
+
+    def product_for(name: str) -> Optional[eol.ProductData]:
+        if name not in products:
+            try:
+                products[name] = eol.get_product(name)
+            except eol.EolError:
+                products[name] = None
+        return products[name]
+
+    # Group mentions: static facts by entry; product entries by (entry, release the written version resolves to).
+    groups: dict[tuple[str, Optional[str]], list[Mention]] = defaultdict(list)
+    releases: dict[tuple[str, Optional[str]], Optional[eol.Release]] = {}
     for m in detect.detect_registry(pages, reg.entries):
-        by_entry[m.entry_id].append(m)
+        e = entries[m.entry_id]
+        if e.fact:
+            groups[(e.id, None)].append(m)
+            continue
+        data = product_for(e.eol.product)
+        if data is None:
+            groups[(e.id, None)].append(m)  # -> unverified: lifecycle data unavailable
+            continue
+        text = m.version or e.eol.cycle
+        rel = eol.resolve_version(data, text, e.eol.versions) if text else None
+        if rel is None:
+            continue  # not a real release of this product (e.g. "PHP 6", never released): ignore
+        groups[(e.id, rel.name)].append(m)
+        releases[(e.id, rel.name)] = rel
 
     eol_data: dict[str, str] = {}
-    entries = {e.id: e for e in reg.entries}
     pages_by_no = {p.number: p for p in pages}
-    findings = [_finding_for_entry(entries[eid], ms, pages_by_no, pdf_path, today, eol_data)
-                for eid, ms in by_entry.items()]
+    findings = [f for (eid, rname), ms in groups.items()
+                if (f := _finding_for_entry(entries[eid], ms, pages_by_no, pdf_path, today, eol_data,
+                                            product=products.get(entries[eid].eol.product) if entries[eid].eol else None,
+                                            rel=releases.get((eid, rname)))) is not None]
 
     # LLM-proposed technologies the registry does not know: never scored, always "unverified".
     for m in detect.detect_technologies(pages):

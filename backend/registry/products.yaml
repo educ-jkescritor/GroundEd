@@ -1,0 +1,200 @@
+# Facts Registry — web-development products with version-aware lifecycle data from endoflife.date (Track A).
+# Coverage map: library/coverage.yaml. Each pattern reads the version with (?P<v>...); code maps it to an
+# endoflife.date release ("5.6", "5" -> newest 5.x, "5.6.40" -> 5.6). Rules that keep this safe:
+#   - no version written => no claim (except products that are end-of-life as a whole, which set a default cycle)
+#   - a version that is not a real release (e.g. "PHP 6") is ignored
+#   - still-supported versions produce no finding
+#   - history/changelog lines are ignored (rules/mentions.yaml)
+#   - (?![\w]) after the version stops "MySQL 3rd Edition" from reading as MySQL 3
+#   - name and version must be on the same line ([ \t], not \s): "PHP\n1." is not PHP 1
+
+# ---------------------------------------------------------------- languages and runtimes
+- id: php
+  technology: PHP
+  patterns: ['\bPHP[ \t]*v?(?P<v>\d+(?:\.\d+){0,2})(?![\w])']
+  eol: {product: php}
+
+- id: python
+  technology: Python
+  patterns: ['\bPython[ \t]*v?(?P<v>\d+(?:\.\d+){0,2})(?![\w])']
+  eol: {product: python}
+
+- id: nodejs
+  technology: Node.js
+  patterns: ['\bNode(?:\.?js)?[ \t]+v?(?P<v>\d+)(?:\.(?:\d+|x))*(?![\w])']
+  eol: {product: nodejs}
+
+- id: ruby
+  technology: Ruby
+  patterns: ['\bRuby[ \t]+v?(?P<v>\d+\.\d+(?:\.\d+)?)(?![\w])']
+  eol: {product: ruby}
+
+# ---------------------------------------------------------------- front-end
+- id: angularjs
+  technology: AngularJS (Angular 1.x)
+  patterns: ['\bAngular\.?js\b', '\bAngular\s+1(?:\.\d+|\.x)?(?![\w.])']
+  eol: {product: angularjs, cycle: "1.8"}  # the whole product is end-of-life; 1.8 was the last release
+  upgrade: {target: "Angular (current)", source_url: "https://endoflife.date/angular"}
+
+- id: angular
+  technology: Angular
+  patterns: ['\bAngular[ \t]+v?(?P<v>(?:[2-9]|[1-9]\d))(?:\.\d+)*(?![\w])']
+  eol: {product: angular}
+
+- id: vue
+  technology: Vue.js
+  patterns: ['\bVue(?:\.?js)?[ \t]+v?(?P<v>\d+(?:\.\d+)?)(?:\.x)?(?![\w])']
+  eol: {product: vue}
+
+- id: jquery
+  technology: jQuery
+  patterns: ['\bjQuery[ \t]+v?(?P<v>\d+(?:\.\d+){0,2})(?:\.x)?(?![\w])']
+  eol: {product: jquery}
+
+- id: jquery-ui
+  technology: jQuery UI
+  patterns: ['\bjQuery\s+UI[ \t]+v?(?P<v>\d+\.\d+(?:\.\d+)?)(?![\w])']
+  eol: {product: jquery-ui}
+
+- id: bootstrap
+  technology: Bootstrap
+  patterns: ['\b(?:Twitter\s+)?Bootstrap[ \t]+v?(?P<v>\d)(?:\.\d+)*(?:\.x)?(?![\w])']
+  context: ['\b(css|html|grid|responsive|navbar|class=|stylesheet|front-?end|framework)\b']
+  eol: {product: bootstrap}
+
+- id: nextjs
+  technology: Next.js
+  patterns: ['\bNext\.?js[ \t]+v?(?P<v>\d+)(?:\.\d+)*(?![\w])']
+  eol: {product: nextjs}
+
+- id: nuxt
+  technology: Nuxt
+  patterns: ['\bNuxt(?:\.?js)?[ \t]+v?(?P<v>\d)(?:\.\d+)*(?![\w])']
+  eol: {product: nuxt}
+
+# ---------------------------------------------------------------- back-end frameworks
+- id: laravel
+  technology: Laravel
+  patterns: ['\bLaravel[ \t]+v?(?P<v>\d+(?:\.\d+)?)(?:\.x)?(?![\w])']
+  eol: {product: laravel}
+
+- id: symfony
+  technology: Symfony
+  patterns: ['\bSymfony[ \t]+v?(?P<v>\d+\.\d+)(?![\w])']
+  eol: {product: symfony}
+
+- id: django
+  technology: Django
+  patterns: ['\bDjango[ \t]+v?(?P<v>\d+\.\d+)(?![\w])']
+  eol: {product: django}
+
+- id: rails
+  technology: Ruby on Rails
+  patterns: ['\b(?:Ruby\s+on\s+)?Rails[ \t]+v?(?P<v>\d+(?:\.\d+)?)(?![\w])']
+  eol: {product: rails}
+
+- id: express
+  technology: Express (Node.js)
+  patterns: ['\bExpress(?:\.?js)?[ \t]+v?(?P<v>\d)(?:\.\d+)*(?:\.x)?(?![\w])']
+  context: ['\b(node|npm|javascript|require\(|app\.(?:get|post|listen))']
+  eol: {product: express}
+
+- id: spring-boot
+  technology: Spring Boot
+  patterns: ['\bSpring\s+Boot[ \t]+v?(?P<v>\d+\.\d+)(?![\w])']
+  eol: {product: spring-boot}
+
+- id: dotnet
+  technology: .NET (Core)
+  patterns: ['\.NET\s+(?:Core\s+)?v?(?P<v>\d+(?:\.\d+)?)(?![\w])']
+  eol: {product: dotnet}
+
+# ---------------------------------------------------------------- databases
+- id: mysql
+  technology: MySQL
+  patterns: ['\bMySQL[ \t]*v?(?P<v>\d+(?:\.\d+){0,2})(?![\w])']
+  eol: {product: mysql}
+
+- id: mariadb
+  technology: MariaDB
+  patterns: ['\bMariaDB[ \t]*v?(?P<v>\d+(?:\.\d+){0,2})(?![\w])']
+  eol: {product: mariadb}
+
+- id: postgresql
+  technology: PostgreSQL
+  patterns: ['\bPostgre(?:SQL|s)[ \t]*v?(?P<v>\d+(?:\.\d+)?)(?![\w])']
+  eol: {product: postgresql}
+
+- id: mongodb
+  technology: MongoDB
+  patterns: ['\bMongoDB[ \t]*v?(?P<v>\d+\.\d+)(?![\w])']
+  eol: {product: mongodb}
+
+- id: mssqlserver
+  technology: Microsoft SQL Server
+  patterns: ['\b(?:MS\s*)?SQL\s+Server[ \t]+(?P<v>20\d\d(?:\s*R2)?)(?![\w])']
+  eol:
+    product: mssqlserver
+    # Year as written -> newest service pack of that version (from endoflife.date labels, 2026-11-14)
+    versions: {"2000": "8.0-sp4", "2005": "9.0-sp4", "2008": "10.0-sp4", "2008 R2": "10.50-sp3",
+               "2012": "11.0-sp4", "2014": "12.0-sp3", "2016": "13.0-sp3", "2017": "14.0", "2019": "15.0",
+               "2022": "16.0", "2025": "17.0"}
+
+- id: redis
+  technology: Redis
+  patterns: ['\bRedis[ \t]+v?(?P<v>\d+\.\d+)(?![\w])']
+  eol: {product: redis}
+
+# ---------------------------------------------------------------- servers
+- id: apache-http-server
+  technology: Apache HTTP Server
+  patterns: ['\bApache(?:\s+HTTP(?:\s+Server)?|\s+httpd)?[ \t]+v?(?P<v>[12]\.\d)(?:\.\d+)?(?![\w])']
+  eol: {product: apache-http-server}
+
+- id: nginx
+  technology: nginx
+  patterns: ['\bnginx[ \t]+v?(?P<v>1\.\d+)(?:\.\d+)?(?![\w])']
+  eol: {product: nginx}
+
+- id: tomcat
+  technology: Apache Tomcat
+  patterns: ['\bTomcat[ \t]+v?(?P<v>\d+(?:\.\d+)?)(?![\w])']
+  eol: {product: tomcat}
+
+# ---------------------------------------------------------------- operating systems
+- id: macos
+  technology: macOS
+  patterns: ['\b(?:Mac\s*OS\s*X|macOS|OS\s*X)[ \t]+v?(?P<v>\d+(?:\.\d+)?)(?![\w])']
+  eol: {product: macos}
+
+- id: ubuntu
+  technology: Ubuntu
+  patterns: ['\bUbuntu[ \t]+(?P<v>\d{1,2}\.\d{2})(?![\w])']
+  eol: {product: ubuntu}
+
+# ---------------------------------------------------------------- CMS and tools
+- id: wordpress
+  technology: WordPress
+  patterns: ['\bWordPress[ \t]+v?(?P<v>\d+\.\d+)(?![\w])']
+  eol: {product: wordpress}
+
+- id: drupal
+  technology: Drupal
+  patterns: ['\bDrupal[ \t]+v?(?P<v>\d+(?:\.\d+)?)(?![\w])']
+  eol: {product: drupal}
+
+- id: joomla
+  technology: Joomla!
+  patterns: ['\bJoomla!?[ \t]+v?(?P<v>\d)(?:\.\d+)*(?![\w])']
+  eol: {product: joomla}
+
+- id: phpmyadmin
+  technology: phpMyAdmin
+  patterns: ['\bphpMyAdmin[ \t]+v?(?P<v>\d+\.\d+)(?![\w])']
+  eol: {product: phpmyadmin}
+
+- id: composer
+  technology: Composer (PHP)
+  patterns: ['\bComposer[ \t]+v?(?P<v>[12](?:\.\d+)?)(?![\w])']
+  context: ['\b(php|packagist|composer\.json|composer\s+require)\b']
+  eol: {product: composer}

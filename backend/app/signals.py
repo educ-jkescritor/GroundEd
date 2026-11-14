@@ -51,3 +51,38 @@ def teaching_depth(lines: list[str]) -> Depth:
 
 def is_hands_on(page_text: str) -> bool:
     return any(p.search(page_text) for p in rules().hands_on)
+
+
+# ---------------------------------------------------------------- historical mentions (rules/mentions.yaml)
+
+MENTIONS_FILE = BASE_DIR / "rules" / "mentions.yaml"
+
+
+@dataclass(frozen=True)
+class MentionRules:
+    version: str
+    history_line: tuple[re.Pattern[str], ...]
+    history_page: tuple[re.Pattern[str], ...]
+
+
+@lru_cache(maxsize=1)
+def mention_rules() -> MentionRules:
+    raw = MENTIONS_FILE.read_bytes()
+    data = yaml.safe_load(raw)
+    return MentionRules(
+        version=hashlib.sha256(raw).hexdigest()[:12],
+        history_line=tuple(re.compile(p, re.IGNORECASE) for p in data["history_line"]),
+        history_page=tuple(re.compile(p, re.IGNORECASE) for p in data["history_page"]),
+    )
+
+
+def is_historical(line: str, page_text: str) -> bool:
+    """True if a product-version mention is history or a changelog note, not taught content."""
+    r = mention_rules()
+    first = next((l for l in page_text.splitlines() if l.strip()), "")
+    return any(p.search(first) for p in r.history_page) or any(p.search(line) for p in r.history_line)
+
+
+def rules_version() -> str:
+    """Combined version of every rules file (recorded in provenance; part of the cache key)."""
+    return hashlib.sha256((rules().version + mention_rules().version).encode()).hexdigest()[:12]

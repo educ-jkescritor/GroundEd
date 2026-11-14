@@ -24,7 +24,11 @@ Stage = Literal["eol", "deprecated", "supported"]
 
 class EolRef(BaseModel):
     product: str  # endoflife.date product slug
-    cycle: str  # release name, matched exactly or as a prefix ("7" matches "7-sp1")
+    # Release used when the text names no version (e.g. "Internet Explorer" -> "11"). Matched exactly or as a
+    # prefix ("7" matches "7-sp1"). Versioned entries read the version from the pattern group (?P<v>...).
+    cycle: Optional[str] = None
+    # How modules write a version -> endoflife.date release name, when they differ (e.g. "2012" -> "11.0-sp4").
+    versions: dict[str, str] = {}
 
 
 class StaticFact(BaseModel):
@@ -64,9 +68,16 @@ class Entry(BaseModel):
     def _check(self) -> "Entry":
         if (self.fact is None) == (self.eol is None):
             raise ValueError(f"{self.id}: exactly one of `fact` or `eol` is required")
+        if self.eol and not self.eol.cycle and not self.versioned:
+            raise ValueError(f"{self.id}: an `eol` entry needs a default `cycle` or a (?P<v>...) version group")
         for p in self.patterns + self.context:
             re.compile(p)
         return self
+
+    @property
+    def versioned(self) -> bool:
+        """True if the patterns read a version number from the text with a (?P<v>...) group."""
+        return any("v" in re.compile(p).groupindex for p in self.patterns)
 
     def compiled(self) -> list[re.Pattern[str]]:
         return [re.compile(p, re.IGNORECASE) for p in self.patterns]
