@@ -1,4 +1,5 @@
 """GroundEd API. Response shapes are the contract in models.py / docs/api.md."""
+import asyncio
 import uuid
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -38,7 +39,12 @@ def _samples() -> list[Sample]:
 
 @app.get("/api/health")
 def health() -> dict:
-    return {"status": "ok", "gemini_configured": bool(config.GEMINI_API_KEY)}
+    """Liveness + which knowledge versions this server runs (useful right after a deployment)."""
+    from . import library, registry, signals
+    from .pipeline import PIPELINE_VERSION
+    return {"status": "ok", "gemini_configured": bool(config.GEMINI_API_KEY),
+            "versions": {"pipeline": PIPELINE_VERSION, "registry": registry.get().version,
+                         "library": library.version(), "rules": signals.rules_version()}}
 
 
 @app.get("/api/samples", response_model=list[Sample])
@@ -48,9 +54,13 @@ def list_samples() -> list[Sample]:
 
 async def _analyze_path(path: Path, filename: str, kind: str) -> Analysis:
     try:
-        return await run_in_threadpool(run_pipeline, path, filename, kind)
+        return await asyncio.wait_for(run_in_threadpool(run_pipeline, path, filename, kind),
+                                      timeout=config.ANALYSIS_TIMEOUT_SECONDS)
     except PdfError as e:
         raise HTTPException(422, str(e)) from e
+    except asyncio.TimeoutError as e:
+        raise HTTPException(504, f"Analysis took longer than {config.ANALYSIS_TIMEOUT_SECONDS} seconds and was "
+                                 "stopped. Try a shorter PDF.") from e
 
 
 @app.post("/api/analyze", response_model=Analysis)
@@ -64,8 +74,9 @@ async def analyze(file: Optional[UploadFile] = File(None), sample_id: Optional[s
             raise HTTPException(404, f"Sample '{sample_id}' not found.")
         return await _analyze_path(config.SAMPLES_DIR / f"{sample_id}.pdf", f"{sample_id}.pdf", "sample")
 
-    if file.content_type != "application/pdf":
-        raise HTTPException(415, f"Only PDF files are supported (got {file.content_type or 'unknown type'}).")
+    # The declared type is only a hint (some clients send octet-stream); the file's first bytes decide below.
+    if file.content_type not in ("application/pdf", "application/x-pdf", "application/octet-stream", None, ""):
+        raise HTTPException(415, f"Only PDF files are supported (got {file.content_type}).")
     limit = config.MAX_UPLOAD_MB * 1024 * 1024
     data = await file.read(limit + 1)
     if len(data) > limit:

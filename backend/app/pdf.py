@@ -13,6 +13,8 @@ from pathlib import Path
 
 import pymupdf
 
+from .config import MAX_PAGES
+
 
 class PdfError(ValueError):
     """A PDF that cannot be analysed; the message is shown to the user as-is."""
@@ -63,6 +65,9 @@ def extract_pages(path: Path) -> list[Page]:
     with doc:
         if doc.needs_pass:
             raise PdfError("The PDF is password-protected. Please upload an unlocked copy.")
+        if len(doc) > MAX_PAGES:
+            raise PdfError(f"The PDF has {len(doc)} pages; the limit is {MAX_PAGES}. "
+                           "Please upload one module at a time.")
         raw = [p.get_text() for p in doc]
         words = [[w[:5] for w in p.get_text("words")] for p in doc]
     if not raw:
@@ -73,12 +78,12 @@ def extract_pages(path: Path) -> list[Page]:
     return [Page(number=i + 1, text=c, raw_text=r, words=w) for i, (c, r, w) in enumerate(zip(cleaned, raw, words))]
 
 
-def find_snippet_bbox(pdf_path: Path, page_number: int, snippet: str) -> list[float] | None:
-    """Bounding box of the snippet on the page (union of all hit rectangles), or None if not found."""
-    with pymupdf.open(pdf_path) as doc:
-        if not 1 <= page_number <= len(doc):
-            return None
-        hits = doc[page_number - 1].search_for(snippet)
+def find_snippet_bbox(doc: "pymupdf.Document", page_number: int, snippet: str) -> list[float] | None:
+    """Bounding box of the snippet on the page (union of all hit rectangles), or None if not found.
+    Takes an already-open document so a PDF is opened once per analysis, not once per citation."""
+    if not 1 <= page_number <= len(doc):
+        return None
+    hits = doc[page_number - 1].search_for(snippet)
     if not hits:
         return None
     return [min(r.x0 for r in hits), min(r.y0 for r in hits), max(r.x1 for r in hits), max(r.y1 for r in hits)]

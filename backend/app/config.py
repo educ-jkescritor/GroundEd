@@ -24,6 +24,8 @@ EOL_CACHE_HOURS = int(os.getenv("EOL_CACHE_HOURS", "24"))
 EOL_SOURCE = os.getenv("EOL_SOURCE", "snapshot")
 
 MAX_UPLOAD_MB = int(os.getenv("MAX_UPLOAD_MB", "10"))
+MAX_PAGES = int(os.getenv("MAX_PAGES", "300"))  # longer PDFs are rejected with a clear message
+ANALYSIS_TIMEOUT_SECONDS = int(os.getenv("ANALYSIS_TIMEOUT_SECONDS", "90"))
 UPLOAD_RETENTION_HOURS = int(os.getenv("UPLOAD_RETENTION_HOURS", "24"))
 
 CORS_ORIGINS = os.getenv("CORS_ORIGINS", "http://localhost:5173").split(",")
