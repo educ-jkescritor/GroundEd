@@ -7,9 +7,8 @@
     stage: deprecated
     product: mysql
     cycle: "8.0.17"
-    source_name: MySQL 8.0 Reference Manual — Numeric Data Type Attributes
-    source_url: https://dev.mysql.com/doc/refman/8.0/en/numeric-type-attributes.html
-    source_quote: "As of MySQL 8.0.17, the ZEROFILL attribute is deprecated for numeric data types, as is the display width attribute for integer data types. You should expect support for ZEROFILL and display widths for integer data types to be removed in a future version of MySQL."
+    doc: mysql-numeric-type-attributes
+    quote: "As of MySQL 8.0.17, the ZEROFILL attribute is deprecated for numeric data types, as is the display width attribute for integer data types. You should expect support for ZEROFILL and display widths for integer data types to be removed in a future version of MySQL."
   upgrade:
     target: "Plain INT (no display width)"
     source_url: https://dev.mysql.com/doc/refman/8.0/en/numeric-type-attributes.html

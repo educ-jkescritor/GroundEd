@@ -1,4 +1,5 @@
-# Facts Registry — PHP language features. Every entry needs an official source and a verbatim quote from it.
+# Facts Registry — PHP language features. Every fact = a library document + a verbatim quote from it.
+# Code checks the quote against library/snapshot/<doc>.json; dates come from the endoflife.date snapshot.
 # Schema: backend/app/registry.py (Entry). Reviewed via PR; never edited by the LLM.
 - id: php-ext-mysql
   technology: PHP mysql extension (mysql_* functions)
@@ -7,10 +8,9 @@
   fact:
     stage: eol
     product: php
-    eol_date: "2015-12-03"  # PHP 7.0.0 release, which removed ext/mysql
-    source_name: PHP Manual (php.net) — Backward incompatible changes in PHP 7.0
-    source_url: https://www.php.net/manual/en/migration70.incompatible.php
-    source_quote: "All ext/mysql functions were removed. For details about choosing a different MySQL API, see Choosing a MySQL API."
+    removed_in: {product: php, cycle: "7.0"}
+    doc: php-migration70-incompatible
+    quote: "All ext/mysql functions were removed. For details about choosing a different MySQL API, see Choosing a MySQL API."
   upgrade:
     target: mysqli or PDO (with prepared statements)
     source_url: https://www.php.net/manual/en/mysqlinfo.api.choosing.php
@@ -26,10 +26,9 @@
   fact:
     stage: eol
     product: php
-    eol_date: "2015-12-03"
-    source_name: PHP Manual (php.net) — Backward incompatible changes in PHP 7.0
-    source_url: https://www.php.net/manual/en/migration70.incompatible.php
-    source_quote: "Support for using ASP and script tags to delimit PHP code has been removed. The affected tags are: <% %> <%= %> <script language=\"php\"> </script>"
+    removed_in: {product: php, cycle: "7.0"}
+    doc: php-migration70-incompatible
+    quote: "Support for using ASP and script tags to delimit PHP code has been removed."
   upgrade:
     target: "Standard <?php ... ?> tags"
     source_url: https://www.php.net/manual/en/language.basic-syntax.phptags.php
@@ -41,10 +40,9 @@
   fact:
     stage: eol
     product: php
-    eol_date: "2015-12-03"
-    source_name: PHP Manual (php.net) — Backward incompatible changes in PHP 7.0
-    source_url: https://www.php.net/manual/en/migration70.incompatible.php
-    source_quote: "All ereg* functions All ereg functions were removed. PCRE is a recommended alternative."
+    removed_in: {product: php, cycle: "7.0"}
+    doc: php-migration70-incompatible
+    quote: "All ereg functions were removed. PCRE is a recommended alternative."
   upgrade:
     target: PCRE preg_* functions
     source_url: https://www.php.net/manual/en/book.pcre.php

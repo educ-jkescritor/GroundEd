@@ -22,19 +22,26 @@ REGISTRY_DIR = BASE_DIR / "registry"
 Stage = Literal["eol", "deprecated", "supported"]
 
 
-class StaticFact(BaseModel):
-    stage: Stage
-    product: str
-    cycle: Optional[str] = None
-    eol_date: Optional[str] = None  # ISO date the item stopped being supported/was removed
-    source_name: str
-    source_url: str
-    source_quote: str
-
-
 class EolRef(BaseModel):
     product: str  # endoflife.date product slug
     cycle: str  # release name, matched exactly or as a prefix ("7" matches "7-sp1")
+
+
+class StaticFact(BaseModel):
+    """A fact proven by a sentence in a library document. Dates are never typed by hand: a removal date is the
+    release date of `removed_in`, looked up in the endoflife.date snapshot."""
+    stage: Stage
+    product: str
+    cycle: Optional[str] = None  # version the stage applies from, e.g. deprecated "as of 8.0.17"
+    removed_in: Optional[EolRef] = None  # e.g. {product: php, cycle: "7.0"} -> PHP 7.0 release date
+    doc: str  # library document id (backend/library/sources.yaml)
+    quote: str  # verbatim sentence from that document; checked by code against the snapshot
+
+    @model_validator(mode="after")
+    def _check(self) -> "StaticFact":
+        if self.stage == "eol" and self.removed_in is None:
+            raise ValueError("stage 'eol' needs `removed_in` so the date comes from a source")
+        return self
 
 
 class UpgradeRef(BaseModel):
