@@ -23,8 +23,9 @@ Docs: `README.md` (setup, layout, scoring) · `docs/api.md` (API contract) · `d
 ## Architecture (adopted skeleton)
 
 `backend/` FastAPI + Pydantic + SQLite · `frontend/` React + Vite + TS + Tailwind · `deploy/` Docker Compose + Caddy (Vultr).
-Pipeline: `pdf.py` (PyMuPDF page text) → `detect.py` (registry alias matching in code first, Gemini for extras;
-every snippet must appear verbatim on its page) → `registry.py` / `eol.py` (facts) → `score.py` → saved analysis.
+Pipeline: `pdf.py` (PyMuPDF page text) → `detect.py` (registry pattern matching in code; every snippet must appear
+on its page) → `registry.py` / `eol.py` (facts) → `signals.py` + `score.py` → saved analysis.
+All LLM (Gemini) calls live in `llm.py` (drafts only); `main.py` only receives requests and returns responses.
 
 Scoring (100 pts, Option C): lifecycle 40 · how it is taught 30 (code > explained > listed) · frequency 20 (4/page) ·
 hands-on 10. Supported and unverified items are not scored. Priority: high ≥ 80 · medium ≥ 50 · else low.
