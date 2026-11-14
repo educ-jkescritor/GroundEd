@@ -393,3 +393,33 @@ def test_pages_that_only_name_the_lab_are_not_hands_on():
         assert not is_hands_on(text), text
     for text in ["Lab 3: Connect to MySQL", "Laboratory Exercise 2", "Lab Activity: forms", "Exercise 4"]:
         assert is_hands_on(text), text
+
+
+# ---------- result cache and file names ----------
+
+def test_cache_uses_content_but_each_name_gets_its_own_report(tmp_path, monkeypatch):
+    """Renamed copy -> same findings, new report under the new name. Different content under an old name ->
+    analysed afresh. Identical re-upload -> the same report (so saved decisions reappear)."""
+    import shutil
+    from app.pipeline import analyze
+    monkeypatch.setattr(config, "DB_PATH", tmp_path / "cache.db")
+    legacy, modern = config.SAMPLES_DIR / "legacy-php-lab.pdf", config.SAMPLES_DIR / "modern-php-lab.pdf"
+    renamed = tmp_path / "renamed.pdf"
+    shutil.copy(legacy, renamed)
+
+    first = analyze(legacy, "lab.pdf", today=TODAY)
+    again = analyze(legacy, "lab.pdf", today=TODAY)
+    assert again.id == first.id  # identical re-upload
+
+    copy = analyze(renamed, "totally-different-name.pdf", today=TODAY)
+    assert copy.id != first.id and copy.source.filename == "totally-different-name.pdf"
+    assert [f.id for f in copy.findings] == [f.id for f in first.findings]
+    assert copy.provenance.file_sha256 == first.provenance.file_sha256
+
+    other = analyze(modern, "lab.pdf", today=TODAY)  # same name, different content
+    assert other.id != first.id and other.provenance.file_sha256 != first.provenance.file_sha256
+    assert {f.id for f in other.findings if f.status != "supported"} == set()
+
+    from app import db
+    assert db.get_analysis(copy.id).source.filename == "totally-different-name.pdf"
+    assert db.get_analysis(first.id).source.filename == "lab.pdf"
