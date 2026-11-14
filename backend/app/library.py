@@ -309,3 +309,37 @@ def search(query: str, doc_ids: Optional[list[str]] = None, k: int = 3) -> list[
     return [Hit(doc_id=did, title=docs[did].title, url=docs[did].url, publisher=docs[did].publisher,
                 tier=docs[did].tier, license=docs[did].license, fetched_at=docs[did].fetched_at,
                 heading=h, text=t, n=int(n), rank=round(r, 4)) for did, n, h, t, r in rows]
+
+
+# ---------------------------------------------------------------- retrieval for findings
+
+def _to_passage(role: str, doc: Document, p: Passage, quote: Optional[str]) -> "SourcePassage":
+    from .detect import normalise
+    from .models import SourcePassage
+
+    return SourcePassage(role=role, doc_id=doc.id, title=doc.title, publisher=doc.publisher, url=doc.url,
+                         heading=p.heading, text=p.text, fetched_at=doc.fetched_at, license=doc.license,
+                         contains_fact_quote=bool(quote) and normalise(quote) in normalise(p.text))
+
+
+def passages_for(technology: str, fact_doc: Optional[str], fact_quote: Optional[str],
+                 replacement_url: Optional[str], replacement_target: Optional[str]) -> list["SourcePassage"]:
+    """Retrieve supporting passages for one finding. The registry points to the document; search picks the passage.
+    - fact: in the fact's document, the passage containing the quote (else the best match for the quote)
+    - replacement: in the upgrade's document, the best match for "<technology> <replacement>"
+    Only documents named by the registry are searched here, so nothing unrelated is attached."""
+    from .detect import normalise
+
+    docs = {d.id: d for d in load_documents()}
+    out = []
+    if fact_doc in docs and fact_quote:
+        doc = docs[fact_doc]
+        p = next((p for p in doc.passages if normalise(fact_quote) in normalise(p.text)), None)
+        if p is None and (hits := search(fact_quote, doc_ids=[fact_doc], k=1)):
+            p = doc.passages[hits[0].n]
+        if p is not None:
+            out.append(_to_passage("fact", doc, p, fact_quote))
+    if replacement_url and (doc := by_url(replacement_url)) and doc.id != fact_doc:
+        if hits := search(f"{technology} {replacement_target or ''}", doc_ids=[doc.id], k=1):
+            out.append(_to_passage("replacement", doc, doc.passages[hits[0].n], None))
+    return out
