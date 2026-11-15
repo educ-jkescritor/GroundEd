@@ -120,3 +120,95 @@
   store: full
   selector: "main"
   tags: [html, deprecated, element]
+
+# ---------------------------------------------------------------- Track B (2026-11-15): removed/deprecated features
+- id: php-migration80-incompatible
+  title: Backward incompatible changes (PHP 8.0)
+  url: https://www.php.net/manual/en/migration80.incompatible.php
+  publisher: PHP Manual (php.net)
+  tier: 2
+  license: CC-BY-3.0
+  store: full
+  selector: "#layout-content"
+  tags: [php, php8, removed, migration]
+
+- id: php-migration72-other-changes
+  title: Other changes (PHP 7.2)
+  url: https://www.php.net/manual/en/migration72.other-changes.php
+  publisher: PHP Manual (php.net)
+  tier: 2
+  license: CC-BY-3.0
+  store: full
+  selector: "#layout-content"
+  tags: [php, php7, mcrypt, removed]
+
+- id: php-migration82-deprecated
+  title: Deprecated features (PHP 8.2)
+  url: https://www.php.net/manual/en/migration82.deprecated.php
+  publisher: PHP Manual (php.net)
+  tier: 2
+  license: CC-BY-3.0
+  store: full
+  selector: "#layout-content"
+  tags: [php, php8, deprecated]
+
+- id: mdn-frameset
+  title: "<frameset> (deprecated)"
+  url: https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/frameset
+  publisher: MDN Web Docs (Mozilla)
+  tier: 2
+  license: CC-BY-SA-2.5
+  store: full
+  selector: "main"
+  tags: [html, deprecated, element]
+
+- id: mdn-big
+  title: "<big> (deprecated)"
+  url: https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/big
+  publisher: MDN Web Docs (Mozilla)
+  tier: 2
+  license: CC-BY-SA-2.5
+  store: full
+  selector: "main"
+  tags: [html, deprecated, element]
+
+- id: mdn-tt
+  title: "<tt> (deprecated)"
+  url: https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/tt
+  publisher: MDN Web Docs (Mozilla)
+  tier: 2
+  license: CC-BY-SA-2.5
+  store: full
+  selector: "main"
+  tags: [html, deprecated, element]
+
+- id: mdn-acronym
+  title: "<acronym> (deprecated)"
+  url: https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/acronym
+  publisher: MDN Web Docs (Mozilla)
+  tier: 2
+  license: CC-BY-SA-2.5
+  store: full
+  selector: "main"
+  tags: [html, deprecated, element]
+
+- id: mdn-strike
+  title: "<strike> (deprecated)"
+  url: https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/strike
+  publisher: MDN Web Docs (Mozilla)
+  tier: 2
+  license: CC-BY-SA-2.5
+  store: full
+  selector: "main"
+  tags: [html, deprecated, element]
+
+- id: adobe-flash-eol
+  title: Adobe Flash Player End of Life
+  url: https://www.adobe.com/products/flashplayer/end-of-life-alternative.html
+  publisher: Adobe
+  tier: 1
+  license: Adobe-terms
+  store: excerpt
+  excerpt_terms: ['Flash']
+  selector: "main"
+  tags: [plugin, flash, eol]
