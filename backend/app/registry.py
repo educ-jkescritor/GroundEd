@@ -118,4 +118,7 @@ def get() -> Registry:
 def eol_products(reg: Optional[Registry] = None) -> list[str]:
     """endoflife.date products the registry depends on (snapshotted by `library build`)."""
     reg = reg or load()
-    return sorted({e.eol.product for e in reg.entries if e.eol} | {e.fact.product for e in reg.entries if e.fact})
+    # Only products whose release data is looked up: version entries and removal dates (removed_in). Facts like
+    # "html" or "flash" take no data from endoflife.date.
+    return sorted({e.eol.product for e in reg.entries if e.eol}
+                  | {e.fact.removed_in.product for e in reg.entries if e.fact and e.fact.removed_in})
