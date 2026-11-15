@@ -181,7 +181,14 @@ export function PrintReport({
   );
   const [downloadTimestamp] = useState(() => new Date().toISOString());
 
-  // Render PDF pages to high-DPI data URLs in the background so `window.print()` prints crisp annotated pages.
+  // Only the module pages that carry a finding go into the export: a 228-page module stays a short report.
+  const findingPages = useMemo(
+    () => [...new Set(analysis.findings.filter(needsReview).flatMap((f) => f.citations.map((c) => c.page)))].sort((a, b) => a - b),
+    [analysis.findings],
+  );
+  const findingPagesKey = findingPages.join(",");
+
+  // Render those pages to high-DPI data URLs in the background so `window.print()` prints crisp annotated pages.
   useEffect(() => {
     if (!pdfSource) {
       setRenderedPages([]);
@@ -205,8 +212,9 @@ export function PrintReport({
 
         const doc = await pdfjs.getDocument({ data: new Uint8Array(buf) }).promise;
         const out: RenderedPdfPage[] = [];
-        for (let i = 1; i <= doc.numPages; i++) {
+        for (const i of findingPages) {
           if (cancelled) break;
+          if (i < 1 || i > doc.numPages) continue;
           const p = await doc.getPage(i);
           const baseVp = p.getViewport({ scale: 1 });
           const renderVp = p.getViewport({ scale: 2 });
@@ -237,7 +245,7 @@ export function PrintReport({
     return () => {
       cancelled = true;
     };
-  }, [pdfSource]);
+  }, [pdfSource, findingPagesKey]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const ranked = useMemo(() => rankFindings(analysis.findings).filter(needsReview), [analysis.findings]);
   const findingNumberById = useMemo(
@@ -312,7 +320,8 @@ export function PrintReport({
     return chunks;
   }, [ranked]);
 
-  const submissionPageCount = renderedPages.length || analysis.pages?.length || 0;
+  const textPages = (analysis.pages ?? []).filter((p) => findingPages.includes(p.number));
+  const submissionPageCount = renderedPages.length || textPages.length;
   // Cover + overview summary + numbered overview list + findings & decisions + annotated module pages
   const firstDetailPage = 3 + findingChunks.length;
   const firstSubmissionPage = firstDetailPage + detailChunks.length;
@@ -595,7 +604,7 @@ export function PrintReport({
               key={`sub-pdf-${pg.page}`}
               pageNumber={firstSubmissionPage + idx}
               totalPages={totalPages}
-              sectionTitle={`Module page ${pg.page} of ${renderedPages.length}`}
+              sectionTitle={`Module page ${pg.page} of ${analysis.source.pages}`}
               submissionId={submissionId}
             >
               <AnnotatedPdfSubmissionPage
@@ -606,7 +615,7 @@ export function PrintReport({
               />
             </TurnitinPageShell>
           ))
-        : (analysis.pages ?? []).map((pg, idx) => (
+        : textPages.map((pg, idx) => (
             <TurnitinPageShell
               key={`sub-text-${pg.number}`}
               pageNumber={firstSubmissionPage + idx}
