@@ -132,3 +132,14 @@ def test_same_pdf_reads_the_same_images_whatever_is_cached(tmp_path, monkeypatch
     assert [f.id for f in first.findings] == [f.id for f in second.findings]
     assert "php-ext-mysql" not in {f.id for f in second.findings}  # still beyond the limit, cached or not
     assert first.source.ocr.images_over_budget == second.source.ocr.images_over_budget == 2
+
+
+def test_onnx_runtime_telemetry_is_switched_off_before_the_engine_starts(monkeypatch):
+    import onnxruntime
+    calls = []
+    monkeypatch.setattr(onnxruntime, "disable_telemetry_events", lambda: calls.append("off"))
+    ocr._engine.cache_clear()
+    try:
+        assert ocr._engine()[0] is not None and calls == ["off"]
+    finally:
+        ocr._engine.cache_clear()
