@@ -78,3 +78,5 @@ Web development (PHP/MySQL test modules first). Out-of-scope content must yield 
 
 `cd backend && uv venv && uv pip install -r requirements.txt && uv run uvicorn app.main:app --reload`
 Tests: `cd backend && uv run pytest`. Eval: `uv run python -m app.cli eval` (see README).
+Sources: `uv run python -m app.cli library check` (are registry quotes still on the live pages?) ·
+`library build` (refresh snapshots) · `library search "..."`. Add knowledge library-first: source → quote → entry → tests.
