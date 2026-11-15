@@ -26,6 +26,7 @@ EOL_CACHE_HOURS = int(os.getenv("EOL_CACHE_HOURS", "24"))
 EOL_SOURCE = os.getenv("EOL_SOURCE", "snapshot")
 
 MAX_UPLOAD_MB = int(os.getenv("MAX_UPLOAD_MB", "10"))
+OCR_ENABLED = os.getenv("OCR_ENABLED", "true").lower() in ("1", "true", "yes")  # read code screenshots
 MAX_PAGES = int(os.getenv("MAX_PAGES", "300"))  # longer PDFs are rejected with a clear message
 ANALYSIS_TIMEOUT_SECONDS = int(os.getenv("ANALYSIS_TIMEOUT_SECONDS", "90"))
 MAX_CONCURRENT_ANALYSES = int(os.getenv("MAX_CONCURRENT_ANALYSES", "3"))  # CPU-bound; sized for 2 vCPU

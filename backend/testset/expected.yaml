@@ -3,6 +3,7 @@
 # (2) keep only items an official source says are removed, deprecated or end-of-life (see registry/ for the quotes).
 # Limitation: this measures "did we find and cite what the sources prove", not teacher agreement.
 # `page` = first page where the item appears (1-based). No quotes from the modules are stored here.
+# Items inside images were added after OCR (2026-11-15) and checked by looking at the screenshot itself.
 modules:
   m01-web-architecture-tools-intro-php.pdf:
     - {item: windows-7, page: 18}
@@ -17,3 +18,6 @@ modules:
     - {item: mysql-int-display-width, page: 27}
   m07-php-application-mysql.pdf:
     - {item: php-ext-mysql, page: 3}
+    # Inside code screenshots (OCR), verified by viewing the images on 2026-11-15:
+    - {item: html-center, page: 15}   # editor screenshot, line 4: <center>
+    - {item: html-font, page: 19}     # editor screenshot, line 28: echo "<font color='red'>…</font>";
