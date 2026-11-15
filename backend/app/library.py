@@ -412,3 +412,30 @@ def check_live(entries) -> list[QuoteCheck]:
                 rows.append(QuoteCheck(entry_id=e.id, doc_id=doc_id, what=what, status="missing",
                                        reason="no longer on the live page: review the entry, then rebuild the snapshot"))
     return rows
+
+
+def save_check_status(rows: list[QuoteCheck], path: Optional[Path] = None) -> dict:
+    """Store the result of a live check so the API can report it (/api/health)."""
+    from .config import SOURCE_CHECK_FILE
+
+    path = path or SOURCE_CHECK_FILE
+    status = {
+        "checked_at": _now(),
+        "ok": sum(r.status == "ok" for r in rows),
+        "total": len(rows),
+        "problems": [r.model_dump() for r in rows if r.status != "ok"],
+    }
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(status, indent=1) + "\n", encoding="utf-8")
+    return status
+
+
+def load_check_status(path: Optional[Path] = None) -> Optional[dict]:
+    """Last live-check result, or None if the check has never run (or the file is unreadable)."""
+    from .config import SOURCE_CHECK_FILE
+
+    path = path or SOURCE_CHECK_FILE
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return None

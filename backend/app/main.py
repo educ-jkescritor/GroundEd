@@ -44,9 +44,13 @@ def health() -> dict:
     """Liveness + which knowledge versions this server runs (useful right after a deployment)."""
     from . import library, registry, signals
     from .pipeline import PIPELINE_VERSION
+    checked = library.load_check_status()
     return {"status": "ok", "gemini_configured": bool(config.GEMINI_API_KEY),
             "versions": {"pipeline": PIPELINE_VERSION, "registry": registry.get().version,
-                         "library": library.version(), "rules": signals.rules_version()}}
+                         "library": library.version(), "rules": signals.rules_version()},
+            # Last `library check`: are the registry's quotes still on the live source pages? None = never run.
+            "sources": {k: checked[k] for k in ("checked_at", "ok", "total")} | {"problems": len(checked["problems"])}
+            if checked else None}
 
 
 @app.get("/api/samples", response_model=list[Sample])

@@ -13,6 +13,8 @@ SAMPLES_DIR = DATA_DIR / "samples"
 CACHE_DIR = DATA_DIR / "cache"
 UPLOAD_DIR = DATA_DIR / "uploads"
 DB_PATH = Path(os.getenv("DB_PATH", DATA_DIR / "grounded.db"))
+# Result of the last `library check` (kept next to the database, i.e. in the persistent volume on the server).
+SOURCE_CHECK_FILE = Path(os.getenv("SOURCE_CHECK_FILE", DB_PATH.parent / "source_check.json"))
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
 GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.5-flash")  # pinned: answered reliably in tests 2026-11-14 (3.7/3.8 were overloaded)

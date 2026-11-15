@@ -76,6 +76,7 @@ def main(argv: list[str] | None = None) -> int:
             print(f"  {en.id:28} {'static fact' if en.fact else 'endoflife.date'}  {en.technology}")
     elif args.cmd == "library" and args.action == "check":
         rows = library.check_live(registry.load().entries)
+        library.save_check_status(rows)  # reported by /api/health
         bad = [r for r in rows if r.status != "ok"]
         for r in rows:
             mark = {"ok": "OK  ", "missing": "MISS", "unreachable": "DOWN"}[r.status]
