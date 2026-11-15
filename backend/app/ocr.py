@@ -75,6 +75,10 @@ def _engine():
     """(engine, label) or (None, reason). Loaded once per process."""
     try:
         from importlib.metadata import version
+
+        import onnxruntime
+        # Module content passes through this engine: switch off ONNX Runtime's platform telemetry before first use.
+        onnxruntime.disable_telemetry_events()
         from rapidocr_onnxruntime import RapidOCR
         return RapidOCR(), f"{ENGINE_NAME} {version(ENGINE_NAME)}"
     except Exception as e:  # missing package or system library: analysis continues without OCR
