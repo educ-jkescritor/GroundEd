@@ -38,13 +38,16 @@ class StaticFact(BaseModel):
     product: str
     cycle: Optional[str] = None  # version the stage applies from, e.g. deprecated "as of 8.0.17"
     removed_in: Optional[EolRef] = None  # e.g. {product: php, cycle: "7.0"} -> PHP 7.0 release date
+    # End date stated by the vendor document itself (e.g. Adobe: "Support for Flash ended on December 31, 2020").
+    # Code checks that this date is written in `quote`; otherwise the finding is unverified.
+    ended_on: Optional[str] = None
     doc: str  # library document id (backend/library/sources.yaml)
     quote: str  # verbatim sentence from that document; checked by code against the snapshot
 
     @model_validator(mode="after")
     def _check(self) -> "StaticFact":
-        if self.stage == "eol" and self.removed_in is None:
-            raise ValueError("stage 'eol' needs `removed_in` so the date comes from a source")
+        if self.stage == "eol" and self.removed_in is None and self.ended_on is None:
+            raise ValueError("stage 'eol' needs `removed_in` or `ended_on` so the date comes from a source")
         return self
 
 

@@ -19,13 +19,26 @@ PIPELINE_VERSION = "0.6.0"  # 0.6.0: supported items listed (unscored) + page te
 MAX_CITATIONS = 5  # per finding; prominence still counts every page
 
 
+def _date_written_in(iso: str, text: str) -> bool:
+    """True if an ISO date appears in the text in a common written form (2020-12-31, December 31, 2020,
+    31 December 2020)."""
+    d = date.fromisoformat(iso)
+    month = d.strftime("%B")
+    forms = (iso, f"{month} {d.day}, {d.year}", f"{month} {d.day} {d.year}", f"{d.day} {month} {d.year}")
+    return any(form.lower() in text.lower() for form in forms)
+
+
 def _static_lifecycle(f: registry.StaticFact, eol_data: dict[str, str]) -> Optional[Lifecycle]:
     """Lifecycle for a document-backed fact, or None if the evidence does not check out."""
     doc = library.load_document(f.doc)
     if doc is None or not library.contains_quote(f.doc, f.quote):
         return None
     eol_date = None
-    if f.removed_in:
+    if f.ended_on:
+        if not _date_written_in(f.ended_on, f.quote):
+            return None  # the date must be stated in the quoted sentence itself
+        eol_date = f.ended_on
+    elif f.removed_in:
         try:
             data = eol.get_product(f.removed_in.product)
         except eol.EolError:
