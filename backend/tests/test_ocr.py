@@ -143,3 +143,10 @@ def test_onnx_runtime_telemetry_is_switched_off_before_the_engine_starts(monkeyp
         assert ocr._engine()[0] is not None and calls == ["off"]
     finally:
         ocr._engine.cache_clear()
+
+
+def test_telemetry_switch_is_set_before_onnxruntime_loads():
+    import os
+    assert os.environ.get("ORT_DISABLE_TELEMETRY") == "1"   # set by app.ocr at import time
+    from pathlib import Path
+    assert "ORT_DISABLE_TELEMETRY=1" in (Path(__file__).parents[1] / "Dockerfile").read_text()

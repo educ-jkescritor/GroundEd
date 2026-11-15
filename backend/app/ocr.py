@@ -8,10 +8,16 @@ Rules: backend/rules/images.yaml. If the OCR engine is unavailable, analysis con
 """
 from __future__ import annotations
 
-import hashlib
-import json
-import re
-from collections import Counter
+import os
+
+# ONNX Runtime (the OCR engine) contains telemetry that starts when the library loads; module content passes through
+# this engine, so it is switched off before any import of onnxruntime (see also backend/Dockerfile).
+os.environ.setdefault("ORT_DISABLE_TELEMETRY", "1")
+
+import hashlib  # noqa: E402
+import json  # noqa: E402
+import re  # noqa: E402
+from collections import Counter  # noqa: E402
 from dataclasses import dataclass
 from functools import lru_cache
 from typing import Optional
