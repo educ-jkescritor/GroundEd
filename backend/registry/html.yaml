@@ -81,3 +81,24 @@
     doc: mdn-strike
     quote: "Avoid using this feature in new projects. This feature may be a candidate for removal from web standards or browsers."
   upgrade: {target: "<s> or <del>", source_url: "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/strike"}
+
+- id: html-frame
+  technology: HTML <frame> element
+  patterns: ['<frame\b']
+  fact:
+    stage: deprecated
+    product: html
+    doc: mdn-frame
+    quote: "Avoid using this feature in new projects. This feature may be a candidate for removal from web standards or browsers."
+  upgrade: {target: "<iframe> or CSS layout", source_url: "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/frame"}
+
+- id: html-body-bgcolor
+  technology: HTML bgcolor attribute on <body>
+  # MDN lists bgcolor under "Deprecated attributes" of <body>; only <body ... bgcolor=...> is matched.
+  patterns: ['<body\b[^>]*\bbgcolor\s*=']
+  fact:
+    stage: deprecated
+    product: html
+    doc: mdn-body
+    quote: "bgcolor Background color for the document. Use the CSS background-color property instead."
+  upgrade: {target: "CSS background-color", source_url: "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/body"}

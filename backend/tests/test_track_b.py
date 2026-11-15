@@ -83,3 +83,44 @@ def test_vendor_date_must_be_written_in_the_quote(monkeypatch, tmp_path):
     a = analyze(_pdf(tmp_path, "Adobe Flash Player"), "m.pdf", today=TODAY, use_cache=False)
     f = next(x for x in a.findings if x.id == "adobe-flash")
     assert f.status == "unverified" and f.score is None
+
+
+ROUND_2 = [
+    # PHP 5.4 removals (PHP 5 legacy manual)
+    ('<?php // php.ini: register_globals = On\necho $username; ?>', "php-register-globals"),
+    ('<?php $name = $HTTP_POST_VARS["name"]; ?>', "php-register-globals"),
+    ('<?php if (ini_get("magic_quotes_gpc")) { $s = stripslashes($s); } ?>', "php-magic-quotes"),
+    ('<?php session_start(); session_register("user"); ?>', "php-session-register"),
+    # HTML
+    ('<frame src="menu.html" name="menu">', "html-frame"),
+    ('<body bgcolor="#ffffcc" text="black">', "html-body-bgcolor"),
+    # JavaScript (MDN)
+    ('<script>var q = escape(input.value); location.href = "?q=" + q;</script>', "js-escape"),
+    ('<script>const first = name.substr(0, 3); console.log(first);</script>', "js-substr"),
+    ('<script>document.addEventListener("keydown", function (e) { if (e.keyCode === 13) send(); });</script>',
+     "js-keycode"),
+    # must NOT be claims
+    ('<?php $name = $_POST["name"]; session_start(); $_SESSION["user"] = $name; ?>', None),     # modern PHP
+    ('<?php $first = substr($name, 0, 3); ?>', None),                                       # PHP substr is fine
+    ('<?php $safe = mysql_real_escape_string($s); ?>', "php-ext-mysql"),                   # only the mysql_ finding
+    ('<script>const q = encodeURIComponent(input.value);</script>', None),
+    ('<script>if (e.key === "Enter") send();</script>', None),
+    ('body { background-color: #ffffcc; }', None),
+    ('<frameset cols="50%,50%"></frameset>', "html-frameset"),                              # not also html-frame
+    ("Remember to escape (quote) user input before showing it.", None),                   # prose
+]
+
+
+@pytest.mark.parametrize("text, expected", ROUND_2)
+def test_track_b_round_2(tmp_path, text, expected):
+    a = analyze(_pdf(tmp_path, text), "m.pdf", today=TODAY, use_cache=False)
+    claims = {f.id for f in a.findings if f.status != "supported"}
+    if expected is None:
+        assert claims == set(), f"false alarm for {text!r}: {claims}"
+    else:
+        assert claims == {expected}, f"expected only {expected} in {text!r}: {claims}"
+
+
+def test_php54_removal_dates_come_from_the_release_snapshot(tmp_path):
+    a = analyze(_pdf(tmp_path, '<?php session_register("u"); ?>'), "m.pdf", today=TODAY, use_cache=False)
+    assert next(f for f in a.findings if f.id == "php-session-register").lifecycle.eol_date == "2012-03-01"

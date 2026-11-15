@@ -9,6 +9,8 @@ until someone adds a sourced entry. Format: item · where seen · status · reas
 | `https://www.php.net/manual/en/intro.mysql.php` | — | failed | 404: ext/mysql pages were removed from the manual; using migration70.incompatible instead |
 | `https://www.php.net/manual/en/intro.pcre.php` | — | failed | 404 (2026-11-14); using book.pcre.php instead |
 | `<applet>` (Java applets) | — | failed | MDN page returns 404 (2026-11-15); needs another tier 1–2 source |
+| `<blink>` | — | failed | MDN page returns 404 (2026-11-15) |
+| php.net PHP 5.x migration pages | — | failed | 404 on php.net (2026-11-15); using Zend's PHP 5 legacy manual archive instead |
 | Rockmelt browser | m01 | needs_manual | Discontinued, but no official/tier 1–2 source found |
 | Mac OS X names (Lion, Snow Leopard, …) | m01 | skipped | Names are ambiguous as plain words; needs version-aware matching |
 
