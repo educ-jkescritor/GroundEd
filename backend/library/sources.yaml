@@ -212,3 +212,75 @@
   excerpt_terms: ['Flash']
   selector: "main"
   tags: [plugin, flash, eol]
+
+# ---------------------------------------------------------------- Track B round 2 (2026-11-15)
+# php.net no longer hosts PHP 5.x migration pages (404); Zend keeps the PHP 5 manual online as a legacy archive.
+- id: php5-migration54-incompatible
+  title: Backward incompatible changes (PHP 5.4) — PHP 5 legacy manual
+  url: https://php-legacy-docs.zend.com/manual/php5/en/migration54.incompatible
+  publisher: PHP 5 Manual (legacy archive, php-legacy-docs.zend.com)
+  tier: 2
+  license: CC-BY-3.0
+  store: full
+  selector: "#layout-content"
+  tags: [php, php5, removed, register_globals, magic_quotes, session]
+
+- id: mdn-js-escape
+  title: escape() (deprecated)
+  url: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/escape
+  publisher: MDN Web Docs (Mozilla)
+  tier: 2
+  license: CC-BY-SA-2.5
+  store: full
+  selector: "main"
+  tags: [javascript, deprecated]
+
+- id: mdn-js-unescape
+  title: unescape() (deprecated)
+  url: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/unescape
+  publisher: MDN Web Docs (Mozilla)
+  tier: 2
+  license: CC-BY-SA-2.5
+  store: full
+  selector: "main"
+  tags: [javascript, deprecated]
+
+- id: mdn-js-substr
+  title: String.prototype.substr() (deprecated)
+  url: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/substr
+  publisher: MDN Web Docs (Mozilla)
+  tier: 2
+  license: CC-BY-SA-2.5
+  store: full
+  selector: "main"
+  tags: [javascript, deprecated, string]
+
+- id: mdn-keycode
+  title: KeyboardEvent.keyCode (deprecated)
+  url: https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/keyCode
+  publisher: MDN Web Docs (Mozilla)
+  tier: 2
+  license: CC-BY-SA-2.5
+  store: full
+  selector: "main"
+  tags: [javascript, dom, deprecated, events]
+
+- id: mdn-frame
+  title: "<frame> (deprecated)"
+  url: https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/frame
+  publisher: MDN Web Docs (Mozilla)
+  tier: 2
+  license: CC-BY-SA-2.5
+  store: full
+  selector: "main"
+  tags: [html, deprecated, element]
+
+- id: mdn-body
+  title: "<body>: The Document Body element"
+  url: https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/body
+  publisher: MDN Web Docs (Mozilla)
+  tier: 2
+  license: CC-BY-SA-2.5
+  store: full
+  selector: "main"
+  tags: [html, attributes, deprecated]

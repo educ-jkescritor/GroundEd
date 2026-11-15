@@ -103,3 +103,43 @@
     doc: php-migration82-deprecated
     quote: "utf8_encode() and utf8_decode() have been deprecated."
   upgrade: {target: "mb_convert_encoding()", source_url: "https://www.php.net/manual/en/migration82.deprecated.php"}
+
+# ---------------------------------------------------------------- Track B round 2: PHP 5.4 removals (2026-11-15)
+- id: php-register-globals
+  technology: PHP register_globals / $HTTP_*_VARS long arrays
+  # register_long_arrays was the directive that provided $HTTP_GET_VARS, $HTTP_POST_VARS, ...
+  patterns:
+    - '\bregister_(?:globals|long_arrays)\b'
+    - '\$HTTP_(?:GET|POST|COOKIE|SERVER|ENV|SESSION|POST_FILES)_VARS\b'
+  context: ['<\?php', '\bphp\b', '\$_(?:GET|POST|SERVER)\b']
+  fact:
+    stage: eol
+    product: php
+    removed_in: {product: php, cycle: "5.4"}
+    doc: php5-migration54-incompatible
+    quote: "The register_globals and register_long_arrays php.ini directives have been removed."
+  upgrade: {target: "$_GET, $_POST, $_SERVER superglobals", source_url: "https://php-legacy-docs.zend.com/manual/php5/en/migration54.incompatible"}
+
+- id: php-magic-quotes
+  technology: PHP magic quotes
+  patterns:
+    - '\bmagic_quotes_(?:gpc|runtime|sybase)\b'
+    - '\bset_magic_quotes_runtime\s*\('
+  fact:
+    stage: eol
+    product: php
+    removed_in: {product: php, cycle: "5.4"}
+    doc: php5-migration54-incompatible
+    quote: "Magic quotes has been removed. Applications relying on this feature may need to be updated, to avoid security issues."
+  upgrade: {target: "Prepared statements / context-specific escaping", source_url: "https://www.php.net/manual/en/mysqlinfo.api.choosing.php"}
+
+- id: php-session-register
+  technology: PHP session_register() / session_unregister() / session_is_registered()
+  patterns: ['\bsession_(?:register|unregister|is_registered)\s*\(']
+  fact:
+    stage: eol
+    product: php
+    removed_in: {product: php, cycle: "5.4"}
+    doc: php5-migration54-incompatible
+    quote: "The following functions have been removed from PHP: define_syslog_variables() import_request_variables() session_is_registered(), session_register() and session_unregister()."
+  upgrade: {target: "$_SESSION with session_start()", source_url: "https://php-legacy-docs.zend.com/manual/php5/en/migration54.incompatible"}
