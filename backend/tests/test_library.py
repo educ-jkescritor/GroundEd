@@ -182,3 +182,26 @@ def test_same_page_without_hint_attaches_no_replacement():
     e = next(x for x in registry.load().entries if x.id == "php-each")  # upgrade page == fact page, no hint
     ps = library.passages_for(e.technology, e.fact.doc, e.fact.quote, e.upgrade.source_url, e.upgrade.target, None)
     assert [p.role for p in ps] == ["fact"]
+
+
+# ---------- live check ----------
+
+def test_live_check_reports_missing_quotes_and_unreachable_pages(monkeypatch):
+    from app import registry
+    entries = [e for e in registry.load().entries if e.id in ("php-each", "html-center")]
+    each_quote = next(e for e in entries if e.id == "php-each").fact.quote
+
+    def fake_fetch(url, attempts=3):
+        if "migration80" in url:
+            return f'<div id="layout-content"><h2>x</h2><p>{each_quote}</p></div>'
+        raise library.FetchError("failed", "HTTP 404: page not found (moved or removed)")
+
+    monkeypatch.setattr(library, "fetch", fake_fetch)
+    rows = {(r.entry_id, r.what): r for r in library.check_live(entries)}
+    assert rows[("php-each", "quote")].status == "ok"
+    assert rows[("html-center", "quote")].status == "unreachable" and "404" in rows[("html-center", "quote")].reason
+    assert rows[("html-center", "passage_hint")].status == "unreachable"
+
+    monkeypatch.setattr(library, "fetch", lambda url, attempts=3: '<div id="layout-content"><p>page rewritten</p></div>')
+    rows = {(r.entry_id, r.what): r for r in library.check_live([e for e in entries if e.id == "php-each"])}
+    assert rows[("php-each", "quote")].status == "missing"
