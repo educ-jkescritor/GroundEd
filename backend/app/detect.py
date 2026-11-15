@@ -63,12 +63,16 @@ def detect_registry(pages: list[Page], entries: list[Entry]) -> list[Mention]:
     for entry in entries:
         pats, ctx = entry.compiled(), entry.compiled_context()
         for page in pages:
-            if ctx and not any(c.search(page.text) or c.search(page.ocr_text) for c in ctx):
-                continue  # the page does not look like the right language/technology
             seen: set[str | None] = set()
             # Page text first, then text read from the page's images (OCR); a mention found in the text wins.
             for source, from_ocr in ((page.text, False), (page.ocr_text, True)):
                 if not source:
+                    continue
+                # Context: a match in the slide TEXT needs context in the slide text (a PHP screenshot must not make
+                # an EJS slide's "<% %>" look like PHP); a match in a SCREENSHOT may take context from the screenshot
+                # or from the slide text around it (a slide titled "PHP Arrays" describes its code image).
+                where = page.text + "\n" + page.ocr_text if from_ocr else page.text
+                if ctx and not any(c.search(where) for c in ctx):
                     continue
                 hits = sorted((m for p in pats for m in p.finditer(source)), key=lambda m: m.start())
                 for m in hits:
