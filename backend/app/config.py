@@ -13,6 +13,8 @@ SAMPLES_DIR = DATA_DIR / "samples"
 CACHE_DIR = DATA_DIR / "cache"
 UPLOAD_DIR = DATA_DIR / "uploads"
 DB_PATH = Path(os.getenv("DB_PATH", DATA_DIR / "grounded.db"))
+# Result of the last `library check` (kept next to the database, i.e. in the persistent volume on the server).
+SOURCE_CHECK_FILE = Path(os.getenv("SOURCE_CHECK_FILE", DB_PATH.parent / "source_check.json"))
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
 GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.5-flash")  # pinned: answered reliably in tests 2026-11-14 (3.7/3.8 were overloaded)
@@ -24,6 +26,7 @@ EOL_CACHE_HOURS = int(os.getenv("EOL_CACHE_HOURS", "24"))
 EOL_SOURCE = os.getenv("EOL_SOURCE", "snapshot")
 
 MAX_UPLOAD_MB = int(os.getenv("MAX_UPLOAD_MB", "10"))
+OCR_ENABLED = os.getenv("OCR_ENABLED", "true").lower() in ("1", "true", "yes")  # read code screenshots
 MAX_PAGES = int(os.getenv("MAX_PAGES", "300"))  # longer PDFs are rejected with a clear message
 ANALYSIS_TIMEOUT_SECONDS = int(os.getenv("ANALYSIS_TIMEOUT_SECONDS", "90"))
 MAX_CONCURRENT_ANALYSES = int(os.getenv("MAX_CONCURRENT_ANALYSES", "3"))  # CPU-bound; sized for 2 vCPU

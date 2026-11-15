@@ -1,0 +1,54 @@
+{
+ "id": "php-migration72-other-changes",
+ "title": "Other changes (PHP 7.2)",
+ "url": "https://www.php.net/manual/en/migration72.other-changes.php",
+ "publisher": "PHP Manual (php.net)",
+ "tier": 2,
+ "license": "CC-BY-3.0",
+ "store": "full",
+ "tags": [
+  "php",
+  "php7",
+  "mcrypt",
+  "removed"
+ ],
+ "fetched_at": "2026-11-15T04:15:26+00:00",
+ "content_sha256": "24548a30b8a9c0dc13142e3b3ee292f5fbeabe5fd7a49bda8fa7f0c25ba10575",
+ "passages": [
+  {
+   "n": 0,
+   "heading": "Moving of utf8_encode() and utf8_decode()",
+   "text": "The utf8_encode() and utf8_decode() functions have now been moved to the standard extension as string functions, whereas before the XML extension was required for them to be available."
+  },
+  {
+   "n": 1,
+   "heading": "Changes to mail() and mb_send_mail()",
+   "text": "The $additional_headers parameter of mail() and mb_send_mail() now also accepts an array instead of a string."
+  },
+  {
+   "n": 2,
+   "heading": "LMDB support",
+   "text": "The DBA extension now has support for LMDB."
+  },
+  {
+   "n": 3,
+   "heading": "Changes to the PHP build system",
+   "text": "Unix: Autoconf 2.64 or greater is now required to build PHP. Unix: --with-pdo-oci configure argument no longer needs the version number of the Oracle Instant Client. Unix: --enable-gd-native-ttf configure argument has been removed. This was not used since PHP 5.5.0. Windows: --with-config-profile configure argument has been added. This can be used to save specific configures, much like the magical config.nice.bat file."
+  },
+  {
+   "n": 4,
+   "heading": "Changes to GD",
+   "text": "imageantialias() is now also available if compiled with a system libgd. imagegd() stores truecolor images as real truecolor images. Formerly, they have been converted to palette."
+  },
+  {
+   "n": 5,
+   "heading": "Moving MCrypt to PECL",
+   "text": "The MCrypt extension has now been moved out of the core to PECL. Given the mcrypt library has not seen any updates since 2007, its usage is highly discouraged. Instead, either the OpenSSL or Sodium extension should be used."
+  },
+  {
+   "n": 6,
+   "heading": "session_module_name()",
+   "text": "Passing \"user\" to session_module_name() now raises an error of level E_RECOVERABLE_ERROR. Formerly, this has been silently ignored."
+  }
+ ]
+}

@@ -32,6 +32,9 @@ endoflife.date data). Registry facts = library doc + verbatim quote, checked by 
 Product versions (Track A): `registry/products.yaml` reads versions from text with `(?P<v>...)` and maps them to
 endoflife.date releases (`eol.resolve_version`); supported versions, unknown versions and history/changelog lines
 (`rules/mentions.yaml`) produce no finding. Scope checklist: `library/coverage.yaml` (must match the registry).
+OCR (multimodal input): `ocr.py` reads code screenshots with RapidOCR (deterministic, no LLM) after skipping noise
+images (rules in `rules/images.yaml`); a fixed number of images per analysis (never a time budget) keeps results
+reproducible; results are cached per image and purged with reports. Quotes read from images carry `from_ocr`.
 
 Scoring (100 pts, Option C): lifecycle 40 · how it is taught 30 (code > explained > listed) · frequency 20 (4/page) ·
 hands-on 10. Supported and unverified items are not scored. Priority: high ≥ 80 · medium ≥ 50 · else low.
@@ -78,3 +81,5 @@ Web development (PHP/MySQL test modules first). Out-of-scope content must yield 
 
 `cd backend && uv venv && uv pip install -r requirements.txt && uv run uvicorn app.main:app --reload`
 Tests: `cd backend && uv run pytest`. Eval: `uv run python -m app.cli eval` (see README).
+Sources: `uv run python -m app.cli library check` (are registry quotes still on the live pages?) ·
+`library build` (refresh snapshots) · `library search "..."`. Add knowledge library-first: source → quote → entry → tests.

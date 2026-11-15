@@ -1,0 +1,16 @@
+# Facts Registry — browser plugins. The end date is stated in the vendor's own sentence (checked by code).
+- id: adobe-flash
+  technology: Adobe Flash Player / ActionScript
+  # Never the bare word "flash" (flash drive, flash messages): only unambiguous Flash product terms.
+  patterns:
+    - '\b(?:Adobe|Macromedia)\s+Flash\b'
+    - '\bFlash\s+Player\b'
+    - '\bActionScript\b'
+    - '\.swf\b'
+  fact:
+    stage: eol
+    product: flash
+    ended_on: "2020-12-31"
+    doc: adobe-flash-eol
+    quote: "Since Adobe no longer supports Flash Player after December 31, 2020 and blocked Flash content from running in Flash Player beginning January 12, 2021, Adobe strongly recommends all users immediately uninstall Flash Player to help protect their systems."
+  upgrade: {target: "HTML5, CSS and JavaScript", source_url: "https://www.adobe.com/products/flashplayer/end-of-life-alternative.html"}

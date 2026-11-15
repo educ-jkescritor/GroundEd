@@ -324,23 +324,118 @@ def _to_passage(role: str, doc: Document, p: Passage, quote: Optional[str]) -> "
 
 
 def passages_for(technology: str, fact_doc: Optional[str], fact_quote: Optional[str],
-                 replacement_url: Optional[str], replacement_target: Optional[str]) -> list["SourcePassage"]:
+                 replacement_url: Optional[str], replacement_target: Optional[str],
+                 replacement_hint: Optional[str] = None) -> list["SourcePassage"]:
     """Retrieve supporting passages for one finding. The registry points to the document; search picks the passage.
     - fact: in the fact's document, the passage containing the quote (else the best match for the quote)
-    - replacement: in the upgrade's document, the best match for "<technology> <replacement>"
+    - replacement ("what to use instead"), in the upgrade's document:
+        with a hint: the best-ranked passage containing that exact phrase (never the fact passage itself)
+        without a hint: the best match for "<technology> <replacement>", but only on a different page than the fact
+          (on the same page, an unguided match is too often an unrelated section, so nothing is attached)
     Only documents named by the registry are searched here, so nothing unrelated is attached."""
     from .detect import normalise
 
     docs = {d.id: d for d in load_documents()}
     out = []
+    fact_n = None
     if fact_doc in docs and fact_quote:
         doc = docs[fact_doc]
         p = next((p for p in doc.passages if normalise(fact_quote) in normalise(p.text)), None)
         if p is None and (hits := search(fact_quote, doc_ids=[fact_doc], k=1)):
             p = doc.passages[hits[0].n]
         if p is not None:
+            fact_n = p.n
             out.append(_to_passage("fact", doc, p, fact_quote))
-    if replacement_url and (doc := by_url(replacement_url)) and doc.id != fact_doc:
+    doc = by_url(replacement_url) if replacement_url else None
+    if doc is None:
+        return out
+    same_page = doc.id == fact_doc
+    if replacement_hint:
+        hint = replacement_hint.lower()
+        candidates = [p for p in doc.passages if hint in p.text.lower() and not (same_page and p.n == fact_n)]
+        if candidates:
+            ranked = {h.n: i for i, h in enumerate(search(f"{replacement_target} {technology}", doc_ids=[doc.id], k=50))}
+            best = min(candidates, key=lambda p: (ranked.get(p.n, 10_000), p.n))
+            out.append(_to_passage("replacement", doc, best, None))
+    elif not same_page:
         if hits := search(f"{technology} {replacement_target or ''}", doc_ids=[doc.id], k=1):
             out.append(_to_passage("replacement", doc, doc.passages[hits[0].n], None))
     return out
+
+
+# ---------------------------------------------------------------- live check (monthly refresh)
+
+class QuoteCheck(BaseModel):
+    entry_id: str
+    doc_id: str
+    what: Literal["quote", "passage_hint"]
+    status: Literal["ok", "missing", "unreachable"]
+    reason: str = ""
+
+
+def check_live(entries) -> list[QuoteCheck]:
+    """Re-fetch every library page the registry relies on and confirm each fact quote (and curated replacement
+    phrase) is still on the live page. Nothing is changed: a 'missing' row means a person must review the entry
+    and rebuild the snapshot. The saved snapshot keeps proving existing reports in the meantime."""
+    from .detect import normalise
+
+    sources = {s.id: s for s in load_sources()}
+    live: dict[str, tuple[Optional[str], str]] = {}  # doc_id -> (error, normalised text)
+
+    def live_text(doc_id: str) -> tuple[Optional[str], str]:
+        if doc_id not in live:
+            src = sources.get(doc_id)
+            if src is None:
+                live[doc_id] = ("not in sources.yaml", "")
+            else:
+                try:
+                    _, ps = extract_passages(fetch(src.url), src.selector)
+                    live[doc_id] = (None, normalise(" ".join(p.text for p in ps)))
+                except FetchError as e:
+                    live[doc_id] = (f"{e.status}: {e}", "")
+        return live[doc_id]
+
+    rows: list[QuoteCheck] = []
+    for e in entries:
+        checks = []
+        if e.fact:
+            checks.append((e.fact.doc, "quote", e.fact.quote))
+        if e.upgrade and e.upgrade.passage_hint and (d := by_url(e.upgrade.source_url)):
+            checks.append((d.id, "passage_hint", e.upgrade.passage_hint))
+        for doc_id, what, text in checks:
+            err, body = live_text(doc_id)
+            if err:
+                rows.append(QuoteCheck(entry_id=e.id, doc_id=doc_id, what=what, status="unreachable", reason=err))
+            elif normalise(text) in body:
+                rows.append(QuoteCheck(entry_id=e.id, doc_id=doc_id, what=what, status="ok"))
+            else:
+                rows.append(QuoteCheck(entry_id=e.id, doc_id=doc_id, what=what, status="missing",
+                                       reason="no longer on the live page: review the entry, then rebuild the snapshot"))
+    return rows
+
+
+def save_check_status(rows: list[QuoteCheck], path: Optional[Path] = None) -> dict:
+    """Store the result of a live check so the API can report it (/api/health)."""
+    from .config import SOURCE_CHECK_FILE
+
+    path = path or SOURCE_CHECK_FILE
+    status = {
+        "checked_at": _now(),
+        "ok": sum(r.status == "ok" for r in rows),
+        "total": len(rows),
+        "problems": [r.model_dump() for r in rows if r.status != "ok"],
+    }
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(status, indent=1) + "\n", encoding="utf-8")
+    return status
+
+
+def load_check_status(path: Optional[Path] = None) -> Optional[dict]:
+    """Last live-check result, or None if the check has never run (or the file is unreadable)."""
+    from .config import SOURCE_CHECK_FILE
+
+    path = path or SOURCE_CHECK_FILE
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return None

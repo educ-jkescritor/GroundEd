@@ -1,0 +1,35 @@
+# Facts Registry — deprecated JavaScript / DOM features. Source: MDN Web Docs (Mozilla), CC BY-SA 2.5.
+# Context requires a JavaScript page, so PHP's substr() or a prose "escape" never match.
+- id: js-escape
+  technology: JavaScript escape() / unescape()
+  patterns: ['(?<![.\w$])(?:escape|unescape)\s*\(']
+  context: ['<script', '\bjavascript\b', '\bdocument\.', '\bwindow\.', '\bconsole\.', '\bfunction\b', '=>', '\b(?:const|let)\s']
+  fact:
+    stage: deprecated
+    product: javascript
+    doc: mdn-js-escape
+    quote: "TC39 included the escape() and unescape() methods in Annex B of the ECMAScript specification, which covers JavaScript features with \"one or more undesirable characteristics and in the absence of legacy usage would be removed.\""
+  upgrade: {target: "encodeURIComponent() / decodeURIComponent()", source_url: "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/escape"}
+
+- id: js-substr
+  technology: JavaScript String.prototype.substr()
+  # A dot before substr: PHP's substr($s, ...) is a different, supported function.
+  patterns: ['\.substr\s*\(']
+  context: ['<script', '\bjavascript\b', '\bdocument\.', '\bwindow\.', '\bconsole\.', '\bfunction\b', '=>', '\b(?:const|let|var)\s']
+  fact:
+    stage: deprecated
+    product: javascript
+    doc: mdn-js-substr
+    quote: "TC39 included substr() in Annex B of the ECMAScript specification, which covers JavaScript features with \"one or more undesirable characteristics and in the absence of legacy usage would be removed.\""
+  upgrade: {target: "substring() or slice()", source_url: "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/substr"}
+
+- id: js-keycode
+  technology: JavaScript KeyboardEvent.keyCode
+  patterns: ['\.keyCode\b']
+  context: ['<script', '\bjavascript\b', '\bdocument\.', '\bwindow\.', '\bfunction\b', '=>', 'addEventListener', '\bon(?:keydown|keyup|keypress)\b']
+  fact:
+    stage: deprecated
+    product: javascript
+    doc: mdn-keycode
+    quote: "The deprecated KeyboardEvent.keyCode read-only property represents a system and implementation dependent numerical code identifying the unmodified value of the pressed key."
+  upgrade: {target: "KeyboardEvent.key or KeyboardEvent.code", source_url: "https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/keyCode"}

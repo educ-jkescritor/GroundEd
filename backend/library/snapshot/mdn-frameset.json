@@ -1,0 +1,48 @@
+{
+ "id": "mdn-frameset",
+ "title": "<frameset> (deprecated)",
+ "url": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/frameset",
+ "publisher": "MDN Web Docs (Mozilla)",
+ "tier": 2,
+ "license": "CC-BY-SA-2.5",
+ "store": "full",
+ "tags": [
+  "html",
+  "deprecated",
+  "element"
+ ],
+ "fetched_at": "2026-11-15T04:15:29+00:00",
+ "content_sha256": "a534857a3faa1d2216f267caed0101bc1bee7992aee8fdc0f00a2dfd73db5fb5",
+ "passages": [
+  {
+   "n": 0,
+   "heading": "<frameset> HTML frameset element",
+   "text": "Avoid using this feature in new projects. This feature may be a candidate for removal from web standards or browsers. See full compatibility Learn more The <frameset> HTML element is used to contain <frame> elements. Note: Because the use of frames is now discouraged in favor of using <iframe>, this element is not typically used by modern websites."
+  },
+  {
+   "n": 1,
+   "heading": "Attributes",
+   "text": "Like all other HTML elements, this element supports the global attributes. cols This attribute specifies the number and size of horizontal spaces in a frameset. rows This attribute specifies the number and size of vertical spaces in a frameset."
+  },
+  {
+   "n": 2,
+   "heading": "A frameset document",
+   "text": "A frameset document has a <frameset> element instead of a <body> element. The <frame> elements are placed within the <frameset>. <!doctype html> <html lang=\"en-US\"> <head> <!-- Document metadata goes here --> </head> <frameset cols=\"50%, 50%\"> <frame src=\"https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/iframe\" /> <frame src=\"https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/frame\" /> </frameset> </html> If you want to embed another HTML page into the <body> of a document, use an <iframe> element."
+  },
+  {
+   "n": 3,
+   "heading": "Specifications",
+   "text": "Specification HTML # frameset"
+  },
+  {
+   "n": 4,
+   "heading": "See also",
+   "text": "<frame> <iframe>"
+  },
+  {
+   "n": 5,
+   "heading": "Help improve MDN",
+   "text": "This page was last modified on Aug 21, 2026 by MDN contributors."
+  }
+ ]
+}

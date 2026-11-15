@@ -1,6 +1,34 @@
 {
  "sources": [
   {
+   "id": "adobe-flash-eol",
+   "status": "ok",
+   "reason": "",
+   "tried_at": "2026-11-15T04:15:37+00:00",
+   "passages": 2
+  },
+  {
+   "id": "mdn-acronym",
+   "status": "ok",
+   "reason": "",
+   "tried_at": "2026-11-15T04:15:35+00:00",
+   "passages": 8
+  },
+  {
+   "id": "mdn-big",
+   "status": "ok",
+   "reason": "",
+   "tried_at": "2026-11-15T04:15:31+00:00",
+   "passages": 12
+  },
+  {
+   "id": "mdn-body",
+   "status": "ok",
+   "reason": "",
+   "tried_at": "2026-11-15T04:24:16+00:00",
+   "passages": 10
+  },
+  {
    "id": "mdn-center",
    "status": "ok",
    "reason": "",
@@ -15,11 +43,67 @@
    "passages": 5
   },
   {
+   "id": "mdn-frame",
+   "status": "ok",
+   "reason": "",
+   "tried_at": "2026-11-15T04:24:14+00:00",
+   "passages": 6
+  },
+  {
+   "id": "mdn-frameset",
+   "status": "ok",
+   "reason": "",
+   "tried_at": "2026-11-15T04:15:29+00:00",
+   "passages": 6
+  },
+  {
+   "id": "mdn-js-escape",
+   "status": "ok",
+   "reason": "",
+   "tried_at": "2026-11-15T04:24:09+00:00",
+   "passages": 9
+  },
+  {
+   "id": "mdn-js-substr",
+   "status": "ok",
+   "reason": "",
+   "tried_at": "2026-11-15T04:24:11+00:00",
+   "passages": 10
+  },
+  {
+   "id": "mdn-js-unescape",
+   "status": "ok",
+   "reason": "",
+   "tried_at": "2026-11-15T04:24:10+00:00",
+   "passages": 9
+  },
+  {
+   "id": "mdn-keycode",
+   "status": "ok",
+   "reason": "",
+   "tried_at": "2026-11-15T04:24:12+00:00",
+   "passages": 34
+  },
+  {
    "id": "mdn-marquee",
    "status": "ok",
    "reason": "",
    "tried_at": "2026-11-14T09:26:48+00:00",
    "passages": 7
+  },
+  {
+   "id": "mdn-strike",
+   "status": "ok",
+   "reason": "",
+   "tried_at": "2026-11-15T04:15:36+00:00",
+   "passages": 7
+  },
+  {
+   "id": "mdn-tt",
+   "status": "ok",
+   "reason": "",
+   "tried_at": "2026-11-15T04:15:32+00:00",
+   "passages": 11
   },
   {
    "id": "ms-ie-retirement-faq",
@@ -50,6 +134,27 @@
    "passages": 2
   },
   {
+   "id": "php-migration72-other-changes",
+   "status": "ok",
+   "reason": "",
+   "tried_at": "2026-11-15T04:15:26+00:00",
+   "passages": 7
+  },
+  {
+   "id": "php-migration80-incompatible",
+   "status": "ok",
+   "reason": "",
+   "tried_at": "2026-11-15T04:15:25+00:00",
+   "passages": 50
+  },
+  {
+   "id": "php-migration82-deprecated",
+   "status": "ok",
+   "reason": "",
+   "tried_at": "2026-11-15T04:15:27+00:00",
+   "passages": 6
+  },
+  {
    "id": "php-mysqlinfo-api-choosing",
    "status": "ok",
    "reason": "",
@@ -76,6 +181,13 @@
    "reason": "",
    "tried_at": "2026-11-14T09:26:40+00:00",
    "passages": 2
+  },
+  {
+   "id": "php5-migration54-incompatible",
+   "status": "ok",
+   "reason": "",
+   "tried_at": "2026-11-15T04:24:07+00:00",
+   "passages": 3
   }
  ]
 }

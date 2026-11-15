@@ -24,6 +24,7 @@ class Mention:
     page: int
     snippet: str  # MUST appear (normalised) in the page text; otherwise the mention is dropped
     entry_id: str | None = None  # registry entry that matched, None for LLM-proposed mentions
+    from_ocr: bool = False  # matched in text read from an image on the page (OCR)
 
 
 def normalise(text: str) -> str:
@@ -32,8 +33,8 @@ def normalise(text: str) -> str:
     return " ".join(unicodedata.normalize("NFKC", text).translate(_QUOTES).split()).lower()
 
 
-def snippet_on_page(snippet: str, page: Page) -> bool:
-    return normalise(snippet) in normalise(page.text)
+def snippet_on_page(snippet: str, page: Page, from_ocr: bool = False) -> bool:
+    return normalise(snippet) in normalise(page.ocr_text if from_ocr else page.text)
 
 
 def _snippet(text: str, start: int, end: int) -> str:
@@ -62,23 +63,32 @@ def detect_registry(pages: list[Page], entries: list[Entry]) -> list[Mention]:
     for entry in entries:
         pats, ctx = entry.compiled(), entry.compiled_context()
         for page in pages:
-            if ctx and not any(c.search(page.text) for c in ctx):
-                continue  # the page does not look like the right language/technology
-            hits = sorted((m for p in pats for m in p.finditer(page.text)), key=lambda m: m.start())
             seen: set[str | None] = set()
-            for m in hits:
-                version = m.groupdict().get("v")
-                if version is not None:
-                    version = " ".join(version.split())
-                if version in seen:
+            # Page text first, then text read from the page's images (OCR); a mention found in the text wins.
+            for source, from_ocr in ((page.text, False), (page.ocr_text, True)):
+                if not source:
                     continue
-                if entry.eol and is_historical(_line_at(page.text, m.start()), page.text):
+                # Context: a match in the slide TEXT needs context in the slide text (a PHP screenshot must not make
+                # an EJS slide's "<% %>" look like PHP); a match in a SCREENSHOT may take context from the screenshot
+                # or from the slide text around it (a slide titled "PHP Arrays" describes its code image).
+                where = page.text + "\n" + page.ocr_text if from_ocr else page.text
+                if ctx and not any(c.search(where) for c in ctx):
                     continue
-                mention = Mention(technology=entry.technology, version=version, page=page.number,
-                                  snippet=_snippet(page.text, m.start(), m.end()), entry_id=entry.id)
-                if snippet_on_page(mention.snippet, page):
-                    seen.add(version)
-                    out.append(mention)
+                hits = sorted((m for p in pats for m in p.finditer(source)), key=lambda m: m.start())
+                for m in hits:
+                    version = m.groupdict().get("v")
+                    if version is not None:
+                        version = " ".join(version.split())
+                    if version in seen:
+                        continue
+                    if entry.eol and is_historical(_line_at(source, m.start()), page.text):
+                        continue
+                    mention = Mention(technology=entry.technology, version=version, page=page.number,
+                                      snippet=_snippet(source, m.start(), m.end()), entry_id=entry.id,
+                                      from_ocr=from_ocr)
+                    if snippet_on_page(mention.snippet, page, from_ocr):
+                        seen.add(version)
+                        out.append(mention)
     return out
 
 

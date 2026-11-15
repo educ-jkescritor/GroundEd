@@ -19,6 +19,8 @@ SAMPLES = {
         "Reading records\n$result = mysql_query(\"SELECT * FROM tblStudent\");\n"
         "while ($row = mysql_fetch_array($result)) { echo $row['name']; }",
         "Validating input\nif (ereg(\"^[0-9]+$\", $id)) { echo \"valid id\"; }",
+        "Listing the records\n<?php while (list($key, $name) = each($names)) { echo $name; } ?>",
+        "Page layout\n<center><font color=\"navy\" size=\"5\">Student Records</font></center>",
     ],
     "modern-php-lab": [
         "Web Systems Lab Manual (sample)\nModule 3: Building a Student Records App with PHP 8",
