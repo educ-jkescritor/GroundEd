@@ -324,23 +324,40 @@ def _to_passage(role: str, doc: Document, p: Passage, quote: Optional[str]) -> "
 
 
 def passages_for(technology: str, fact_doc: Optional[str], fact_quote: Optional[str],
-                 replacement_url: Optional[str], replacement_target: Optional[str]) -> list["SourcePassage"]:
+                 replacement_url: Optional[str], replacement_target: Optional[str],
+                 replacement_hint: Optional[str] = None) -> list["SourcePassage"]:
     """Retrieve supporting passages for one finding. The registry points to the document; search picks the passage.
     - fact: in the fact's document, the passage containing the quote (else the best match for the quote)
-    - replacement: in the upgrade's document, the best match for "<technology> <replacement>"
+    - replacement ("what to use instead"), in the upgrade's document:
+        with a hint: the best-ranked passage containing that exact phrase (never the fact passage itself)
+        without a hint: the best match for "<technology> <replacement>", but only on a different page than the fact
+          (on the same page, an unguided match is too often an unrelated section, so nothing is attached)
     Only documents named by the registry are searched here, so nothing unrelated is attached."""
     from .detect import normalise
 
     docs = {d.id: d for d in load_documents()}
     out = []
+    fact_n = None
     if fact_doc in docs and fact_quote:
         doc = docs[fact_doc]
         p = next((p for p in doc.passages if normalise(fact_quote) in normalise(p.text)), None)
         if p is None and (hits := search(fact_quote, doc_ids=[fact_doc], k=1)):
             p = doc.passages[hits[0].n]
         if p is not None:
+            fact_n = p.n
             out.append(_to_passage("fact", doc, p, fact_quote))
-    if replacement_url and (doc := by_url(replacement_url)) and doc.id != fact_doc:
+    doc = by_url(replacement_url) if replacement_url else None
+    if doc is None:
+        return out
+    same_page = doc.id == fact_doc
+    if replacement_hint:
+        hint = replacement_hint.lower()
+        candidates = [p for p in doc.passages if hint in p.text.lower() and not (same_page and p.n == fact_n)]
+        if candidates:
+            ranked = {h.n: i for i, h in enumerate(search(f"{replacement_target} {technology}", doc_ids=[doc.id], k=50))}
+            best = min(candidates, key=lambda p: (ranked.get(p.n, 10_000), p.n))
+            out.append(_to_passage("replacement", doc, best, None))
+    elif not same_page:
         if hits := search(f"{technology} {replacement_target or ''}", doc_ids=[doc.id], k=1):
             out.append(_to_passage("replacement", doc, doc.passages[hits[0].n], None))
     return out

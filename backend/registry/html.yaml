@@ -10,7 +10,7 @@
     product: html
     doc: mdn-center
     quote: "This tag has been deprecated in HTML 4 (and XHTML 1) in favor of the CSS text-align property, which can be applied to the <div> element or to an individual <p>."
-  upgrade: {target: "CSS text-align", source_url: "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/center"}
+  upgrade: {target: "CSS text-align", source_url: "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/center", passage_hint: "text-align: center"}
 
 - id: html-font
   technology: HTML <font> element
@@ -50,7 +50,7 @@
     product: html
     doc: mdn-big
     quote: "Avoid using this feature in new projects. This feature may be a candidate for removal from web standards or browsers."
-  upgrade: {target: "CSS font-size", source_url: "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/big"}
+  upgrade: {target: "CSS font-size", source_url: "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/big", passage_hint: "This example uses the CSS font-size property"}
 
 - id: html-tt
   technology: HTML <tt> element
@@ -70,7 +70,7 @@
     product: html
     doc: mdn-acronym
     quote: "Avoid using this feature in new projects. This feature may be a candidate for removal from web standards or browsers."
-  upgrade: {target: "<abbr>", source_url: "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/acronym"}
+  upgrade: {target: "<abbr>", source_url: "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/acronym", passage_hint: "<abbr>"}
 
 - id: html-strike
   technology: HTML <strike> element
@@ -80,7 +80,7 @@
     product: html
     doc: mdn-strike
     quote: "Avoid using this feature in new projects. This feature may be a candidate for removal from web standards or browsers."
-  upgrade: {target: "<s> or <del>", source_url: "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/strike"}
+  upgrade: {target: "<s> or <del>", source_url: "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/strike", passage_hint: "<del>"}
 
 - id: html-frame
   technology: HTML <frame> element

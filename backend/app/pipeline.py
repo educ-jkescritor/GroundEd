@@ -118,6 +118,7 @@ def _finding_for_entry(entry: registry.Entry, mentions: list[Mention], pages_by_
         entry.technology,
         entry.fact.doc if entry.fact else None, entry.fact.quote if entry.fact else None,
         entry.upgrade.source_url if entry.upgrade else None, entry.upgrade.target if entry.upgrade else None,
+        entry.upgrade.passage_hint if entry.upgrade else None,
     ) or None
     score = compute(lifecycle.eol_date, deprecated, depth, len(pages), hands_on, today, ended)
     return Finding(**base, version=version, status=status, lifecycle=lifecycle, score=score, passages=passages)
