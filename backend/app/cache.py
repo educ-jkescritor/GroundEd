@@ -22,6 +22,8 @@ def _connect() -> sqlite3.Connection:
     conn.execute("CREATE TABLE IF NOT EXISTS analysis_cache (key TEXT PRIMARY KEY, analysis_id TEXT NOT NULL)")
     conn.execute("CREATE TABLE IF NOT EXISTS draft_cache (key TEXT PRIMARY KEY, text TEXT NOT NULL, model TEXT NOT NULL, "
                  "created_at TEXT NOT NULL DEFAULT (datetime('now')))")
+    conn.execute("CREATE TABLE IF NOT EXISTS ocr_cache (image TEXT NOT NULL, engine TEXT NOT NULL, lines TEXT NOT NULL, "
+                 "created_at TEXT NOT NULL DEFAULT (datetime('now')), PRIMARY KEY (image, engine))")
     return conn
 
 
@@ -63,7 +65,9 @@ def purge_expired(hours: int | None = None) -> int:
     with closing(_connect()) as conn, conn:
         n = conn.execute("DELETE FROM analyses WHERE created_at < ?", (cutoff.isoformat(),)).rowcount
         conn.execute("DELETE FROM analysis_cache WHERE analysis_id NOT IN (SELECT id FROM analyses)")
-        n += conn.execute("DELETE FROM draft_cache WHERE created_at < ?", (cutoff.strftime("%Y-%m-%d %H:%M:%S"),)).rowcount
+        n += conn.execute("DELETE FROM draft_cache WHERE created_at <= ?", (cutoff.strftime("%Y-%m-%d %H:%M:%S"),)).rowcount
+        # OCR text is module content too: same retention as reports
+        n += conn.execute("DELETE FROM ocr_cache WHERE created_at <= ?", (cutoff.strftime("%Y-%m-%d %H:%M:%S"),)).rowcount
     return n
 
 
@@ -73,3 +77,17 @@ def enable_wal() -> str:
     config.DB_PATH.parent.mkdir(parents=True, exist_ok=True)
     with closing(sqlite3.connect(config.DB_PATH)) as conn:
         return conn.execute("PRAGMA journal_mode=WAL").fetchone()[0]
+
+
+def get_ocr(image: str, engine: str) -> Optional[list]:
+    """Cached OCR lines for an image fingerprint (engine-specific), or None."""
+    from .ocr import decode
+    with closing(_connect()) as conn:
+        row = conn.execute("SELECT lines FROM ocr_cache WHERE image = ? AND engine = ?", (image, engine)).fetchone()
+    return decode(row[0]) if row else None
+
+
+def put_ocr(image: str, engine: str, lines: list) -> None:
+    from .ocr import encode
+    with closing(_connect()) as conn, conn:
+        conn.execute("INSERT OR REPLACE INTO ocr_cache (image, engine, lines) VALUES (?, ?, ?)", (image, engine, encode(lines)))

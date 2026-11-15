@@ -1,0 +1,104 @@
+# Facts Registry — deprecated HTML elements. Source: MDN Web Docs (Mozilla), CC BY-SA 2.5.
+# Each element's own MDN page is the document; the quote is MDN's deprecation statement on that page.
+# Patterns need the literal tag ("<center"), so prose like "center the text" or CSS text-align never matches.
+
+- id: html-center
+  technology: HTML <center> element
+  patterns: ['<center\b']
+  fact:
+    stage: deprecated
+    product: html
+    doc: mdn-center
+    quote: "This tag has been deprecated in HTML 4 (and XHTML 1) in favor of the CSS text-align property, which can be applied to the <div> element or to an individual <p>."
+  upgrade: {target: "CSS text-align", source_url: "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/center", passage_hint: "text-align: center"}
+
+- id: html-font
+  technology: HTML <font> element
+  patterns: ['<font\b']
+  fact:
+    stage: deprecated
+    product: html
+    doc: mdn-font
+    quote: "Avoid using this feature in new projects. This feature may be a candidate for removal from web standards or browsers."
+  upgrade: {target: "CSS font properties", source_url: "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/font"}
+
+- id: html-marquee
+  technology: HTML <marquee> element
+  patterns: ['<marquee\b']
+  fact:
+    stage: deprecated
+    product: html
+    doc: mdn-marquee
+    quote: "The HTML <marquee> element is deprecated and its use is strongly discouraged."
+  upgrade: {target: "CSS animations", source_url: "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/marquee"}
+
+- id: html-frameset
+  technology: HTML <frameset> element
+  patterns: ['<frameset\b']
+  fact:
+    stage: deprecated
+    product: html
+    doc: mdn-frameset
+    quote: "Avoid using this feature in new projects. This feature may be a candidate for removal from web standards or browsers."
+  upgrade: {target: "CSS layout (Flexbox / Grid) or <iframe>", source_url: "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/frameset"}
+
+- id: html-big
+  technology: HTML <big> element
+  patterns: ['<big\b']
+  fact:
+    stage: deprecated
+    product: html
+    doc: mdn-big
+    quote: "Avoid using this feature in new projects. This feature may be a candidate for removal from web standards or browsers."
+  upgrade: {target: "CSS font-size", source_url: "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/big", passage_hint: "This example uses the CSS font-size property"}
+
+- id: html-tt
+  technology: HTML <tt> element
+  patterns: ['<tt\b']
+  fact:
+    stage: deprecated
+    product: html
+    doc: mdn-tt
+    quote: "Avoid using this feature in new projects. This feature may be a candidate for removal from web standards or browsers."
+  upgrade: {target: "<code> or <kbd>, or CSS font-family", source_url: "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/tt"}
+
+- id: html-acronym
+  technology: HTML <acronym> element
+  patterns: ['<acronym\b']
+  fact:
+    stage: deprecated
+    product: html
+    doc: mdn-acronym
+    quote: "Avoid using this feature in new projects. This feature may be a candidate for removal from web standards or browsers."
+  upgrade: {target: "<abbr>", source_url: "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/acronym", passage_hint: "<abbr>"}
+
+- id: html-strike
+  technology: HTML <strike> element
+  patterns: ['<strike\b']
+  fact:
+    stage: deprecated
+    product: html
+    doc: mdn-strike
+    quote: "Avoid using this feature in new projects. This feature may be a candidate for removal from web standards or browsers."
+  upgrade: {target: "<s> or <del>", source_url: "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/strike", passage_hint: "<del>"}
+
+- id: html-frame
+  technology: HTML <frame> element
+  patterns: ['<frame\b']
+  fact:
+    stage: deprecated
+    product: html
+    doc: mdn-frame
+    quote: "Avoid using this feature in new projects. This feature may be a candidate for removal from web standards or browsers."
+  upgrade: {target: "<iframe> or CSS layout", source_url: "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/frame"}
+
+- id: html-body-bgcolor
+  technology: HTML bgcolor attribute on <body>
+  # MDN lists bgcolor under "Deprecated attributes" of <body>; only <body ... bgcolor=...> is matched.
+  patterns: ['<body\b[^>]*\bbgcolor\s*=']
+  fact:
+    stage: deprecated
+    product: html
+    doc: mdn-body
+    quote: "bgcolor Background color for the document. Use the CSS background-color property instead."
+  upgrade: {target: "CSS background-color", source_url: "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/body"}

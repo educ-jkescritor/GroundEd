@@ -1,0 +1,58 @@
+{
+ "id": "mdn-acronym",
+ "title": "<acronym> (deprecated)",
+ "url": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/acronym",
+ "publisher": "MDN Web Docs (Mozilla)",
+ "tier": 2,
+ "license": "CC-BY-SA-2.5",
+ "store": "full",
+ "tags": [
+  "html",
+  "deprecated",
+  "element"
+ ],
+ "fetched_at": "2026-11-15T04:15:35+00:00",
+ "content_sha256": "8e7537e2a019221b06609663ffae8b345eec37b1def095c13a44fac1de1d08fb",
+ "passages": [
+  {
+   "n": 0,
+   "heading": "<acronym> HTML acronym or abbreviation element",
+   "text": "Avoid using this feature in new projects. This feature may be a candidate for removal from web standards or browsers. See full compatibility Learn more The <acronym> HTML element allows authors to clearly indicate a sequence of characters that compose an acronym or abbreviation for a word. Warning: Don't use this element. Use the <abbr> element instead."
+  },
+  {
+   "n": 1,
+   "heading": "Attributes",
+   "text": "This element only has global attributes, which are common to all elements."
+  },
+  {
+   "n": 2,
+   "heading": "DOM Interface",
+   "text": "This element implements the HTMLElement interface."
+  },
+  {
+   "n": 3,
+   "heading": "Examples",
+   "text": "<p> The <acronym title=\"World Wide Web\">WWW</acronym> is only a component of the Internet. </p>"
+  },
+  {
+   "n": 4,
+   "heading": "Default styling",
+   "text": "Though the purpose of this tag is purely for the convenience of the author, its default styling varies from one browser to another: Opera, Firefox, Chrome, and some others add a dotted underline to the content of the element. A few browsers not only add a dotted underline, but also put it in small caps; to avoid this styling, adding something like font-variant: none in the CSS takes care of this case. It is therefore recommended that web authors either explicitly style this element, or accept some cross-browser variation."
+  },
+  {
+   "n": 5,
+   "heading": "Specifications",
+   "text": "Specification HTML # acronym"
+  },
+  {
+   "n": 6,
+   "heading": "See also",
+   "text": "The <abbr> HTML element"
+  },
+  {
+   "n": 7,
+   "heading": "Help improve MDN",
+   "text": "This page was last modified on Aug 21, 2026 by MDN contributors."
+  }
+ ]
+}

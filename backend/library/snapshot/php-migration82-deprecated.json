@@ -1,0 +1,48 @@
+{
+ "id": "php-migration82-deprecated",
+ "title": "Deprecated features (PHP 8.2)",
+ "url": "https://www.php.net/manual/en/migration82.deprecated.php",
+ "publisher": "PHP Manual (php.net)",
+ "tier": 2,
+ "license": "CC-BY-3.0",
+ "store": "full",
+ "tags": [
+  "php",
+  "php8",
+  "deprecated"
+ ],
+ "fetched_at": "2026-11-15T04:15:27+00:00",
+ "content_sha256": "7ccbdfde6618c2003393d185f1309d19e474e305cba53c031a6ce25ce2e14026",
+ "passages": [
+  {
+   "n": 0,
+   "heading": "Usage of dynamic properties",
+   "text": "Declaring the property (preferred). Adding the #[\\AllowDynamicProperties] attribute to the class (which also applies to all child classes). Using a WeakMap if additional data needs to be associated with an object which one does not own."
+  },
+  {
+   "n": 1,
+   "heading": "Relative callables",
+   "text": "\"self::method\" \"parent::method\" \"static::method\" [\"self\", \"method\"] [\"parent\", \"method\"] [\"static\", \"method\"] [\"Foo\", \"Bar::method\"] [new Foo, \"Bar::method\"]"
+  },
+  {
+   "n": 2,
+   "heading": "\"${var}\" and \"${expr}\" style interpolation",
+   "text": "The \"${var}\" and \"${expr}\" style of string interpolation is deprecated. Use \"$var\"/\"{$var}\" and \"{${expr}}\", respectively."
+  },
+  {
+   "n": 3,
+   "heading": "MBString",
+   "text": "Usage of the QPrint, Base64, Uuencode, and HTML-ENTITIES 'text encodings' is deprecated for all MBString functions. Unlike all the other text encodings supported by MBString, these do not encode a sequence of Unicode codepoints, but rather a sequence of raw bytes. It is not clear what the correct return values for most MBString functions should be when one of these non-encodings is specified. Moreover, PHP has separate, built-in implementations of all of them; for example, UUencoded data can be handled using convert_uuencode() / convert_uudecode()."
+  },
+  {
+   "n": 4,
+   "heading": "SPL",
+   "text": "The internal SplFileInfo::_bad_state_ex() method has been deprecated."
+  },
+  {
+   "n": 5,
+   "heading": "Standard",
+   "text": "utf8_encode() and utf8_decode() have been deprecated."
+  }
+ ]
+}

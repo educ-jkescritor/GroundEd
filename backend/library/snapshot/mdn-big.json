@@ -1,0 +1,78 @@
+{
+ "id": "mdn-big",
+ "title": "<big> (deprecated)",
+ "url": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/big",
+ "publisher": "MDN Web Docs (Mozilla)",
+ "tier": 2,
+ "license": "CC-BY-SA-2.5",
+ "store": "full",
+ "tags": [
+  "html",
+  "deprecated",
+  "element"
+ ],
+ "fetched_at": "2026-11-15T04:15:31+00:00",
+ "content_sha256": "0350397f1081b5c67817c2a8ff32c73d2ca4a4f2ac8e7939339c6da78ef6727f",
+ "passages": [
+  {
+   "n": 0,
+   "heading": "<big> HTML bigger text element",
+   "text": "Avoid using this feature in new projects. This feature may be a candidate for removal from web standards or browsers. See full compatibility Learn more The <big> HTML deprecated element renders the enclosed text at a font size one level larger than the surrounding text ( medium becomes large, for example). The size is capped at the browser's maximum permitted font size. Warning: This element has been removed from the specification and shouldn't be used anymore. Use the CSS font-size property to adjust the font size."
+  },
+  {
+   "n": 1,
+   "heading": "Attributes",
+   "text": "This element has no other attributes than the global attributes, common to all elements."
+  },
+  {
+   "n": 2,
+   "heading": "Examples",
+   "text": "Here we see examples showing the use of <big> followed by an example showing how to accomplish the same results using modern CSS syntax instead."
+  },
+  {
+   "n": 3,
+   "heading": "Using big",
+   "text": "This example uses the obsolete <big> element to increase the size of some text."
+  },
+  {
+   "n": 4,
+   "heading": "HTML",
+   "text": "<p> This is the first sentence. <big>This whole sentence is in bigger letters.</big> </p>"
+  },
+  {
+   "n": 5,
+   "heading": "Using CSS font-size",
+   "text": "This example uses the CSS font-size property to increase the font size by one level."
+  },
+  {
+   "n": 6,
+   "heading": "HTML",
+   "text": "<p> This is the first sentence. <span class=\"bigger\">This whole sentence is in bigger letters.</span> </p>"
+  },
+  {
+   "n": 7,
+   "heading": "CSS",
+   "text": ".bigger { font-size: larger; }"
+  },
+  {
+   "n": 8,
+   "heading": "DOM interface",
+   "text": "This element implements the HTMLElement interface."
+  },
+  {
+   "n": 9,
+   "heading": "Specifications",
+   "text": "Specification HTML # big"
+  },
+  {
+   "n": 10,
+   "heading": "See also",
+   "text": "CSS: font-size, font HTML: <small>, <font>, <style>"
+  },
+  {
+   "n": 11,
+   "heading": "Help improve MDN",
+   "text": "This page was last modified on Nov 12, 2026 by MDN contributors."
+  }
+ ]
+}

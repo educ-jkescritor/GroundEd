@@ -26,6 +26,11 @@ class Page:
     text: str  # cleaned text (repeated headers/footers removed)
     raw_text: str = ""
     words: list[tuple[float, float, float, float, str]] = field(default_factory=list)  # x0, y0, x1, y1, word
+    ocr_lines: list = field(default_factory=list)  # app.ocr.OcrLine: text read from images on this page
+
+    @property
+    def ocr_text(self) -> str:
+        return "\n".join(line.text for line in self.ocr_lines)
 
 
 MIN_CHARS_PER_PAGE = 20  # below this on average, treat the PDF as scanned/image-only
@@ -57,7 +62,8 @@ def _strip_repeated_lines(texts: list[str]) -> list[str]:
     return ["\n".join(l for l in t.splitlines() if _line_key(l) not in repeated) for t in texts]
 
 
-def extract_pages(path: Path) -> list[Page]:
+def extract_pages(path: Path, allow_image_only: bool = False) -> list[Page]:
+    """allow_image_only: OCR will read the images, so a PDF with (almost) no selectable text is not rejected."""
     try:
         doc = pymupdf.open(path)
     except Exception as e:  # corrupt / not a PDF
@@ -72,8 +78,9 @@ def extract_pages(path: Path) -> list[Page]:
         words = [[w[:5] for w in p.get_text("words")] for p in doc]
     if not raw:
         raise PdfError("The PDF has no pages.")
-    if sum(len(t.strip()) for t in raw) < MIN_CHARS_PER_PAGE * len(raw):
-        raise PdfError("This PDF appears to be scanned (no selectable text). Scanned PDFs are not supported yet.")
+    if not allow_image_only and sum(len(t.strip()) for t in raw) < MIN_CHARS_PER_PAGE * len(raw):
+        raise PdfError("This PDF appears to be scanned (no selectable text) and image reading (OCR) is not available "
+                       "on this server.")
     cleaned = _strip_repeated_lines(raw)
     return [Page(number=i + 1, text=c, raw_text=r, words=w) for i, (c, r, w) in enumerate(zip(cleaned, raw, words))]
 

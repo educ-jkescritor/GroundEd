@@ -27,7 +27,7 @@
 - id: internet-explorer
   technology: Internet Explorer
   patterns:
-    - '\bInternet\s+Explorer(?:[ \t]+v?(?P<v>\d+))?\b'
+    - '\bInternet\s*Explorer(?:[ \t]+v?(?P<v>\d+))?\b'   # \s*: OCR sometimes drops the space ("InternetExplorer")
     - '\b(?:MSIE|IE)[ \t]?(?P<v>[5-9]|1[01])\b'
   eol: {product: internet-explorer, cycle: "11"}  # no version written: IE 11, the last release
   upgrade: {target: Microsoft Edge, source_url: "https://learn.microsoft.com/lifecycle/faq/internet-explorer-microsoft-edge"}

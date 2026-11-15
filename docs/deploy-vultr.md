@@ -134,6 +134,23 @@ Kept across updates: the database volume (reports, feedback, draft cache), Caddy
 | Roll back | `git log --oneline -5` → `git checkout <good-commit>` → same `up -d --build` |
 | Release | `git switch main && git pull` → same `up -d --build` |
 
+## Weekly source check (keeps the knowledge base honest)
+
+GroundEd's facts quote official pages (php.net, MDN, …). `library check` re-fetches them and confirms every quote is
+still there; the result appears in `/api/health` under `sources` (`ok`, `total`, `problems`, `checked_at`).
+It only **reports**: a changed page is reviewed by a person, then the snapshot is rebuilt and redeployed.
+Existing reports stay proven by the saved copies.
+
+Run it once by hand, then schedule it (server, as root):
+```bash
+cd /opt/GroundEd && docker compose -f deploy/docker-compose.yml exec -T backend python -m app.cli library check
+( crontab -l 2>/dev/null; echo '0 3 * * 1 cd /opt/GroundEd && docker compose -f deploy/docker-compose.yml exec -T backend python -m app.cli library check >> /var/log/grounded-source-check.log 2>&1' ) | crontab -
+crontab -l    # every Monday 03:00 server time
+```
+Check: `curl https://<site>/api/health` → `"sources": {"ok": 30, "total": 30, "problems": 0, ...}`.
+If `problems` > 0: `tail /var/log/grounded-source-check.log`, review the entry, rebuild the snapshot on a branch
+(`library build --only <doc>`), and redeploy.
+
 ## Safety and cost
 
 - **No login yet** (known hackathon gap). Share the link only once the frontend fixes are in; demo with the samples.

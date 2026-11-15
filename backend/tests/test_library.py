@@ -152,3 +152,73 @@ def test_passages_only_come_from_documents_the_registry_names():
     ps = library.passages_for("anything", "php-tags", "no such sentence in this doc", None, None)
     assert all(p.doc_id == "php-tags" and not p.contains_fact_quote for p in ps)
     assert library.passages_for("x", None, None, "https://example.com/not-in-library", "y") == []
+
+
+# ---------- curated "what to use instead" passages ----------
+
+def test_every_passage_hint_exists_in_its_upgrade_document():
+    """A curated phrase that no longer appears (page changed) must fail loudly, not attach nothing silently."""
+    from app import registry
+    for e in registry.load().entries:
+        if e.upgrade and e.upgrade.passage_hint:
+            doc = library.by_url(e.upgrade.source_url)
+            assert doc, f"{e.id}: upgrade page not in the library"
+            assert any(e.upgrade.passage_hint.lower() in p.text.lower() for p in doc.passages), \
+                f"{e.id}: hint {e.upgrade.passage_hint!r} not found in {doc.id}"
+
+
+def test_hint_selects_the_replacement_passage_on_the_same_page():
+    from app import registry
+    e = next(x for x in registry.load().entries if x.id == "html-center")
+    ps = library.passages_for(e.technology, e.fact.doc, e.fact.quote, e.upgrade.source_url, e.upgrade.target,
+                              e.upgrade.passage_hint)
+    roles = {p.role: p for p in ps}
+    assert "text-align: center" in roles["replacement"].text and roles["replacement"].text != roles["fact"].text
+
+
+def test_same_page_without_hint_attaches_no_replacement():
+    """Unguided matching on the fact's own page too often picks an unrelated section: attach nothing."""
+    from app import registry
+    e = next(x for x in registry.load().entries if x.id == "php-each")  # upgrade page == fact page, no hint
+    ps = library.passages_for(e.technology, e.fact.doc, e.fact.quote, e.upgrade.source_url, e.upgrade.target, None)
+    assert [p.role for p in ps] == ["fact"]
+
+
+# ---------- live check ----------
+
+def test_live_check_reports_missing_quotes_and_unreachable_pages(monkeypatch):
+    from app import registry
+    entries = [e for e in registry.load().entries if e.id in ("php-each", "html-center")]
+    each_quote = next(e for e in entries if e.id == "php-each").fact.quote
+
+    def fake_fetch(url, attempts=3):
+        if "migration80" in url:
+            return f'<div id="layout-content"><h2>x</h2><p>{each_quote}</p></div>'
+        raise library.FetchError("failed", "HTTP 404: page not found (moved or removed)")
+
+    monkeypatch.setattr(library, "fetch", fake_fetch)
+    rows = {(r.entry_id, r.what): r for r in library.check_live(entries)}
+    assert rows[("php-each", "quote")].status == "ok"
+    assert rows[("html-center", "quote")].status == "unreachable" and "404" in rows[("html-center", "quote")].reason
+    assert rows[("html-center", "passage_hint")].status == "unreachable"
+
+    monkeypatch.setattr(library, "fetch", lambda url, attempts=3: '<div id="layout-content"><p>page rewritten</p></div>')
+    rows = {(r.entry_id, r.what): r for r in library.check_live([e for e in entries if e.id == "php-each"])}
+    assert rows[("php-each", "quote")].status == "missing"
+
+
+def test_check_status_is_saved_and_reported_by_health(tmp_path, monkeypatch):
+    from fastapi.testclient import TestClient
+    from app import config
+    from app.main import app
+    monkeypatch.setattr(config, "SOURCE_CHECK_FILE", tmp_path / "source_check.json")
+    monkeypatch.setattr(config, "DB_PATH", tmp_path / "t.db")
+    with TestClient(app) as c:
+        assert c.get("/api/health").json()["sources"] is None            # never checked
+        rows = [library.QuoteCheck(entry_id="a", doc_id="d", what="quote", status="ok"),
+                library.QuoteCheck(entry_id="b", doc_id="d", what="quote", status="missing", reason="gone")]
+        library.save_check_status(rows)
+        s = c.get("/api/health").json()["sources"]
+        assert (s["ok"], s["total"], s["problems"]) == (1, 2, 1) and s["checked_at"]
+    (tmp_path / "source_check.json").write_text("{not json")
+    assert library.load_check_status() is None                          # unreadable file never breaks health

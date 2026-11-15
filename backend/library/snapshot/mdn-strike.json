@@ -1,0 +1,53 @@
+{
+ "id": "mdn-strike",
+ "title": "<strike> (deprecated)",
+ "url": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/strike",
+ "publisher": "MDN Web Docs (Mozilla)",
+ "tier": 2,
+ "license": "CC-BY-SA-2.5",
+ "store": "full",
+ "tags": [
+  "html",
+  "deprecated",
+  "element"
+ ],
+ "fetched_at": "2026-11-15T04:15:36+00:00",
+ "content_sha256": "a4fe9bc126e0f5245c47675c4f58fb10f70ac7dc582e088f8bc8113de2cf0ccc",
+ "passages": [
+  {
+   "n": 0,
+   "heading": "<strike> HTML strikethrough element",
+   "text": "Avoid using this feature in new projects. This feature may be a candidate for removal from web standards or browsers. See full compatibility Learn more The <strike> HTML element places a strikethrough (horizontal line) over text. Warning: This element is deprecated in HTML 4 and XHTML 1, and obsoleted in the HTML Living Standard. If semantically appropriate, i.e., if it represents deleted content, use <del> instead. In all other cases use <s>."
+  },
+  {
+   "n": 1,
+   "heading": "Attributes",
+   "text": "This element includes the global attributes."
+  },
+  {
+   "n": 2,
+   "heading": "Examples",
+   "text": "&lt;strike&gt;: <strike>Today's Special: Salmon</strike> SOLD OUT<br /> &lt;s&gt;: <s>Today's Special: Salmon</s> SOLD OUT"
+  },
+  {
+   "n": 3,
+   "heading": "Technical summary",
+   "text": "DOM interface HTMLElement"
+  },
+  {
+   "n": 4,
+   "heading": "Specifications",
+   "text": "Specification HTML # strike"
+  },
+  {
+   "n": 5,
+   "heading": "See also",
+   "text": "The <s> element. The <del> element should be used if the data has been deleted. The CSS text-decoration property can be used to style text with a strikethrough."
+  },
+  {
+   "n": 6,
+   "heading": "Help improve MDN",
+   "text": "This page was last modified on Nov 10, 2026 by MDN contributors."
+  }
+ ]
+}

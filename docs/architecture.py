@@ -10,14 +10,14 @@ W, H = 2000, 1290
 FONT = "Helvetica, Arial, sans-serif"
 
 C = {
-    "ink": "#1e293b", "muted": "#475569", "line": "#64748b", "bg": "#ffffff",
+    "ink": "#17213a", "muted": "#4f5a6e", "line": "#64748b", "bg": "#ffffff",
     "code": "#0f766e", "code_bg": "#ccfbf1",
-    "ai": "#7c3aed", "ai_bg": "#ede9fe",
+    "ai": "#6941c6", "ai_bg": "#f4f3ff",
     "data": "#b45309", "data_bg": "#fef3c7",
     "ext": "#475569", "ext_bg": "#f1f5f9",
-    "ui": "#1d4ed8", "ui_bg": "#dbeafe",
-    "qa": "#be123c", "qa_bg": "#ffe4e6",
-    "group_bg": "#f8fafc", "group_line": "#cbd5e1",
+    "ui": "#2b55a6", "ui_bg": "#dce6f6",
+    "qa": "#b42318", "qa_bg": "#fef3f2",
+    "group_bg": "#f4f5f8", "group_line": "#cbd5e1",
 }
 
 out: list[str] = []
@@ -84,41 +84,45 @@ def box(x, y, w, h, title, items, fg, bg, chips=(), title_size=15):
 
 # ---------------------------------------------------------------- canvas
 out.append(f'<rect x="0" y="0" width="{W}" height="{H}" fill="{C["bg"]}"/>')
-text(60, 52, "GroundEd — High-Level System Architecture", size=30, weight="bold")
-text(60, 82, "Grounded curriculum review · Registry + RAG + Checks + Rule Scoring · Initial scope: Web Development",
+text(60, 52, "GroundEd — System Architecture & Grounding Pipeline", size=30, weight="bold")
+text(60, 82, "Source-backed curriculum review · Facts Registry + SQLite FTS5 RAG + Deterministic 100-pt Scoring · Hosted on Vultr Cloud Compute",
      size=16, color=C["muted"])
 
 # ---------------------------------------------------------------- row A: users + frontend
-box(60, 115, 230, 105, "Faculty", ["Uploads a module PDF", "Reviews cited evidence", "Accepts / rejects / keeps"],
-    C["ui"], C["ui_bg"])
-box(350, 115, 1150, 105, "Frontend  ·  React + Vite + TypeScript + Tailwind", [
-    "Upload & login  ·  Analysis progress  ·  Report with priorities  ·  Evidence viewer (PDF.js, highlighted quotes)",
-    "Side-by-side: “Your module says (page, quote)”  vs  “Source says (link, date)”  ·  Faculty decision + rationale",
+box(60, 115, 250, 105, "Faculty / Reviewer", [
+    "Uploads module PDF or sample",
+    "Inspects PDF highlight + source",
+    "Decides: Update · Keep · Dismiss",
 ], C["ui"], C["ui_bg"])
-arrow(290, 167, 350, 167, C["ui"])
+box(360, 115, 1140, 105, "Frontend SPA  ·  React 18 + Vite + TypeScript + Tailwind CSS v4 + PDF.js", [
+    "Side-by-side Report Workspace: interactive PDF.js viewer with bbox highlights (left) + ranked findings & priority filters (right)",
+    "Clickable module quotes & official source cards  ·  Optional editable AI draft  ·  Turnitin-style multi-page PDF & Markdown export",
+], C["ui"], C["ui_bg"])
+arrow(310, 167, 360, 167, C["ui"])
 
-# ---------------------------------------------------------------- row B: API
-box(60, 260, 1440, 72, "Backend API  ·  Python + FastAPI + Pydantic", [
-    "Auth  ·  POST upload (size/type checks)  →  create job  ·  GET job status / progress  ·  GET report  ·  POST feedback  ·  Returns cached report if provenance matches",
+# ---------------------------------------------------------------- row B: Caddy + FastAPI
+box(60, 260, 1440, 72, "Caddy 2 Reverse Proxy (Auto-HTTPS)  →  FastAPI Backend (Python 3.12 + Pydantic v2)", [
+    "POST /api/analyze (%PDF & size check, concurrency semaphore)  ·  GET /api/samples  ·  GET /api/analysis/{id}  ·  POST /draft (rate-limited)  ·  POST /api/feedback",
 ], C["code"], C["code_bg"])
 arrow(925, 220, 925, 260, C["ui"], both=True, label="HTTPS / JSON", lx=935, ly=246)
 
-# ---------------------------------------------------------------- row C: worker pipeline
-group(60, 370, 1440, 262, "Analysis Worker", C["code"], "(background job — no AI decides, AI only explains)")
-arrow(780, 332, 780, 370, C["code"], label="enqueue job", lx=790, ly=358)
+# ---------------------------------------------------------------- row C: deterministic pipeline
+group(60, 370, 1440, 262, "Deterministic Grounding & RAG Pipeline (pipeline.py)", C["code"],
+      "(code finds, verifies, retrieves, and scores; AI never decides facts or scores)")
+arrow(780, 332, 780, 370, C["code"], label="run pipeline", lx=790, ly=358)
 
 steps = [
-    ("1  Read PDF", ["Docling / PyMuPDF", "OCR for scanned pages", "& code screenshots", "Strip headers/footers"],
+    ("1  Read PDF", ["PyMuPDF (pdf.py)", "Per-page text + words", "Strip repeated headers", "Exact snippet bboxes"],
      [("CODE", C["code"])]),
-    ("2  Detect", ["Registry alias matching", "AI proposes unknowns", "Taught vs. mentioned", "Version stated?"],
-     [("CODE", C["code"]), ("AI", C["ai"])]),
-    ("3  Retrieve Evidence", ["Registry: exact facts", "RAG: hybrid search", "(keyword + vector)", "over source passages"],
+    ("2  Detect Mentions", ["Registry regexes (detect.py)", "37 versioned products", "Filter history/changelogs", "Verify verbatim quote"],
      [("CODE", C["code"])]),
-    ("4  Verify", ["Quotes exist in module", "& in source (fuzzy)", "AI support check", "Fail → drop claim"],
-     [("CODE", C["code"]), ("AI", C["ai"])]),
-    ("5  Rule Scoring", ["Lifecycle   0–40", "Frequency   0–30", "Labs   0 / 20", "Activities   0 / 10"],
+    ("3  Verify Evidence", ["Facts Registry (registry.py)", "endoflife.date (eol.py)", "Confirm quote in doc", "No source → Unverified"],
      [("CODE", C["code"])]),
-    ("6  Explain", ["Writes plain-language", "advice ONLY from", "verified evidence", "Pinned model, temp 0"],
+    ("4  Source RAG", ["SQLite FTS5 (library.py)", "BM25 passage search", "• Fact context passage", "• Replacement passage"],
+     [("CODE", C["code"])]),
+    ("5  Rule Scoring", ["Option C (score.py, 0–100)", "Lifecycle          0–40", "How taught      0–30", "Freq 0–20 · Lab 0/10"],
+     [("CODE", C["code"])]),
+    ("6  Optional Draft", ["On faculty click only", "Gemini (llm.py, temp 0)", "Uses verified quote+fact", "Badged 'AI suggestion'"],
      [("AI", C["ai"])]),
 ]
 sx, sy, sw_, sh, gap = 80, 412, 207, 160, 31
@@ -131,17 +135,18 @@ for i, (title, items, chips) in enumerate(steps):
         arrow(x + sw_, sy + sh / 2, x + sw_ + gap, sy + sh / 2, C["code"])
 
 rect(80, 584, 1400, 36, "#ffffff", C["group_line"], rx=8, sw=1.2)
-text(96, 607, "Provenance stamp on every report:  file hash · registry version · library version · model + prompt version · "
-     "analysis date   →   same inputs = same result", size=13, color=C["ink"], weight="bold")
+text(96, 607, "Cryptographic Provenance Stamp:  file_sha256 · registry_version · library_version · rules_version · pipeline_version · "
+     "analysis_date   →   same PDF = same score", size=13, color=C["ink"], weight="bold")
 
-# ---------------------------------------------------------------- row D: data layer
-group(60, 672, 1440, 196, "Data Layer", C["data"], "PostgreSQL + pgvector (one database) · S3-compatible file storage")
+# ---------------------------------------------------------------- row D: data & knowledge layer
+group(60, 672, 1440, 196, "Knowledge Base & Persistence Layer", C["data"],
+      "Committed YAML & JSON snapshots in Git  ·  SQLite (WAL mode + FTS5 index) on Docker volume")
 data_boxes = [
-    ("Facts Registry", ["Technology, version,", "support stage, EOL date,", "replacement, aliases,", "source link + tier"]),
-    ("Source Library", ["Cleaned passages +", "embeddings + full-text", "index; publisher, date,", "license, tags"]),
-    ("Reports", ["Claims, citations,", "scores, explanations,", "provenance stamp,", "job status"]),
-    ("Feedback", ["Accept / reject /", "keep intentionally,", "faculty rationale", "→ evaluation data"]),
-    ("File Storage", ["Uploaded PDFs,", "extracted pages;", "retention + delete", "on request"]),
+    ("Facts Registry", ["backend/registry/*.yaml", "Deprecated functions,", "tags, settings, quotes,", "upgrade targets & URLs"]),
+    ("Lifecycle Snapshot", ["library/snapshot/eol/", "37 products synced from", "endoflife.date v1 API:", "release cycles & EOL"]),
+    ("Source Library (RAG)", ["library/snapshot/*.json", "Curated official docs:", "php.net, MDN, MySQL,", "Microsoft Docs + FTS5"]),
+    ("SQLite Store (WAL)", ["Analyses & provenance,", "24h deterministic cache,", "AI draft cache,", "faculty feedback"]),
+    ("Teaching & Scope Rules", ["rules/teaching.yaml", "rules/mentions.yaml", "library/coverage.yaml", "Code > explained > listed"]),
 ]
 dx, dy, dw, dh, dgap = 80, 712, 264, 140, 20
 data_x = []
@@ -150,76 +155,88 @@ for i, (title, items) in enumerate(data_boxes):
     data_x.append(x)
     box(x, dy, dw, dh, title, items, C["data"], C["data_bg"])
 
-# pipeline <-> data arrows
-s3x = sx + 2 * (sw_ + gap)
-arrow(s3x + 40, 632, data_x[0] + 230, 712, C["data"], label="lookup", lx=s3x - 120, ly=668)
-arrow(s3x + 140, 632, data_x[1] + 200, 712, C["data"], label="search", lx=s3x + 150, ly=668)
-s6x = sx + 5 * (sw_ + gap)
-arrow(s6x + 100, 632, data_x[2] + 200, 712, C["data"], label="save report", lx=s6x + 110, ly=668)
+# pipeline <-> data arrows (non-crossing, aligned under steps 3, 4, 5)
+arrow(560, 632, 325, 712, C["data"], label="verify fact", lx=410, ly=666)
+arrow(660, 632, 550, 712, C["data"], label="resolve EOL", lx=615, ly=666)
+arrow(895, 632, 820, 712, C["data"], label="FTS5 BM25", lx=870, ly=666)
+arrow(1120, 632, 1070, 712, C["data"], label="save + cache", lx=1108, ly=666)
+arrow(1210, 632, 1320, 712, C["data"], label="load rules", lx=1280, ly=666)
 
 # ---------------------------------------------------------------- row E: ingestion + quality
-group(60, 908, 720, 252, "Knowledge Ingestion", C["data"], "(offline, scheduled)")
-box(80, 948, 330, 196, "Registry as Code", [
-    "YAML files in Git, reviewed via PR",
-    "Schema-validated in CI",
-    "Synced with endoflife.date (v1 API)",
-    "Every change versioned",
+group(60, 908, 720, 252, "Offline Knowledge Ingestion (app.cli)", C["data"], "(versioned in Git, deterministic at runtime)")
+box(80, 948, 330, 196, "Registry & Coverage Rules", [
+    "YAML facts & version patterns in Git",
+    "Every quote verified in snapshot doc",
+    "coverage.yaml enforces product parity",
+    "Adding a subject = data only, no code",
 ], C["data"], "#ffffff", chips=[("CODE", C["code"])])
-box(430, 948, 330, 196, "Source Pipeline", [
-    "Trusted web-dev sources:",
-    "php.net, MDN, framework docs,",
-    "release & deprecation notes",
-    "Collect → clean → split → tag → embed",
-    "Monthly refresh + link checks",
+box(430, 948, 330, 196, "Source Library Builder", [
+    "sources.yaml → python -m app.cli library",
+    "Fetches & cleans official documentation",
+    "Snapshots 37 endoflife.date products",
+    "Flags unreachable URLs (never guesses)",
 ], C["data"], "#ffffff", chips=[("CODE", C["code"])])
 arrow(300, 948, 300, 852, C["data"], label="load", lx=310, ly=905)
 arrow(600, 948, 600, 852, C["data"], label="index", lx=610, ly=905)
 
-group(800, 908, 700, 252, "Quality & Evaluation", C["qa"], "(runs on every change)")
-box(820, 948, 320, 196, "Test Set", [
-    "5–10 real web modules",
-    "Outdated items marked",
-    "by the team (ground truth)",
-    "+ out-of-scope modules",
-    "(must say “no evidence”)",
+group(800, 908, 700, 252, "Quality & Evaluation Harness", C["qa"], "(runs on every commit)")
+box(820, 948, 320, 196, "Golden Test Set & Samples", [
+    "testset/expected.yaml + sample PDFs",
+    "Legacy PHP lab · Modern PHP lab",
+    "228-page Web Development module",
+    "Verifies zero false alarms on modern code",
 ], C["qa"], C["qa_bg"])
-box(1160, 948, 320, 196, "Evaluation Runner", [
-    "pytest + scoring scripts",
-    "Claims backed by source",
-    "Citation accuracy",
-    "Coverage · False alarms",
-    "Consistency across reruns",
+box(1160, 948, 320, 196, "Automated Verification", [
+    "74 pytest unit & integration tests",
+    "Every registry quote checked in doc",
+    "Citation bbox & snippet accuracy",
+    "100% score reproducibility across runs",
 ], C["qa"], C["qa_bg"])
 arrow(1140, 1046, 1160, 1046, C["qa"])
-arrow(data_x[3] + 132, 852, 1300, 948, C["qa"], label="feedback → test data", lx=1320, ly=905)
+arrow(data_x[3] + 132, 852, 1300, 948, C["qa"], label="verify pipeline", lx=1310, ly=905)
 
-# ---------------------------------------------------------------- external services column
-group(1540, 260, 400, 608, "External Services", C["ext"])
+# ---------------------------------------------------------------- external & deployment column
+group(1540, 260, 400, 608, "Cloud & External Services", C["ext"])
 ext = [
-    ("LLM API · Google Gemini", ["One pinned model (+ fallback)", "Pinned versions, strict JSON", "schema, temperature 0",
-                 "Used in steps 2, 4, 6 only"]),
-    ("Embedding Model · Gemini", ["gemini-embedding-001", "Same provider as the LLM", "Model name stored with vectors"]),
-    ("endoflife.date API (v1)", ["Support stages & EOL dates", "Feeds the Facts Registry", "Results cached"]),
-    ("Langfuse (tracing)", ["Every AI call: inputs,", "outputs, model, cost, latency"]),
+    ("Vultr Cloud Compute (Singapore)", [
+        "Ubuntu 24.04 LTS (vc2-2c-4gb)",
+        "Docker Compose: web (Caddy 2) +",
+        "backend (FastAPI non-root container)",
+        "Auto-HTTPS via Let's Encrypt",
+    ]),
+    ("Google Gemini API (llm.py)", [
+        "gemini-2.5-flash (+ fallback model)",
+        "Called ONLY for optional rewrite drafts",
+        "Receives only verified quote & fact",
+        "Cached in SQLite + rate-limited",
+    ]),
+    ("endoflife.date API (v1)", [
+        "Upstream release & EOL schedules",
+        "Committed offline snapshot in repo",
+        "Live fallback with 24h local cache",
+    ]),
+    ("Official Documentation Sources", [
+        "PHP Manual (php.net) · MDN Web Docs",
+        "MySQL Reference · Microsoft Docs",
+        "Stored with publisher, date & license",
+    ]),
 ]
 ey = 300
-ext_y = []
 for title, items in ext:
     h = 40 + 18 * len(items) + 10
     box(1560, ey, 360, h, title, items, C["ext"], C["ext_bg"])
-    ext_y.append((ey, h))
     ey += h + 16
-# worker -> LLM
-arrow(1500, 398, 1560, 398, C["ai"], label="AI", lx=1520, ly=390)
+
+arrow(1500, 460, 1560, 460, C["ai"], label="draft only", lx=1503, ly=448)
 
 # ---------------------------------------------------------------- legend
 group(1540, 908, 400, 252, "Legend", C["ink"])
 lg = [
     (C["code"], C["code_bg"], "CODE", "Deterministic: same input, same output"),
-    (C["ai"], C["ai_bg"], "AI", "Language model; always checked"),
-    (C["data"], C["data_bg"], "DATA", "Sources, registry, reports"),
-    (C["qa"], C["qa_bg"], "QA", "Measures accuracy & consistency"),
-    (C["ui"], C["ui_bg"], "UI", "What faculty see and do"),
+    (C["ai"], C["ai_bg"], "AI", "Optional rewrite draft; always badged"),
+    (C["data"], C["data_bg"], "DATA", "Curated registry, snapshots & SQLite"),
+    (C["qa"], C["qa_bg"], "QA", "74 automated tests & eval harness"),
+    (C["ui"], C["ui_bg"], "UI", "Side-by-side workspace & PDF export"),
 ]
 for i, (fg, bg, lbl, desc) in enumerate(lg):
     y = 952 + i * 38
@@ -228,10 +245,10 @@ for i, (fg, bg, lbl, desc) in enumerate(lg):
     text(1636, y + 18, desc, size=13, color=C["muted"])
 
 # ---------------------------------------------------------------- footer
-text(60, 1200, "Principle: the AI can only say what the sources prove — code finds, checks and scores the evidence; "
-     "the AI explains it; the faculty decides.", size=15, color=C["ink"], weight="bold")
-text(60, 1228, "Not shown: login provider (Clerk / Supabase Auth or backend sessions), Docker Compose for local dev, "
-     "hosting (Vultr Compute instance, Docker Compose + Caddy).", size=13, color=C["muted"])
+text(60, 1205, "Core Principle: No source, no claim — deterministic code finds, verifies, retrieves, and scores every finding; "
+     "Gemini only drafts optional replacement wording; the faculty member decides.", size=15, color=C["ink"], weight="bold")
+text(60, 1233, "Production Deployment: Vultr Cloud Compute (Ubuntu 24.04 LTS, Docker Compose, Caddy 2 HTTPS reverse proxy, non-root FastAPI backend, SQLite WAL volume).",
+     size=13, color=C["muted"])
 
 svg = (f'<svg xmlns="http://www.w3.org/2000/svg" width="{W}" height="{H}" viewBox="0 0 {W} {H}">'
        + "".join(out) + "</svg>")
@@ -240,7 +257,7 @@ dest = Path(sys.argv[1])
 svg_path = dest.with_suffix(".svg")
 svg_path.write_text(svg, encoding="utf-8")
 
-import fitz  # PyMuPDF
+import pymupdf as fitz
 
 doc = fitz.open(str(svg_path))
 pix = doc[0].get_pixmap(matrix=fitz.Matrix(1.5, 1.5), alpha=False)

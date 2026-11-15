@@ -122,6 +122,7 @@ def test_teaching_signals():
     assert teaching_depth(["mysql> CREATE TABLE t(id int(5));"]) == "code"
     assert teaching_depth(["mysql_result() retrieves the contents of one cell from a MySQL result set"]) == "explained"
     assert teaching_depth(["Windows 7 / Windows 8"]) == "listed"
+    assert teaching_depth(['<center><font color="navy">Student Records</font></center>']) == "code"  # HTML students type
     assert is_hands_on("Laboratory Exercise 3: connect to MySQL")
     assert not is_hands_on("Assignment Operator: $a = 5;")  # 'assignment' operator is not an activity
 
@@ -134,7 +135,8 @@ def test_image_only_pdf_gives_clear_error(tmp_path: Path):
     doc.new_page()
     doc.save(p)
     with pytest.raises(PdfError, match="scanned"):
-        extract_pages(p)
+        extract_pages(p)                       # without OCR: clear message
+    assert extract_pages(p, allow_image_only=True)  # with OCR: read the images instead
 
 
 def test_not_a_pdf_gives_clear_error(tmp_path: Path):
@@ -161,7 +163,7 @@ def test_samples_and_analyze_sample(client):
     assert "legacy-php-lab" in ids
     a = client.post("/api/analyze", data={"sample_id": "modern-php-lab"}).json()
     assert [f for f in a["findings"] if f["status"] != "supported"] == []  # no claims on the modern lab
-    assert a["summary"]["supported"] >= 1 and a["provenance"]["detector"] == "registry"
+    assert a["summary"]["supported"] >= 1 and a["provenance"]["detector"].startswith("registry")
     a = client.post("/api/analyze", data={"sample_id": "legacy-php-lab"}).json()
     ids = {f["id"] for f in a["findings"]}
     assert {"php-ext-mysql", "php-asp-script-tags", "php-ext-ereg", "mysql-int-display-width"} <= ids
