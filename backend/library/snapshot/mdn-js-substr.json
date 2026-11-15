@@ -1,0 +1,68 @@
+{
+ "id": "mdn-js-substr",
+ "title": "String.prototype.substr() (deprecated)",
+ "url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/substr",
+ "publisher": "MDN Web Docs (Mozilla)",
+ "tier": 2,
+ "license": "CC-BY-SA-2.5",
+ "store": "full",
+ "tags": [
+  "javascript",
+  "deprecated",
+  "string"
+ ],
+ "fetched_at": "2026-11-15T04:24:11+00:00",
+ "content_sha256": "9e13dc007a8f78ee0632a7dfc9368711e63cad7a18cb432b00d3c346a83b9383",
+ "passages": [
+  {
+   "n": 0,
+   "heading": "String.prototype.substr()",
+   "text": "Avoid using this feature in new projects. TC39 included substr() in Annex B of the ECMAScript specification, which covers JavaScript features with \"one or more undesirable characteristics and in the absence of legacy usage would be removed.\" This feature may be a candidate for removal from web standards or browsers. See full compatibility Learn more The substr() method of String values returns a portion of this string, starting at the specified index and extending for a given number of characters afterwards. Note: substr() is not part of the main ECMAScript specification — it's defined in Annex B: Additional ECMAScript Features for Web Browsers, which is normative optional for non-browser runtimes. Therefore, people are advised to use the standard String.prototype.substring() and String.prototype.slice() methods instead to make their code maximally cross-platform friendly. The String.prototype.substring() page has some comparisons between the three methods."
+  },
+  {
+   "n": 1,
+   "heading": "Try it",
+   "text": "const str = \"Mozilla\"; console.log(str.substr(1, 2)); // Expected output: \"oz\" console.log(str.substr(2)); // Expected output: \"zilla\""
+  },
+  {
+   "n": 2,
+   "heading": "Syntax",
+   "text": "substr(start) substr(start, length)"
+  },
+  {
+   "n": 3,
+   "heading": "Parameters",
+   "text": "start The index of the first character to include in the returned substring. length Optional The number of characters to extract."
+  },
+  {
+   "n": 4,
+   "heading": "Return value",
+   "text": "A new string containing the specified part of the given string."
+  },
+  {
+   "n": 5,
+   "heading": "Description",
+   "text": "A string's substr() method extracts length characters from the string, counting from the start index. If start >= str.length, an empty string is returned. If start < 0, the index starts counting from the end of the string. More formally, in this case the substring starts at max(start + str.length, 0). If start is omitted or undefined, it's treated as 0. If length is omitted or undefined, or if start + length >= str.length, substr() extracts characters to the end of the string. If length < 0, an empty string is returned. For both start and length, NaN is treated as 0. Although you are encouraged to avoid using substr(), there is no trivial way to migrate substr() to either slice() or substring() in legacy code without essentially writing a polyfill for substr(). For example, str.substr(a, l), str.slice(a, a + l), and str.substring(a, a + l) all have different results when str = \"01234\", a = 1, l = -2 — substr() returns an empty string, slice() returns \"123\", while substring() returns \"0\". The actual refactoring path depends on the knowledge of the range of a and l."
+  },
+  {
+   "n": 6,
+   "heading": "Using substr()",
+   "text": "const string = \"Mozilla\"; console.log(string.substr(0, 1)); // 'M' console.log(string.substr(1, 0)); // '' console.log(string.substr(-1, 1)); // 'a' console.log(string.substr(1, -1)); // '' console.log(string.substr(-3)); // 'lla' console.log(string.substr(1)); // 'ozilla' console.log(string.substr(-20, 2)); // 'Mo' console.log(string.substr(20, 2)); // ''"
+  },
+  {
+   "n": 7,
+   "heading": "Specifications",
+   "text": "Specification ECMAScript® 2027 Language Specification # sec-string.prototype.substr"
+  },
+  {
+   "n": 8,
+   "heading": "See also",
+   "text": "Polyfill of String.prototype.substr in core-js es-shims polyfill of String.prototype.substr String.prototype.slice() String.prototype.substring()"
+  },
+  {
+   "n": 9,
+   "heading": "Help improve MDN",
+   "text": "This page was last modified on Oct 26, 2026 by MDN contributors."
+  }
+ ]
+}

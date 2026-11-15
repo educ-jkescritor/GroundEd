@@ -1,0 +1,68 @@
+{
+ "id": "mdn-body",
+ "title": "<body>: The Document Body element",
+ "url": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/body",
+ "publisher": "MDN Web Docs (Mozilla)",
+ "tier": 2,
+ "license": "CC-BY-SA-2.5",
+ "store": "full",
+ "tags": [
+  "html",
+  "attributes",
+  "deprecated"
+ ],
+ "fetched_at": "2026-11-15T04:24:16+00:00",
+ "content_sha256": "4be0cb45c295202afbe49bc6370e0555f259350c8587026bc4cf62d1d98f91e4",
+ "passages": [
+  {
+   "n": 0,
+   "heading": "<body> HTML document body element",
+   "text": "This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015. See full compatibility Learn more The <body> HTML element represents the content of an HTML document. There can be only one <body> element in a document."
+  },
+  {
+   "n": 1,
+   "heading": "Attributes",
+   "text": "This element includes the global attributes, event attributes, and deprecated attributes:"
+  },
+  {
+   "n": 2,
+   "heading": "Event attributes",
+   "text": "Note: Each of the below event attribute names is linked to its equivalent Window interface event. You can listen to these events using addEventListener() instead of adding the oneventname attribute to the <body> element. onafterprint Function to call after the user has printed the document. onbeforeprint Function to call when the user requests printing of the document. onbeforeunload Function to call when the document is about to be unloaded. onblur Function to call when the document loses focus. onerror Function to call when the document fails to load properly. onfocus Function to call when the document receives focus. onhashchange Function to call when the fragment identifier part (starting with the hash ( '#') character) of the document's current address has changed. onlanguagechange Function to call when the preferred languages changed. onload Function to call when the document has finished loading. onmessage Function to call when the document has received a message. onmessageerror Function to call when the document has received a message that cannot be deserialized. onoffline Function to call when network communication has failed. ononline Function to call when network communication has been restored. onpageswap Function to call when you navigate across documents, when the previous document is about to unload. onpagehide Function to call when the browser hides the current page in the process of presenting a different"
+  },
+  {
+   "n": 3,
+   "heading": "Event attributes",
+   "text": "page from the session's history. onpagereveal Function to call when a document is first rendered, either when loading a fresh document from the network or activating a document. onpageshow Function to call when the browser displays the window's document due to navigation. onpopstate Function to call when the user has navigated session history. onresize Function to call when the document has been resized. onrejectionhandled Function to call when a JavaScript Promise is handled late. onstorage Function to call when the storage area has changed. onunhandledrejection Function to call when a JavaScript Promise that has no rejection handler is rejected. onunload Function to call when the document is going away."
+  },
+  {
+   "n": 4,
+   "heading": "Deprecated attributes",
+   "text": "Warning: Do not use these deprecated attributes; opt for the CSS alternatives listed with each deprecated attribute instead. alink Color of text for hyperlinks when selected. Use the CSS color property in conjunction with the:active and:focus pseudo-classes instead. background URI of an image to use as a background. Use the CSS background-image property instead. bgcolor Background color for the document. Use the CSS background-color property instead. bottommargin Ignored. leftmargin The margin of the left and right of the body. Use the CSS margin-left and margin-right properties (or the logical margin-inline property) instead. link Color of text for unvisited hypertext links. Use the CSS color property in conjunction with the:link pseudo-class instead. rightmargin Ignored. text Foreground color of text. Use the CSS color property instead. topmargin The margin of the top and bottom of the body. Use the CSS margin-top and margin-bottom properties (or the logical margin-block property) instead. vlink Color of text for visited hypertext links. Use the CSS color property in conjunction with the:visited pseudo-class instead."
+  },
+  {
+   "n": 5,
+   "heading": "Examples",
+   "text": "<html lang=\"en\"> <head> <title>Document title</title> </head> <body> <p> The <code>&lt;body&gt;</code> HTML element represents the content of an HTML document. There can be only one <code>&lt;body&gt;</code> element in a document. </p> </body> </html>"
+  },
+  {
+   "n": 6,
+   "heading": "Technical summary",
+   "text": "Content categories None. Permitted content Flow content. Tag omission The start tag may be omitted if the element is empty, or if the first thing inside it is not ASCII whitespace or a comment, except if the first thing inside it is a <meta>, <noscript>, <link>, <script>, <style>, or <template> element. The end tag may be omitted if the <body> element is not immediately followed by a comment. Permitted parents It must be the second element of an <html> element. Implicit ARIA role generic Permitted ARIA roles No role permitted DOM interface The <body> element exposes the HTMLBodyElement interface. You can access the <body> element through the document.body property."
+  },
+  {
+   "n": 7,
+   "heading": "Specifications",
+   "text": "Specification HTML # the-body-element"
+  },
+  {
+   "n": 8,
+   "heading": "See also",
+   "text": "<html> <head> Event handling overview"
+  },
+  {
+   "n": 9,
+   "heading": "Help improve MDN",
+   "text": "This page was last modified on Nov 10, 2026 by MDN contributors."
+  }
+ ]
+}
