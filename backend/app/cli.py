@@ -6,6 +6,7 @@
   uv run python -m app.cli library build [--only id,id]   # fetch sources -> library/snapshot/
   uv run python -m app.cli library status                 # which sources are ok / failed / need manual work
   uv run python -m app.cli library search "mysql removed"  # keyword search over the library
+  uv run python -m app.cli library check                  # are all registry quotes still on the live pages?
 """
 from __future__ import annotations
 
@@ -52,7 +53,7 @@ def main(argv: list[str] | None = None) -> int:
     e.add_argument("--runs", type=int, default=3)
     sub.add_parser("registry")
     lib = sub.add_parser("library")
-    lib.add_argument("action", choices=["build", "status", "search"])
+    lib.add_argument("action", choices=["build", "status", "search", "check"])
     lib.add_argument("query", nargs="?", default="", help="search text (for 'search')")
     lib.add_argument("--only", default="", help="comma-separated source ids")
     args = ap.parse_args(argv)
@@ -73,6 +74,14 @@ def main(argv: list[str] | None = None) -> int:
         print(f"registry version {reg.version}: {len(reg.entries)} entries")
         for en in reg.entries:
             print(f"  {en.id:28} {'static fact' if en.fact else 'endoflife.date'}  {en.technology}")
+    elif args.cmd == "library" and args.action == "check":
+        rows = library.check_live(registry.load().entries)
+        bad = [r for r in rows if r.status != "ok"]
+        for r in rows:
+            mark = {"ok": "OK  ", "missing": "MISS", "unreachable": "DOWN"}[r.status]
+            print(f"  {mark} {r.entry_id:26} {r.what:12} {r.doc_id:32} {r.reason}")
+        print(f"{len(rows) - len(bad)}/{len(rows)} checks ok")
+        return 1 if bad else 0
     elif args.cmd == "library" and args.action == "search":
         for h in library.search(args.query, k=5):
             print(f"\n[{h.rank:+.2f}] {h.publisher} — {h.title} › {h.heading}\n  {h.url}\n  {h.text[:220]}")

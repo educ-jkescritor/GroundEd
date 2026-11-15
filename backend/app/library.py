@@ -361,3 +361,54 @@ def passages_for(technology: str, fact_doc: Optional[str], fact_quote: Optional[
         if hits := search(f"{technology} {replacement_target or ''}", doc_ids=[doc.id], k=1):
             out.append(_to_passage("replacement", doc, doc.passages[hits[0].n], None))
     return out
+
+
+# ---------------------------------------------------------------- live check (monthly refresh)
+
+class QuoteCheck(BaseModel):
+    entry_id: str
+    doc_id: str
+    what: Literal["quote", "passage_hint"]
+    status: Literal["ok", "missing", "unreachable"]
+    reason: str = ""
+
+
+def check_live(entries) -> list[QuoteCheck]:
+    """Re-fetch every library page the registry relies on and confirm each fact quote (and curated replacement
+    phrase) is still on the live page. Nothing is changed: a 'missing' row means a person must review the entry
+    and rebuild the snapshot. The saved snapshot keeps proving existing reports in the meantime."""
+    from .detect import normalise
+
+    sources = {s.id: s for s in load_sources()}
+    live: dict[str, tuple[Optional[str], str]] = {}  # doc_id -> (error, normalised text)
+
+    def live_text(doc_id: str) -> tuple[Optional[str], str]:
+        if doc_id not in live:
+            src = sources.get(doc_id)
+            if src is None:
+                live[doc_id] = ("not in sources.yaml", "")
+            else:
+                try:
+                    _, ps = extract_passages(fetch(src.url), src.selector)
+                    live[doc_id] = (None, normalise(" ".join(p.text for p in ps)))
+                except FetchError as e:
+                    live[doc_id] = (f"{e.status}: {e}", "")
+        return live[doc_id]
+
+    rows: list[QuoteCheck] = []
+    for e in entries:
+        checks = []
+        if e.fact:
+            checks.append((e.fact.doc, "quote", e.fact.quote))
+        if e.upgrade and e.upgrade.passage_hint and (d := by_url(e.upgrade.source_url)):
+            checks.append((d.id, "passage_hint", e.upgrade.passage_hint))
+        for doc_id, what, text in checks:
+            err, body = live_text(doc_id)
+            if err:
+                rows.append(QuoteCheck(entry_id=e.id, doc_id=doc_id, what=what, status="unreachable", reason=err))
+            elif normalise(text) in body:
+                rows.append(QuoteCheck(entry_id=e.id, doc_id=doc_id, what=what, status="ok"))
+            else:
+                rows.append(QuoteCheck(entry_id=e.id, doc_id=doc_id, what=what, status="missing",
+                                       reason="no longer on the live page: review the entry, then rebuild the snapshot"))
+    return rows
