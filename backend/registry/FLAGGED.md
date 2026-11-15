@@ -8,6 +8,7 @@ until someone adds a sourced entry. Format: item · where seen · status · reas
 | `mktime()` `$is_dst` parameter | m04 | needs_manual | No php.net passage found confirming removal (checked function.mktime and migration70.incompatible, 2026-11-14) |
 | `https://www.php.net/manual/en/intro.mysql.php` | — | failed | 404: ext/mysql pages were removed from the manual; using migration70.incompatible instead |
 | `https://www.php.net/manual/en/intro.pcre.php` | — | failed | 404 (2026-11-14); using book.pcre.php instead |
+| `<applet>` (Java applets) | — | failed | MDN page returns 404 (2026-11-15); needs another tier 1–2 source |
 | Rockmelt browser | m01 | needs_manual | Discontinued, but no official/tier 1–2 source found |
 | Mac OS X names (Lion, Snow Leopard, …) | m01 | skipped | Names are ambiguous as plain words; needs version-aware matching |
 

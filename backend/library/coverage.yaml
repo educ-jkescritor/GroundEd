@@ -1,7 +1,7 @@
 # Coverage map — web development curriculum (scope of the knowledge base, not of our test modules).
 # Every product listed under `covered` must have a registry entry (tests/test_products.py checks this).
 # `gaps` are known, deliberate, with the reason — they produce no findings until a sourced entry exists.
-# Updated 2026-11-14 (Track A: endoflife.date product lifecycles).
+# Updated 2026-11-14 (Track A: endoflife.date product lifecycles); 2026-11-15 (Track B: documents).
 
 categories:
   languages_and_runtimes:
@@ -20,8 +20,13 @@ categories:
     covered: [windows-7, windows-8, windows-8-1, windows-10, macos, ubuntu]
   cms_and_tools:
     covered: [wordpress, drupal, joomla, phpmyadmin, composer]
-  language_features:  # document-backed facts (registry/php.yaml, mysql.yaml)
-    covered: [php-ext-mysql, php-asp-script-tags, php-ext-ereg, mysql-int-display-width]
+  language_features:  # document-backed facts (registry/php.yaml, mysql.yaml) — official quote checked by code
+    covered: [php-ext-mysql, php-asp-script-tags, php-ext-ereg, mysql-int-display-width,
+              php-each, php-create-function, php-functions-removed-8, php-ext-mcrypt, php-utf8-encode]
+  html_elements:  # deprecated HTML elements (registry/html.yaml), MDN Web Docs
+    covered: [html-center, html-font, html-marquee, html-frameset, html-big, html-tt, html-acronym, html-strike]
+  browser_plugins:  # registry/plugins.yaml, vendor end-of-life statement
+    covered: [adobe-flash]
 
 gaps:
   - {item: React, reason: "endoflife.date publishes no end-of-life dates for React releases: nothing to claim"}
@@ -31,4 +36,6 @@ gaps:
   - {item: "Windows XP / Vista", reason: "endoflife.date names them by NT version; mapping not verified yet"}
   - {item: "macOS by codename (Lion, Catalina)", reason: "codenames are ordinary words; version numbers only"}
   - {item: "Firefox / Chrome versions", reason: "rapid release; versions rarely appear in modules"}
-  - {item: "Deprecated HTML, PHP functions, Flash, insecure practices", reason: "document-backed facts: Track B"}
+  - {item: "<applet>, Java applets", reason: "MDN page removed (404, 2026-11-15); no other tier 1-2 source saved yet"}
+  - {item: "Insecure practices (md5 passwords, SQL string concatenation)", reason: "need a new finding type agreed with the frontend"}
+  - {item: "Less popular but not deprecated (var, jQuery)", reason: "official docs do not call them outdated: would be false alarms"}
