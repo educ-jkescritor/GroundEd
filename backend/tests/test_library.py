@@ -205,3 +205,20 @@ def test_live_check_reports_missing_quotes_and_unreachable_pages(monkeypatch):
     monkeypatch.setattr(library, "fetch", lambda url, attempts=3: '<div id="layout-content"><p>page rewritten</p></div>')
     rows = {(r.entry_id, r.what): r for r in library.check_live([e for e in entries if e.id == "php-each"])}
     assert rows[("php-each", "quote")].status == "missing"
+
+
+def test_check_status_is_saved_and_reported_by_health(tmp_path, monkeypatch):
+    from fastapi.testclient import TestClient
+    from app import config
+    from app.main import app
+    monkeypatch.setattr(config, "SOURCE_CHECK_FILE", tmp_path / "source_check.json")
+    monkeypatch.setattr(config, "DB_PATH", tmp_path / "t.db")
+    with TestClient(app) as c:
+        assert c.get("/api/health").json()["sources"] is None            # never checked
+        rows = [library.QuoteCheck(entry_id="a", doc_id="d", what="quote", status="ok"),
+                library.QuoteCheck(entry_id="b", doc_id="d", what="quote", status="missing", reason="gone")]
+        library.save_check_status(rows)
+        s = c.get("/api/health").json()["sources"]
+        assert (s["ok"], s["total"], s["problems"]) == (1, 2, 1) and s["checked_at"]
+    (tmp_path / "source_check.json").write_text("{not json")
+    assert library.load_check_status() is None                          # unreadable file never breaks health
