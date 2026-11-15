@@ -8,6 +8,7 @@ code:
   - '<\?php|<%|<script'           # code/template tags
   - '\bCREATE\s+TABLE\b|\bSELECT\b.+\bFROM\b'
   - '\w+\s*\([^)]*\)\s*;'         # function call statement
+  - '<[a-zA-Z][a-zA-Z0-9]*(?:\s[^<>]*)?>'   # an HTML tag students type, e.g. <center> or <font color="red">
 explained_min_words: 8
 
 # A page counts as HANDS-ON if it matches any of these (labs, exercises, activities). "assignment" is left out on

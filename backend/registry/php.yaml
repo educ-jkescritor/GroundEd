@@ -46,3 +46,60 @@
   upgrade:
     target: PCRE preg_* functions
     source_url: https://www.php.net/manual/en/book.pcre.php
+
+# ---------------------------------------------------------------- Track B (2026-11-15)
+- id: php-each
+  technology: PHP each() function
+  # each($array): the $ argument and the negative look-behinds keep jQuery's $.each(...) and "for each (" out.
+  patterns: ['(?<![.\w$>])(?<!for )\beach\s*\(\s*\$']
+  context: ['<\?php', '\bphp\b']
+  fact:
+    stage: eol
+    product: php
+    removed_in: {product: php, cycle: "8.0"}
+    doc: php-migration80-incompatible
+    quote: "each() has been removed. foreach or ArrayIterator should be used instead."
+  upgrade: {target: "foreach loops", source_url: "https://www.php.net/manual/en/migration80.incompatible.php"}
+
+- id: php-create-function
+  technology: PHP create_function()
+  patterns: ['\bcreate_function\s*\(']
+  fact:
+    stage: eol
+    product: php
+    removed_in: {product: php, cycle: "8.0"}
+    doc: php-migration80-incompatible
+    quote: "create_function() has been removed. Anonymous functions may be used instead."
+  upgrade: {target: "Anonymous functions (closures)", source_url: "https://www.php.net/manual/en/migration80.incompatible.php"}
+
+- id: php-functions-removed-8
+  technology: PHP functions removed in 8.0 (money_format, get_magic_quotes_gpc, fgetss, …)
+  patterns: ['\b(?:money_format|get_magic_quotes_gpc|get_magic_quotes_runtime|fgetss|convert_cyr_string|hebrevc|restore_include_path|ezmlm_hash)\s*\(']
+  fact:
+    stage: eol
+    product: php
+    removed_in: {product: php, cycle: "8.0"}
+    doc: php-migration80-incompatible
+    quote: "The following functions have been removed: hebrevc() convert_cyr_string() money_format() ezmlm_hash() restore_include_path() get_magic_quotes_gpc() get_magic_quotes_runtime() fgetss()"
+
+- id: php-ext-mcrypt
+  technology: PHP mcrypt extension (mcrypt_* functions)
+  patterns: ['\bmcrypt_[a-z0-9_]+\s*\(']
+  fact:
+    stage: eol
+    product: php
+    removed_in: {product: php, cycle: "7.2"}
+    doc: php-migration72-other-changes
+    quote: "The MCrypt extension has now been moved out of the core to PECL. Given the mcrypt library has not seen any updates since 2007, its usage is highly discouraged. Instead, either the OpenSSL or Sodium extension should be used."
+  upgrade: {target: "OpenSSL or Sodium extension", source_url: "https://www.php.net/manual/en/migration72.other-changes.php"}
+
+- id: php-utf8-encode
+  technology: PHP utf8_encode() / utf8_decode()
+  patterns: ['\butf8_(?:en|de)code\s*\(']
+  fact:
+    stage: deprecated
+    product: php
+    cycle: "8.2"
+    doc: php-migration82-deprecated
+    quote: "utf8_encode() and utf8_decode() have been deprecated."
+  upgrade: {target: "mb_convert_encoding()", source_url: "https://www.php.net/manual/en/migration82.deprecated.php"}

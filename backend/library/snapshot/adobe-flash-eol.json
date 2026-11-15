@@ -1,0 +1,28 @@
+{
+ "id": "adobe-flash-eol",
+ "title": "Adobe Flash Player End of Life",
+ "url": "https://www.adobe.com/products/flashplayer/end-of-life-alternative.html",
+ "publisher": "Adobe",
+ "tier": 1,
+ "license": "Adobe-terms",
+ "store": "excerpt",
+ "tags": [
+  "plugin",
+  "flash",
+  "eol"
+ ],
+ "fetched_at": "2026-11-15T04:15:37+00:00",
+ "content_sha256": "76fbd0e295878921e2836682bae67783c00cc5f96345d77289467861564b9821",
+ "passages": [
+  {
+   "n": 0,
+   "heading": "Adobe Flash Player EOL General Information",
+   "text": "UPDATED: January 13, 2021 Since Adobe no longer supports Flash Player after December 31, 2020 and blocked Flash content from running in Flash Player beginning January 12, 2021, Adobe strongly recommends all users immediately uninstall Flash Player to help protect their systems. Some users may continue to see reminders from Adobe to uninstall Flash Player from their system. See below for more details on how to uninstall Flash Player."
+  },
+  {
+   "n": 1,
+   "heading": "Will Adobe provide security updates for Flash Player after the EOL date?",
+   "text": "https://main--cc--adobecom.aem.live/cc-shared/fragments/merch/creativecloud/merch-card/segment-blade {{home}} {{adobe-cc}} Adobe Flash Player End of Life Info"
+  }
+ ]
+}

@@ -122,6 +122,7 @@ def test_teaching_signals():
     assert teaching_depth(["mysql> CREATE TABLE t(id int(5));"]) == "code"
     assert teaching_depth(["mysql_result() retrieves the contents of one cell from a MySQL result set"]) == "explained"
     assert teaching_depth(["Windows 7 / Windows 8"]) == "listed"
+    assert teaching_depth(['<center><font color="navy">Student Records</font></center>']) == "code"  # HTML students type
     assert is_hands_on("Laboratory Exercise 3: connect to MySQL")
     assert not is_hands_on("Assignment Operator: $a = 5;")  # 'assignment' operator is not an activity
 

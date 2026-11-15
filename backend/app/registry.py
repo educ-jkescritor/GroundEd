@@ -38,13 +38,16 @@ class StaticFact(BaseModel):
     product: str
     cycle: Optional[str] = None  # version the stage applies from, e.g. deprecated "as of 8.0.17"
     removed_in: Optional[EolRef] = None  # e.g. {product: php, cycle: "7.0"} -> PHP 7.0 release date
+    # End date stated by the vendor document itself (e.g. Adobe: "Support for Flash ended on December 31, 2020").
+    # Code checks that this date is written in `quote`; otherwise the finding is unverified.
+    ended_on: Optional[str] = None
     doc: str  # library document id (backend/library/sources.yaml)
     quote: str  # verbatim sentence from that document; checked by code against the snapshot
 
     @model_validator(mode="after")
     def _check(self) -> "StaticFact":
-        if self.stage == "eol" and self.removed_in is None:
-            raise ValueError("stage 'eol' needs `removed_in` so the date comes from a source")
+        if self.stage == "eol" and self.removed_in is None and self.ended_on is None:
+            raise ValueError("stage 'eol' needs `removed_in` or `ended_on` so the date comes from a source")
         return self
 
 
@@ -115,4 +118,7 @@ def get() -> Registry:
 def eol_products(reg: Optional[Registry] = None) -> list[str]:
     """endoflife.date products the registry depends on (snapshotted by `library build`)."""
     reg = reg or load()
-    return sorted({e.eol.product for e in reg.entries if e.eol} | {e.fact.product for e in reg.entries if e.fact})
+    # Only products whose release data is looked up: version entries and removal dates (removed_in). Facts like
+    # "html" or "flash" take no data from endoflife.date.
+    return sorted({e.eol.product for e in reg.entries if e.eol}
+                  | {e.fact.removed_in.product for e in reg.entries if e.fact and e.fact.removed_in})
