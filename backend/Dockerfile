@@ -1,7 +1,8 @@
 FROM python:3.12-slim
 
 WORKDIR /app
-ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
+# ORT_DISABLE_TELEMETRY: the OCR engine (ONNX Runtime) has load-time telemetry; module content passes through it.
+ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 ORT_DISABLE_TELEMETRY=1
 
 # OpenCV (used by the OCR engine) needs these two system libraries on the slim image.
 RUN apt-get update && apt-get install -y --no-install-recommends libgl1 libglib2.0-0 \
