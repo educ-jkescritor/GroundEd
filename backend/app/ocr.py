@@ -1,9 +1,9 @@
 """OCR for code screenshots inside PDFs (multimodal input). Deterministic: RapidOCR (ONNX, CPU), no LLM.
 
-Pipeline per PDF: find images → skip noise (small, tiny on the page, repeated backgrounds/logos, pages that already
-have plenty of text) → read the first N unique images in page order (fixed count, so results are deterministic;
+Pipeline per PDF: find images → skip noise (icons, tiny on the page, slide backgrounds = repeated AND covering much of
+the page, pages that already have plenty of text) → read the first N unique images in page order (fixed count, so results are deterministic;
 cached by fingerprint across analyses) →
-keep confident lines, drop line numbers and stray symbols → map each line's box to page coordinates (for highlights).
+merge fragments of the same visual line → keep confident lines, normalise (NFKC), drop line numbers and stray symbols → map each line's box to page coordinates (for highlights).
 Rules: backend/rules/images.yaml. If the OCR engine is unavailable, analysis continues without it and says so.
 """
 from __future__ import annotations
@@ -17,6 +17,7 @@ os.environ.setdefault("ORT_DISABLE_TELEMETRY", "1")
 import hashlib  # noqa: E402
 import json  # noqa: E402
 import re  # noqa: E402
+import unicodedata  # noqa: E402
 from collections import Counter  # noqa: E402
 from dataclasses import dataclass
 from functools import lru_cache
@@ -33,13 +34,16 @@ ENGINE_NAME = "rapidocr-onnxruntime"
 @dataclass(frozen=True)
 class ImageRules:
     version: str
-    min_side_px: int
+    min_long_side_px: int
+    min_area_px: int
     min_shown_area_pt2: float
     repeated_fraction: float
+    background_page_fraction: float
     only_pages_with_text_below: int
     max_images: int
     max_side_px: int
     min_confidence: float
+    same_line_overlap: float
     drop_lines: tuple[re.Pattern[str], ...]
     strip_leading: re.Pattern[str]
 
@@ -50,8 +54,9 @@ def rules() -> ImageRules:
     d = yaml.safe_load(raw)
     return ImageRules(
         version=hashlib.sha256(raw).hexdigest()[:12],
-        min_side_px=int(d["min_side_px"]), min_shown_area_pt2=float(d["min_shown_area_pt2"]),
-        repeated_fraction=float(d["repeated_fraction"]), only_pages_with_text_below=int(d["only_pages_with_text_below"]),
+        min_long_side_px=int(d["min_long_side_px"]), min_area_px=int(d["min_area_px"]),
+        min_shown_area_pt2=float(d["min_shown_area_pt2"]), repeated_fraction=float(d["repeated_fraction"]),
+        background_page_fraction=float(d["background_page_fraction"]), same_line_overlap=float(d["same_line_overlap"]), only_pages_with_text_below=int(d["only_pages_with_text_below"]),
         max_images=int(d["max_images"]), max_side_px=int(d["max_side_px"]),
         min_confidence=float(d["min_confidence"]),
         drop_lines=tuple(re.compile(p) for p in d["drop_lines"]), strip_leading=re.compile(d["strip_leading"]),
@@ -97,10 +102,33 @@ def engine_label() -> str:
 
 def clean_line(text: str) -> Optional[str]:
     r = rules()
-    t = r.strip_leading.sub("", text).strip()
+    # NFKC: full-width and compatibility forms OCR sometimes produces ("）" -> ")"), as for quote comparison
+    t = r.strip_leading.sub("", unicodedata.normalize("NFKC", text)).strip()
     if not t or any(p.search(t) for p in r.drop_lines):
         return None
     return t
+
+
+def merge_lines(raw: list[tuple[str, list[float], float]], overlap: float) -> list[tuple[str, list[float], float]]:
+    """OCR often splits one code line into fragments ('var' | 's =' | 'name.substr(0,'). Fragments whose vertical
+    extents overlap by >= `overlap` of the smaller height are one visual line: joined left to right."""
+    lines: list[list[tuple[str, list[float], float]]] = []
+    for frag in sorted(raw, key=lambda f: ((f[1][1] + f[1][3]) / 2, f[1][0])):
+        _, (_, y0, _, y1), _ = frag
+        for line in lines:
+            ly0, ly1 = min(f[1][1] for f in line), max(f[1][3] for f in line)
+            common = min(y1, ly1) - max(y0, ly0)
+            if common >= overlap * min(y1 - y0, ly1 - ly0):
+                line.append(frag)
+                break
+        else:
+            lines.append([frag])
+    out = []
+    for line in lines:
+        line.sort(key=lambda f: f[1][0])
+        box = [min(f[1][0] for f in line), min(f[1][1] for f in line), max(f[1][2] for f in line), max(f[1][3] for f in line)]
+        out.append((" ".join(f[0] for f in line), box, min(f[2] for f in line)))
+    return out
 
 
 def _read_image(eng, png: bytes) -> list[tuple[str, list[float], float]]:
@@ -132,9 +160,13 @@ def read_pdf_images(doc, page_texts: dict[int, str], cache_get, cache_put) -> tu
     candidates = []
     for page_no, info in infos:
         x0, y0, x1, y1 = info["bbox"]
-        if (min(info["width"], info["height"]) < r.min_side_px
-                or (x1 - x0) * (y1 - y0) < r.min_shown_area_pt2
-                or repeat[info["digest"]] >= threshold
+        page = doc[page_no - 1].rect
+        shown = (x1 - x0) * (y1 - y0)
+        background = repeat[info["digest"]] >= threshold and shown >= r.background_page_fraction * page.width * page.height
+        if (max(info["width"], info["height"]) < r.min_long_side_px
+                or info["width"] * info["height"] < r.min_area_px
+                or shown < r.min_shown_area_pt2
+                or background
                 or len(page_texts.get(page_no, "").strip()) >= r.only_pages_with_text_below
                 or not info.get("xref")):
             continue
@@ -172,8 +204,11 @@ def read_pdf_images(doc, page_texts: dict[int, str], cache_get, cache_put) -> tu
         # map image pixels -> page points
         x0, y0, x1, y1 = info["bbox"]
         sx, sy = (x1 - x0) / info["width"], (y1 - y0) / info["height"]
-        for text, (bx0, by0, bx1, by1), conf in results[key]:
-            if conf < r.min_confidence or (t := clean_line(text)) is None:
+        # Drop unsure fragments FIRST, then merge the rest into visual lines: one misread symbol must not
+        # discard an otherwise well-read line (e.g. '$r = mysql_query("SELECT' + '￥' + 'FROM t");').
+        confident = [f for f in results[key] if f[2] >= r.min_confidence]
+        for text, (bx0, by0, bx1, by1), conf in merge_lines(confident, r.same_line_overlap):
+            if (t := clean_line(text)) is None:
                 continue
             lines.setdefault(page_no, []).append(
                 OcrLine(text=t, bbox=[x0 + bx0 * sx, y0 + by0 * sy, x0 + bx1 * sx, y0 + by1 * sy], confidence=conf))

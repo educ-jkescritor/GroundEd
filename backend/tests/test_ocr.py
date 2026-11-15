@@ -150,3 +150,71 @@ def test_telemetry_switch_is_set_before_onnxruntime_loads():
     assert os.environ.get("ORT_DISABLE_TELEMETRY") == "1"   # set by app.ocr at import time
     from pathlib import Path
     assert "ORT_DISABLE_TELEMETRY=1" in (Path(__file__).parents[1] / "Dockerfile").read_text()
+
+
+# ---------- OCR x context rules (stress-tested 2026-11-15) ----------
+
+def _ctx_pdf(tmp_path, pages):
+    p = tmp_path / "ctx.pdf"
+    doc = pymupdf.open()
+    for text, img in pages:
+        pg = doc.new_page(width=960, height=540)
+        pg.insert_textbox(pymupdf.Rect(40, 20, 920, 75), text, fontsize=16)
+        if img:
+            pg.insert_image(pymupdf.Rect(60, 90, 900, 300), stream=img)
+    doc.save(p)
+    return p
+
+
+def _claims(tmp_path, pages):
+    a = analyze(_ctx_pdf(tmp_path, pages), "ctx.pdf", today=TODAY, use_cache=False)
+    return {f.id: f for f in a.findings if f.status != "supported"}
+
+
+def _hands_on(f):
+    return next(p.points for p in f.score.breakdown if p.key == "hands_on") > 0
+
+
+@pytest.mark.parametrize("prev_page, expected", [
+    (("Laboratory Exercise 3", None), True),                                            # lab title as text
+    (("Slide 1", "image"), True),                                                         # lab title inside an image
+    (("Lab Setup: install XAMPP", None), False),                                          # only names the lab
+])
+def test_look_back_one_page_works_with_screenshots(tmp_path, prev_page, expected):
+    text, img = prev_page
+    prev = (text, _code_png(["Laboratory Exercise 3", "Connect to MySQL"]) if img else None)
+    f = _claims(tmp_path, [prev, ("Example", _code_png(CODE))])["php-ext-mysql"]
+    assert f.citations[0].from_ocr and _hands_on(f) is expected
+
+
+def test_context_rules_for_text_and_screenshot_matches(tmp_path):
+    each_img = _code_png(["while (list($k, $v) = each($arr))"])
+    # text match: context only from the slide text -> an EJS slide beside a PHP screenshot is not a PHP finding
+    ejs = _claims(tmp_path, [("EJS: <% if (user) { %> Hi <% } %>", _code_png(["PHP arrays:", "echo $x;"]))])
+    assert "php-asp-script-tags" not in ejs
+    # screenshot match: context from the screenshot itself ...
+    assert "php-each" in _claims(tmp_path, [("Example", _code_png(["PHP arrays:", "while (list($k, $v) = each($arr))"]))])
+    # ... or from the slide text around it (title "PHP Arrays", code image without the word PHP)
+    assert "php-each" in _claims(tmp_path, [("PHP Arrays", each_img)])
+    # ... but no context anywhere -> no claim (could be another language)
+    assert "php-each" not in _claims(tmp_path, [("Arrays", each_img)])
+
+
+def test_history_inside_a_screenshot_is_still_history(tmp_path):
+    assert _claims(tmp_path, [("History", _code_png(["PHP 5 (July 13, 2004)", "Improved OOP support"]))]) == {}
+
+
+def test_short_wide_and_reused_screenshots_are_read(tmp_path):
+    # a 1-line snippet is not "too small"; a code screenshot reused on every page is not a "background"
+    one_line = _claims(tmp_path, [("Output", _code_png(["Windows Internet Explorer"]))])
+    assert "internet-explorer" in one_line
+    reused = _claims(tmp_path, [(f"Example {i}", _code_png(CODE)) for i in range(3)])
+    assert [c.page for c in reused["php-ext-mysql"].citations] == [1, 2, 3]
+
+
+def test_one_misread_symbol_does_not_discard_the_line():
+    raw = [('$r = mysql_query("SELECT', [24, 77, 414, 110], 0.95), ("￥", [428, 84, 442, 94], 0.40),
+           ('FROM t");', [455, 79, 597, 104], 0.93)]
+    confident = [f for f in raw if f[2] >= ocr.rules().min_confidence]
+    assert [t for t, _, _ in ocr.merge_lines(confident, ocr.rules().same_line_overlap)] == \
+        ['$r = mysql_query("SELECT FROM t");']
