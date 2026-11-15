@@ -1,0 +1,21 @@
+# Image rules for OCR (reading code screenshots). Data, not code: tune here, then re-run tests and `app.cli eval`.
+# Images get the same clean-up idea as text: skip what cannot carry teaching content, read the rest, keep only
+# confident text. Everything here is deterministic (same image -> same text).
+
+# 1. Which images are worth reading
+min_side_px: 150            # icons, bullets and logos are smaller than this
+min_shown_area_pt2: 15000   # images displayed tinier than ~120x120 pt on the page are decoration
+repeated_fraction: 0.5      # an image on >= half of the pages is a slide background or logo
+only_pages_with_text_below: 400   # pages that already have this much real text rarely hide code in images
+
+# 2. Limit per analysis. A fixed COUNT (first N worth reading, in page order), never a time budget: the same PDF
+#    must read the same images on a fast laptop or a 2-CPU server, first run or tenth (results are cached by image
+#    fingerprint, which only makes it faster). ~1.4 s per image on 2 CPU cores -> 30 images ~ 45 s worst case.
+max_images: 30
+max_side_px: 1600           # larger images are scaled down first
+
+# 3. Which OCR lines to keep
+min_confidence: 0.80
+drop_lines:                 # whole lines that are noise in code screenshots
+  - '^\s*\d{1,4}\s*$'       # editor line numbers
+strip_leading: '^[^\x20-\x7E]+'   # fold markers/icons misread as symbols at the start of a line ("白<center>")
