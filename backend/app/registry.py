@@ -54,6 +54,9 @@ class StaticFact(BaseModel):
 class UpgradeRef(BaseModel):
     target: str
     source_url: str
+    # Exact phrase the "what to use instead" passage must contain (chosen by a person, checked by code), e.g.
+    # "text-align: center". Needed when the advice is on the same page as the fact; without it nothing is attached.
+    passage_hint: Optional[str] = None
 
 
 class Entry(BaseModel):

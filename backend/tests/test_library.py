@@ -152,3 +152,33 @@ def test_passages_only_come_from_documents_the_registry_names():
     ps = library.passages_for("anything", "php-tags", "no such sentence in this doc", None, None)
     assert all(p.doc_id == "php-tags" and not p.contains_fact_quote for p in ps)
     assert library.passages_for("x", None, None, "https://example.com/not-in-library", "y") == []
+
+
+# ---------- curated "what to use instead" passages ----------
+
+def test_every_passage_hint_exists_in_its_upgrade_document():
+    """A curated phrase that no longer appears (page changed) must fail loudly, not attach nothing silently."""
+    from app import registry
+    for e in registry.load().entries:
+        if e.upgrade and e.upgrade.passage_hint:
+            doc = library.by_url(e.upgrade.source_url)
+            assert doc, f"{e.id}: upgrade page not in the library"
+            assert any(e.upgrade.passage_hint.lower() in p.text.lower() for p in doc.passages), \
+                f"{e.id}: hint {e.upgrade.passage_hint!r} not found in {doc.id}"
+
+
+def test_hint_selects_the_replacement_passage_on_the_same_page():
+    from app import registry
+    e = next(x for x in registry.load().entries if x.id == "html-center")
+    ps = library.passages_for(e.technology, e.fact.doc, e.fact.quote, e.upgrade.source_url, e.upgrade.target,
+                              e.upgrade.passage_hint)
+    roles = {p.role: p for p in ps}
+    assert "text-align: center" in roles["replacement"].text and roles["replacement"].text != roles["fact"].text
+
+
+def test_same_page_without_hint_attaches_no_replacement():
+    """Unguided matching on the fact's own page too often picks an unrelated section: attach nothing."""
+    from app import registry
+    e = next(x for x in registry.load().entries if x.id == "php-each")  # upgrade page == fact page, no hint
+    ps = library.passages_for(e.technology, e.fact.doc, e.fact.quote, e.upgrade.source_url, e.upgrade.target, None)
+    assert [p.role for p in ps] == ["fact"]
