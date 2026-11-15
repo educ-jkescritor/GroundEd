@@ -1,0 +1,30 @@
+{
+ "id": "php-migration70-removed-exts",
+ "title": "Removed extensions and SAPIs (PHP 7.0)",
+ "url": "https://www.php.net/manual/en/migration70.removed-exts-sapis.php",
+ "publisher": "PHP Manual (php.net)",
+ "tier": 2,
+ "license": "CC-BY-3.0",
+ "store": "full",
+ "tags": [
+  "php",
+  "php7",
+  "removed",
+  "mysql",
+  "ereg"
+ ],
+ "fetched_at": "2026-11-14T09:21:55+00:00",
+ "content_sha256": "454b68c8bcfc461381d910dd19e69f752d82e9d47b16a8e5fe4c272dabe89f33",
+ "passages": [
+  {
+   "n": 0,
+   "heading": "Removed Extensions",
+   "text": "ereg mssql mysql sybase_ct"
+  },
+  {
+   "n": 1,
+   "heading": "Removed SAPIs",
+   "text": "aolserver apache apache_hooks apache2filter caudium continuity isapi milter nsapi phttpd pi3web roxen thttpd tux webjames"
+  }
+ ]
+}

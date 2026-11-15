@@ -1,0 +1,15 @@
+# Keep the build context small and never ship local state or secrets into the image.
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.env
+.env.*
+!.env.example
+tests/
+scripts/check_gemini.py
+# Runtime state is created inside the container (DB volume, cache, uploads) — never copied from a dev machine.
+data/*.db
+data/*.db-*
+data/cache/
+data/uploads/

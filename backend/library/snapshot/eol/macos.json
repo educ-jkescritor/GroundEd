@@ -1,0 +1,196 @@
+{
+ "last_modified": "2026-11-10T00:08:40+00:00",
+ "result": {
+  "name": "macos",
+  "label": "Apple macOS",
+  "links": {
+   "html": "https://endoflife.date/macos"
+  },
+  "releases": [
+   {
+    "name": "27",
+    "label": "macOS 27 (Golden Gate)",
+    "releaseDate": "2026-09-14",
+    "isEol": false,
+    "eolFrom": null,
+    "isMaintained": true
+   },
+   {
+    "name": "26",
+    "label": "macOS 26 (Tahoe)",
+    "releaseDate": "2025-09-15",
+    "isEol": false,
+    "eolFrom": null,
+    "isMaintained": true
+   },
+   {
+    "name": "15",
+    "label": "macOS 15 (Sequoia)",
+    "releaseDate": "2024-09-16",
+    "isEol": false,
+    "eolFrom": null,
+    "isMaintained": true
+   },
+   {
+    "name": "14",
+    "label": "macOS 14 (Sonoma)",
+    "releaseDate": "2023-09-26",
+    "isEol": true,
+    "eolFrom": "2026-09-14",
+    "isMaintained": false
+   },
+   {
+    "name": "13",
+    "label": "macOS 13 (Ventura)",
+    "releaseDate": "2022-10-24",
+    "isEol": true,
+    "eolFrom": "2025-09-15",
+    "isMaintained": false
+   },
+   {
+    "name": "12",
+    "label": "macOS 12 (Monterey)",
+    "releaseDate": "2021-10-25",
+    "isEol": true,
+    "eolFrom": "2024-09-16",
+    "isMaintained": false
+   },
+   {
+    "name": "11",
+    "label": "macOS 11 (Big Sur)",
+    "releaseDate": "2020-11-12",
+    "isEol": true,
+    "eolFrom": "2026-02-02",
+    "isMaintained": false
+   },
+   {
+    "name": "10.15",
+    "label": "macOS 10.15 (Catalina)",
+    "releaseDate": "2019-10-07",
+    "isEol": true,
+    "eolFrom": "2026-02-02",
+    "isMaintained": false
+   },
+   {
+    "name": "10.14",
+    "label": "macOS 10.14 (Mojave)",
+    "releaseDate": "2018-09-24",
+    "isEol": true,
+    "eolFrom": "2021-10-25",
+    "isMaintained": false
+   },
+   {
+    "name": "10.13",
+    "label": "macOS 10.13 (High Sierra)",
+    "releaseDate": "2017-09-25",
+    "isEol": true,
+    "eolFrom": "2020-12-01",
+    "isMaintained": false
+   },
+   {
+    "name": "10.12",
+    "label": "macOS 10.12 (Sierra)",
+    "releaseDate": "2016-09-20",
+    "isEol": true,
+    "eolFrom": "2019-10-01",
+    "isMaintained": false
+   },
+   {
+    "name": "10.11",
+    "label": "OS X 10.11 (El Capitan)",
+    "releaseDate": "2015-09-30",
+    "isEol": true,
+    "eolFrom": "2018-12-01",
+    "isMaintained": false
+   },
+   {
+    "name": "10.10",
+    "label": "OS X 10.10 (Yosemite)",
+    "releaseDate": "2014-10-16",
+    "isEol": true,
+    "eolFrom": "2017-08-01",
+    "isMaintained": false
+   },
+   {
+    "name": "10.9",
+    "label": "OS X 10.9 (Mavericks)",
+    "releaseDate": "2013-10-22",
+    "isEol": true,
+    "eolFrom": "2016-12-01",
+    "isMaintained": false
+   },
+   {
+    "name": "10.8",
+    "label": "OS X 10.8 (Mountain Lion)",
+    "releaseDate": "2012-07-25",
+    "isEol": true,
+    "eolFrom": "2015-08-13",
+    "isMaintained": false
+   },
+   {
+    "name": "10.7",
+    "label": "Mac OS X 10.7 (Lion)",
+    "releaseDate": "2011-07-20",
+    "isEol": true,
+    "eolFrom": "2012-10-04",
+    "isMaintained": false
+   },
+   {
+    "name": "10.6",
+    "label": "Mac OS X 10.6 (Snow Leopard)",
+    "releaseDate": "2009-08-28",
+    "isEol": true,
+    "eolFrom": "2011-07-25",
+    "isMaintained": false
+   },
+   {
+    "name": "10.5",
+    "label": "Mac OS X 10.5 (Leopard)",
+    "releaseDate": "2007-10-26",
+    "isEol": true,
+    "eolFrom": "2009-08-13",
+    "isMaintained": false
+   },
+   {
+    "name": "10.4",
+    "label": "Mac OS X 10.4 (Tiger)",
+    "releaseDate": "2005-04-29",
+    "isEol": true,
+    "eolFrom": "2007-11-14",
+    "isMaintained": false
+   },
+   {
+    "name": "10.3",
+    "label": "Mac OS X 10.3 (Panther)",
+    "releaseDate": "2003-10-24",
+    "isEol": true,
+    "eolFrom": "2005-04-15",
+    "isMaintained": false
+   },
+   {
+    "name": "10.2",
+    "label": "Mac OS X 10.2 (Jaguar)",
+    "releaseDate": "2002-08-24",
+    "isEol": true,
+    "eolFrom": "2003-10-03",
+    "isMaintained": false
+   },
+   {
+    "name": "10.1",
+    "label": "Mac OS X 10.1 (Puma)",
+    "releaseDate": "2001-09-25",
+    "isEol": true,
+    "eolFrom": "2002-06-06",
+    "isMaintained": false
+   },
+   {
+    "name": "10.0",
+    "label": "Mac OS X 10.0 (Cheetah)",
+    "releaseDate": "2001-03-24",
+    "isEol": true,
+    "eolFrom": "2001-06-22",
+    "isMaintained": false
+   }
+  ]
+ }
+}

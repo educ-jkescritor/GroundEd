@@ -1,4 +1,11 @@
 # Run from the repo root:  docker compose -f deploy/docker-compose.yml up -d --build
+# Logs: each service keeps at most 3 files of 10 MB, so an unattended server cannot fill its disk.
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
 services:
   backend:
     build: ../backend
@@ -8,6 +15,8 @@ services:
     volumes:
       - backend_state:/app/state
     restart: unless-stopped
+    logging: *logging
+    # Health check is defined in backend/Dockerfile (GET /api/health every 30 s).
 
   web:
     build: ../frontend
@@ -22,8 +31,10 @@ services:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy_data:/data
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy  # start serving only once the API answers its health check
     restart: unless-stopped
+    logging: *logging
 
 volumes:
   backend_state:

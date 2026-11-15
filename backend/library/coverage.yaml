@@ -1,0 +1,34 @@
+# Coverage map — web development curriculum (scope of the knowledge base, not of our test modules).
+# Every product listed under `covered` must have a registry entry (tests/test_products.py checks this).
+# `gaps` are known, deliberate, with the reason — they produce no findings until a sourced entry exists.
+# Updated 2026-11-14 (Track A: endoflife.date product lifecycles).
+
+categories:
+  languages_and_runtimes:
+    covered: [php, python, nodejs, ruby]
+  front_end:
+    covered: [angularjs, angular, vue, jquery, jquery-ui, bootstrap, nextjs, nuxt]
+  back_end_frameworks:
+    covered: [laravel, symfony, django, rails, express, spring-boot, dotnet]
+  databases:
+    covered: [mysql, mariadb, postgresql, mongodb, mssqlserver, redis]
+  web_servers:
+    covered: [apache-http-server, nginx, tomcat]
+  browsers:
+    covered: [internet-explorer]
+  operating_systems:
+    covered: [windows-7, windows-8, windows-8-1, windows-10, macos, ubuntu]
+  cms_and_tools:
+    covered: [wordpress, drupal, joomla, phpmyadmin, composer]
+  language_features:  # document-backed facts (registry/php.yaml, mysql.yaml)
+    covered: [php-ext-mysql, php-asp-script-tags, php-ext-ereg, mysql-int-display-width]
+
+gaps:
+  - {item: React, reason: "endoflife.date publishes no end-of-life dates for React releases: nothing to claim"}
+  - {item: "Java, TypeScript, Safari, Microsoft Edge, IIS, XAMPP", reason: "not on endoflife.date; needs vendor documents (Track B)"}
+  - {item: "Angular 2-8", reason: "endoflife.date lists Angular 9+ only"}
+  - {item: "Laravel 5.0-5.4 and other minor lines not listed", reason: "no release record; never mapped to a different minor line"}
+  - {item: "Windows XP / Vista", reason: "endoflife.date names them by NT version; mapping not verified yet"}
+  - {item: "macOS by codename (Lion, Catalina)", reason: "codenames are ordinary words; version numbers only"}
+  - {item: "Firefox / Chrome versions", reason: "rapid release; versions rarely appear in modules"}
+  - {item: "Deprecated HTML, PHP functions, Flash, insecure practices", reason: "document-backed facts: Track B"}

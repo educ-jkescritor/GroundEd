@@ -1,0 +1,211 @@
+import { useEffect, useRef, useState, type ReactNode } from "react";
+import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
+import { ArrowRight, ChevronDown, FileText, LogOut } from "lucide-react";
+import { Button, ButtonLink } from "./ui/Button";
+import { Logo } from "./ui/Logo";
+import { getDemoUser, signOutDemo, useStored } from "../lib/history";
+
+/**
+ * Scroll behaviour on navigation: a new page starts at the top; a link with a #hash scrolls to that section
+ * (e.g. /#how-it-works). React Router does neither on its own.
+ */
+function ScrollManager() {
+  const { pathname, hash } = useLocation();
+  useEffect(() => {
+    if (hash) {
+      // Wait a frame so the target page has rendered.
+      const t = setTimeout(() => document.getElementById(hash.slice(1))?.scrollIntoView({ block: "start" }), 50);
+      return () => clearTimeout(t);
+    } else {
+      window.scrollTo(0, 0);
+    }
+  }, [pathname, hash]);
+  return null;
+}
+
+/** Account dropdown (used if a compact menu is needed). */
+export function AccountMenu({ name }: { name: string }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!open) return;
+    const close = (e: MouseEvent | KeyboardEvent) => {
+      if (e instanceof KeyboardEvent ? e.key === "Escape" : !ref.current?.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", close);
+    document.addEventListener("keydown", close);
+    return () => {
+      document.removeEventListener("mousedown", close);
+      document.removeEventListener("keydown", close);
+    };
+  }, [open]);
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        type="button"
+        aria-haspopup="menu"
+        aria-expanded={open}
+        onClick={() => setOpen(!open)}
+        className="flex min-h-9 items-center gap-2 rounded-full px-2.5 text-sm font-semibold text-ink hover:bg-panel"
+      >
+        <span aria-hidden className="flex h-7 w-7 items-center justify-center rounded-full bg-sky text-xs font-bold text-lapis-deep">
+          {name.split(" ").map((w) => w[0]).join("").slice(0, 2)}
+        </span>
+        <span className="hidden lg:inline">{name}</span>
+        <ChevronDown size={14} aria-hidden />
+      </button>
+      {open && (
+        <div role="menu" className="absolute right-0 top-11 z-50 w-52 rounded-[var(--radius-card)] border border-line bg-surface p-1.5 shadow-[var(--shadow-float)]">
+          <p className="px-3 py-2 text-xs text-ink-subtle">Logged in as {name} (demo)</p>
+          <button role="menuitem" type="button" onClick={() => { setOpen(false); navigate("/reports"); }} className="flex w-full items-center gap-2 rounded-[var(--radius-control)] px-3 py-2 text-left text-sm text-ink hover:bg-panel">
+            <FileText size={15} aria-hidden /> Upload history
+          </button>
+          <button role="menuitem" type="button" onClick={() => { setOpen(false); signOutDemo(); navigate("/"); }} className="flex w-full items-center gap-2 rounded-[var(--radius-control)] px-3 py-2 text-left text-sm text-ink hover:bg-panel">
+            <LogOut size={15} aria-hidden /> Log out
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default function Layout() {
+  const user = useStored(getDemoUser);
+
+  return (
+    <div className="flex min-h-screen flex-col">
+      <ScrollManager />
+
+      {/* Floating pill header: Notion-inspired auth state (Log in / Log out) + divider + primary CTA */}
+      <header className="sticky top-3 z-20 px-3 sm:px-6 print:hidden">
+        <nav
+          aria-label="Main"
+          className="mx-auto flex max-w-6xl items-center justify-between gap-4 rounded-full border border-line bg-surface/85 px-2 py-2 shadow-[var(--shadow-float)] backdrop-blur"
+        >
+          <div className="pl-3"><Logo /></div>
+
+          <div className="flex items-center justify-end gap-2">
+            {user ? (
+              <Button
+                variant="ghost"
+                size="sm"
+                shape="pill"
+                onClick={() => signOutDemo()}
+                className="text-ink hover:bg-panel"
+              >
+                Log out
+              </Button>
+            ) : (
+              <ButtonLink
+                to="/sign-in"
+                variant="ghost"
+                size="sm"
+                shape="pill"
+                className="text-ink hover:bg-panel"
+              >
+                Log in
+              </ButtonLink>
+            )}
+            <span aria-hidden className="hidden h-4 w-px bg-line sm:inline-block" />
+            <ButtonLink to="/analyze" size="sm" shape="pill">
+              <span>Analyze a module</span>
+              {user && <ArrowRight size={14} aria-hidden />}
+            </ButtonLink>
+          </div>
+        </nav>
+      </header>
+
+      <main className="flex-1">
+        <Outlet />
+      </main>
+
+      <Footer signedIn={!!user} />
+    </div>
+  );
+}
+
+/** Global multi-column footer: brand anchored on the left, navigation columns grouped on the right. */
+function Footer({ signedIn }: { signedIn: boolean }) {
+  const columns: { title: string; links: { label: string; to?: string; href?: string }[] }[] = [
+    {
+      title: "Product",
+      links: [
+        { label: "Analyze a module", to: "/analyze" },
+        { label: "Try a sample", to: "/analyze#samples" },
+        { label: "How it works", to: "/#how-it-works" },
+        signedIn ? { label: "Upload history", to: "/reports" } : { label: "Log in", to: "/sign-in" },
+      ],
+    },
+    {
+      title: "Trust",
+      links: [
+        { label: "Methodology", to: "/methodology" },
+        { label: "Sources and tiers", to: "/methodology#sources" },
+        { label: "Scoring", to: "/methodology#scoring" },
+        { label: "Coverage and privacy", to: "/methodology#coverage" },
+      ],
+    },
+    {
+      title: "Project",
+      links: [
+        { label: "GitHub", href: "https://github.com/educ-jkescritor/GroundEd" },
+        { label: "Give feedback", to: "/feedback" },
+      ],
+    },
+  ];
+
+  return (
+    <footer className="mt-24 border-t border-line bg-panel print:hidden">
+      <div className="mx-auto flex max-w-6xl flex-col justify-between gap-12 px-4 py-14 sm:px-6 md:flex-row md:items-start lg:gap-24">
+        <div className="max-w-xs space-y-3.5">
+          <Logo />
+          <p className="text-sm leading-relaxed text-ink-muted">
+            Source-backed reviews for technology course modules. GroundEd advises; you decide what changes.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-2 gap-10 sm:grid-cols-3 sm:gap-14 md:ml-auto lg:gap-20">
+          {columns.map((c) => (
+            <nav key={c.title} aria-label={c.title} className="space-y-3.5">
+              <p className="text-xs font-bold uppercase tracking-[0.07em] text-ink">{c.title}</p>
+              <ul className="space-y-2.5 text-sm">
+                {c.links.map((l) => (
+                  <li key={l.label}>
+                    {l.to ? (
+                      <Link to={l.to} className="text-ink-muted no-underline transition-colors hover:text-ink hover:no-underline">
+                        {l.label}
+                      </Link>
+                    ) : (
+                      <a
+                        href={l.href}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-ink-muted no-underline transition-colors hover:text-ink hover:no-underline"
+                      >
+                        {l.label}
+                      </a>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </nav>
+          ))}
+        </div>
+      </div>
+      <div className="border-t border-line">
+        <p className="mx-auto max-w-6xl px-4 py-5 text-center text-xs text-ink-subtle sm:px-6">
+          © 2026 GroundEd · Built for HackGlobal 2026
+        </p>
+      </div>
+    </footer>
+  );
+}
+
+/** Standard page container for app pages. */
+export function Page({ children, narrow = false, wide = false }: { children: ReactNode; narrow?: boolean; wide?: boolean }) {
+  const width = narrow ? "max-w-3xl" : wide ? "max-w-[1400px]" : "max-w-6xl";
+  return <div className={`mx-auto px-4 pb-10 pt-8 sm:px-6 ${width} space-y-6`}>{children}</div>;
+}

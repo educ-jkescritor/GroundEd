@@ -1,0 +1,19 @@
+# Teaching signals used by scoring (Option C). Data, not code: tune here, then re-run `python -m app.cli eval`.
+# A line that mentions the item counts as CODE if it matches any `code` pattern (students type it),
+# as EXPLAINED if it is a sentence of at least `explained_min_words` words, otherwise as LISTED.
+code:
+  - '\$\w'                       # PHP variable
+  - ';\s*(//.*)?$'                # statement terminator, optional trailing comment
+  - '\bmysql>'                    # MySQL console prompt
+  - '<\?php|<%|<script'           # code/template tags
+  - '\bCREATE\s+TABLE\b|\bSELECT\b.+\bFROM\b'
+  - '\w+\s*\([^)]*\)\s*;'         # function call statement
+explained_min_words: 8
+
+# A page counts as HANDS-ON if it matches any of these (labs, exercises, activities). "assignment" is left out on
+# purpose: in programming slides it usually means the assignment operator.
+hands_on:
+  # "Lab" counts only when students do something: "Lab 3", "Laboratory Exercise". Pages that merely name the lab
+  # ("Lab Setup", "Lab Manual", "Lab Requirements", "Lab Computers") do not.
+  - '\b(?:lab|laboratory)\b(?![ \t]*(?:set[- ]?up|manual|requirements?|environment|computers?|rooms?|rules)\b)'
+  - '\b(exercise|exercises|hands-on|machine problem|activity|activities|try it yourself)\b'

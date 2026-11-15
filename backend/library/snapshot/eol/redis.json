@@ -1,0 +1,108 @@
+{
+ "last_modified": "2026-10-27T00:08:12+00:00",
+ "result": {
+  "name": "redis",
+  "label": "Redis",
+  "links": {
+   "html": "https://endoflife.date/redis"
+  },
+  "releases": [
+   {
+    "name": "8.10",
+    "label": "8.10",
+    "releaseDate": "2026-07-29",
+    "isEol": false,
+    "eolFrom": null,
+    "isMaintained": true
+   },
+   {
+    "name": "8.8",
+    "label": "8.8",
+    "releaseDate": "2026-05-25",
+    "isEol": false,
+    "eolFrom": null,
+    "isMaintained": true
+   },
+   {
+    "name": "8.6",
+    "label": "8.6",
+    "releaseDate": "2026-02-11",
+    "isEol": false,
+    "eolFrom": null,
+    "isMaintained": true
+   },
+   {
+    "name": "8.4",
+    "label": "8.4",
+    "releaseDate": "2025-11-18",
+    "isEol": false,
+    "eolFrom": null,
+    "isMaintained": true
+   },
+   {
+    "name": "8.2",
+    "label": "8.2",
+    "releaseDate": "2025-08-04",
+    "isEol": false,
+    "eolFrom": "2030-09-01",
+    "isMaintained": true
+   },
+   {
+    "name": "8.0",
+    "label": "8.0",
+    "releaseDate": "2025-05-02",
+    "isEol": false,
+    "eolFrom": "2026-12-01",
+    "isMaintained": true
+   },
+   {
+    "name": "7.4",
+    "label": "7.4",
+    "releaseDate": "2024-07-29",
+    "isEol": false,
+    "eolFrom": "2029-12-01",
+    "isMaintained": true
+   },
+   {
+    "name": "7.2",
+    "label": "7.2",
+    "releaseDate": "2023-08-15",
+    "isEol": false,
+    "eolFrom": "2029-12-01",
+    "isMaintained": true
+   },
+   {
+    "name": "7.0",
+    "label": "7.0",
+    "releaseDate": "2022-04-27",
+    "isEol": true,
+    "eolFrom": "2024-07-29",
+    "isMaintained": false
+   },
+   {
+    "name": "6.2",
+    "label": "6.2",
+    "releaseDate": "2021-02-22",
+    "isEol": false,
+    "eolFrom": "2027-04-01",
+    "isMaintained": true
+   },
+   {
+    "name": "6.0",
+    "label": "6.0",
+    "releaseDate": "2020-04-30",
+    "isEol": true,
+    "eolFrom": "2022-05-31",
+    "isMaintained": false
+   },
+   {
+    "name": "5.0",
+    "label": "5.0",
+    "releaseDate": "2018-10-17",
+    "isEol": true,
+    "eolFrom": "2022-04-27",
+    "isMaintained": false
+   }
+  ]
+ }
+}

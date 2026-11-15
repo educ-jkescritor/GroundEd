@@ -5,7 +5,11 @@ from typing import Literal, Optional
 
 from pydantic import BaseModel, Field
 
-FindingStatus = Literal["eol", "nearing_eol", "supported", "unverified"]
+# "less_used" = still supported but declining in industry (separate claim type, never "end-of-life").
+FindingStatus = Literal["eol", "nearing_eol", "less_used", "supported", "unverified"]
+ItemKind = Literal["tool", "language", "framework", "practice", "topic"]
+# How the module uses the item (from signals.teaching_depth): in code students write > explained > only listed.
+Usage = Literal["code", "explained", "listed"]
 
 
 class Citation(BaseModel):
@@ -22,6 +26,9 @@ class Lifecycle(BaseModel):
     eol_date: Optional[str] = None  # ISO date, or None if no EOL announced
     latest_cycle: Optional[str] = None
     source_url: str  # e.g. https://endoflife.date/python
+    # Additive (registry facts): who published the fact and the exact sentence that proves it.
+    source_name: Optional[str] = None  # e.g. "PHP Manual (php.net)" or "endoflife.date"
+    source_quote: Optional[str] = None  # verbatim passage from source_url
 
 
 class ScorePart(BaseModel):
@@ -35,6 +42,7 @@ class ScorePart(BaseModel):
 class Score(BaseModel):
     total: int
     max: int = 100
+    priority: Optional[Literal["high", "medium", "low"]] = None  # high >= 80, medium >= 50, else low
     breakdown: list[ScorePart]
 
 
@@ -42,6 +50,20 @@ class Upgrade(BaseModel):
     """Same-product upgrade derived from endoflife.date (sourced)."""
     target_cycle: str
     source_url: str
+
+
+class SourcePassage(BaseModel):
+    """A passage retrieved from the source library (RAG). Additive: frontend may ignore it."""
+    role: Literal["fact", "replacement"]  # fact = context around the registry quote; replacement = what to use instead
+    doc_id: str
+    title: str
+    publisher: str
+    url: str
+    heading: str
+    text: str
+    fetched_at: str  # when the library saved this document
+    license: str
+    contains_fact_quote: bool = False  # code-checked: the registry's quote appears in this passage
 
 
 class Finding(BaseModel):
@@ -53,6 +75,16 @@ class Finding(BaseModel):
     lifecycle: Optional[Lifecycle] = None  # None => unverified
     score: Optional[Score] = None  # None => unverified, "needs manual check"
     upgrade: Optional[Upgrade] = None
+    passages: Optional[list[SourcePassage]] = None  # additive: supporting passages from the source library
+    kind: Optional[ItemKind] = None  # additive: what sort of item (for labels and filters)
+    usage: Optional[Usage] = None  # additive: how the module uses it (for labels)
+    hands_on: Optional[bool] = None  # additive: appears on a lab / exercise / activity page
+
+
+class PageText(BaseModel):
+    """Extracted text of one module page, so the frontend can show the module beside the findings."""
+    number: int  # 1-based
+    text: str
 
 
 class SourceInfo(BaseModel):
@@ -64,8 +96,21 @@ class SourceInfo(BaseModel):
 class Summary(BaseModel):
     eol: int = 0
     nearing_eol: int = 0
+    less_used: int = 0
     supported: int = 0
     unverified: int = 0
+
+
+class Provenance(BaseModel):
+    """Set by code, never by the LLM. Same stamp => same result (served from cache)."""
+    file_sha256: str
+    registry_version: str  # hash of backend/registry/*.yaml
+    pipeline_version: str
+    detector: str  # e.g. "registry" or "registry+gemini-2.5-flash"
+    rules_version: Optional[str] = None  # hash of backend/rules/teaching.yaml (scoring signals)
+    library_version: Optional[str] = None  # hash of the source library snapshot (documents + lifecycle data)
+    eol_data: dict[str, str] = {}  # endoflife.date product -> last_modified of the data used
+    analysis_date: str  # ISO date used for "time past EOL" and status
 
 
 class Analysis(BaseModel):
@@ -74,6 +119,10 @@ class Analysis(BaseModel):
     source: SourceInfo
     summary: Summary
     findings: list[Finding]
+    provenance: Optional[Provenance] = None  # additive
+    pages: list[PageText] = []  # additive: module text per page, for the side-by-side Report
+    # "not_covered": the module is outside technology courses (e.g. GED), so there are no findings by design.
+    coverage: Literal["covered", "not_covered"] = "covered"
 
 
 class Draft(BaseModel):
@@ -96,6 +145,8 @@ class FeedbackIn(BaseModel):
     institution: Optional[str] = Field(None, max_length=200)
     rating: int = Field(..., ge=1, le=5)
     comments: Optional[str] = Field(None, max_length=2000)
+    would_use: Optional[Literal["yes", "maybe", "no"]] = None
+    consent_to_quote: bool = False  # may we quote the comment anonymously ("Faculty, Philippines")
     analysis_id: Optional[str] = None
 
 

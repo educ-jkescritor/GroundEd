@@ -1,0 +1,44 @@
+{
+ "last_modified": "2026-11-12T00:08:23+00:00",
+ "result": {
+  "name": "bootstrap",
+  "label": "Bootstrap",
+  "links": {
+   "html": "https://endoflife.date/bootstrap"
+  },
+  "releases": [
+   {
+    "name": "5",
+    "label": "5 (LTS)",
+    "releaseDate": "2021-05-05",
+    "isEol": false,
+    "eolFrom": null,
+    "isMaintained": true
+   },
+   {
+    "name": "4",
+    "label": "4 (LTS)",
+    "releaseDate": "2018-01-18",
+    "isEol": true,
+    "eolFrom": "2023-01-01",
+    "isMaintained": true
+   },
+   {
+    "name": "3",
+    "label": "3 (LTS)",
+    "releaseDate": "2013-08-19",
+    "isEol": true,
+    "eolFrom": "2019-07-24",
+    "isMaintained": true
+   },
+   {
+    "name": "2",
+    "label": "2",
+    "releaseDate": "2012-01-31",
+    "isEol": true,
+    "eolFrom": "2013-08-19",
+    "isMaintained": true
+   }
+  ]
+ }
+}

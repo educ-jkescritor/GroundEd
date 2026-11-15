@@ -1,0 +1,14 @@
+# Facts Registry — MySQL server features.
+- id: mysql-int-display-width
+  technology: MySQL integer display width, e.g. INT(5)
+  patterns:
+    - '\b(tiny|small|medium|big)?int\s*\(\s*\d+\s*\)'
+  fact:
+    stage: deprecated
+    product: mysql
+    cycle: "8.0.17"
+    doc: mysql-numeric-type-attributes
+    quote: "As of MySQL 8.0.17, the ZEROFILL attribute is deprecated for numeric data types, as is the display width attribute for integer data types. You should expect support for ZEROFILL and display widths for integer data types to be removed in a future version of MySQL."
+  upgrade:
+    target: "Plain INT (no display width)"
+    source_url: https://dev.mysql.com/doc/refman/8.0/en/numeric-type-attributes.html
