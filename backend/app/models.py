@@ -17,6 +17,7 @@ class Citation(BaseModel):
     page: int  # 1-based
     snippet: str  # verbatim text from that page
     bbox: Optional[list[float]] = None  # [x0, y0, x1, y1] in PDF points, for highlighting
+    from_ocr: Optional[bool] = None  # additive: True = read from an image on the page (OCR), not from its text
 
 
 class Lifecycle(BaseModel):
@@ -87,10 +88,22 @@ class PageText(BaseModel):
     text: str
 
 
+class OcrSummary(BaseModel):
+    """Additive: how much of the PDF's images were read (code screenshots). Honest about what was skipped."""
+    engine: str
+    images_found: int = 0
+    images_candidates: int = 0  # after skipping backgrounds, logos, icons and pages with enough text
+    images_read: int = 0
+    images_from_cache: int = 0
+    images_over_budget: int = 0  # worth reading but skipped to stay within the time budget
+    pages_with_text: int = 0
+
+
 class SourceInfo(BaseModel):
     kind: Literal["upload", "sample"]
     filename: str
     pages: int
+    ocr: Optional[OcrSummary] = None  # additive
 
 
 class Summary(BaseModel):

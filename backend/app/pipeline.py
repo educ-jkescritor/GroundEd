@@ -1,6 +1,7 @@
 """Analysis pipeline: PDF -> mentions -> facts -> score -> Analysis. No LLM decides or scores anything here."""
 from __future__ import annotations
 
+import hashlib
 import uuid
 from collections import defaultdict
 from datetime import date, datetime, timezone
@@ -9,13 +10,14 @@ from typing import Optional
 
 import pymupdf
 
-from . import cache, detect, eol, library, registry, signals
+from . import cache, config, detect, eol, library, ocr, registry, signals
 from .detect import Mention
-from .models import Analysis, Citation, Finding, Lifecycle, PageText, Provenance, SourceInfo, Summary, Upgrade
+from .models import (Analysis, Citation, Finding, Lifecycle, OcrSummary, PageText, Provenance, SourceInfo, Summary,
+                     Upgrade)
 from .pdf import Page, extract_pages, file_sha256, find_snippet_bbox
 from .score import compute, status_for
 
-PIPELINE_VERSION = "0.6.0"  # 0.6.0: supported items listed (unscored) + page text, kind, usage, hands_on (Report)
+PIPELINE_VERSION = "0.7.0"  # 0.7.0: OCR of code screenshots (0.6.0: supported items listed, Report fields)
 MAX_CITATIONS = 5  # per finding; prominence still counts every page
 
 
@@ -66,6 +68,15 @@ def _kind(entry: registry.Entry) -> str:
     return "language" if product in _LANGUAGES else "framework" if product in _FRAMEWORKS else "tool"
 
 
+def _ocr_bbox(page: Page, snippet: str) -> Optional[list[float]]:
+    """Highlight box for a quote read from an image: union of the OCR lines that make up the snippet."""
+    target = detect.normalise(snippet)
+    boxes = [line.bbox for line in page.ocr_lines if detect.normalise(line.text) in target]
+    if not boxes:
+        return None
+    return [min(b[0] for b in boxes), min(b[1] for b in boxes), max(b[2] for b in boxes), max(b[3] for b in boxes)]
+
+
 def _finding_for_entry(entry: registry.Entry, mentions: list[Mention], pages_by_no: dict[int, Page], pdf_doc,
                        today: date, eol_data: dict[str, str], product: Optional[eol.ProductData] = None,
                        rel: Optional[eol.Release] = None) -> Optional[Finding]:
@@ -73,13 +84,17 @@ def _finding_for_entry(entry: registry.Entry, mentions: list[Mention], pages_by_
     pages = sorted({m.page for m in mentions})
     # Teaching signals: every line on those pages that mentions the item, and whether any page is hands-on.
     pats = entry.compiled()
-    lines = [l for n in pages for l in pages_by_no[n].text.splitlines() if any(p.search(l) for p in pats)]
+    lines = [l for n in pages for l in (pages_by_no[n].text + "\n" + pages_by_no[n].ocr_text).splitlines()
+             if any(p.search(l) for p in pats)]
     depth = signals.teaching_depth(lines)
     # Hands-on: the page itself, or the page just before it ("Lab 3" title slide, then the code slide).
     # Never forward: the next page may already be a different topic.
-    hands_on = any(signals.is_hands_on(pages_by_no[k].text) for n in pages for k in (n, n - 1) if k in pages_by_no)
+    hands_on = any(signals.is_hands_on(pages_by_no[k].text + "\n" + pages_by_no[k].ocr_text)
+                   for n in pages for k in (n, n - 1) if k in pages_by_no)
     citations = [
-        Citation(page=m.page, snippet=m.snippet, bbox=find_snippet_bbox(pdf_doc, m.page, m.snippet))
+        Citation(page=m.page, snippet=m.snippet, from_ocr=m.from_ocr or None,
+                 bbox=_ocr_bbox(pages_by_no[m.page], m.snippet) if m.from_ocr
+                 else find_snippet_bbox(pdf_doc, m.page, m.snippet))
         for m in sorted(mentions, key=lambda m: m.page)[:MAX_CITATIONS]
     ]
     upgrade = Upgrade(target_cycle=entry.upgrade.target, source_url=entry.upgrade.source_url) if entry.upgrade else None
@@ -129,8 +144,11 @@ def analyze(pdf_path: Path, filename: str, kind: str = "upload", today: Optional
     today = today or date.today()
     reg = registry.get()
     file_hash = file_sha256(pdf_path)
-    detector = "registry"  # becomes "registry+<model>" once LLM detection is enabled
-    rules_version, library_version = signals.rules_version(), library.version()
+    use_ocr = config.OCR_ENABLED
+    # Detector = what read the module: the registry patterns, plus the OCR engine when it reads images.
+    detector = f"registry+ocr({ocr.engine_label()})" if use_ocr else "registry"
+    rules_version = hashlib.sha256((signals.rules_version() + ocr.rules().version).encode()).hexdigest()[:12]
+    library_version = library.version()
     cache_key = cache.key(file_hash, reg.version, rules_version, library_version, PIPELINE_VERSION, detector,
                           today.isoformat())
     if use_cache and (hit := cache.get(cache_key)):
@@ -146,7 +164,14 @@ def analyze(pdf_path: Path, filename: str, kind: str = "upload", today: Optional
         cache.save_report(report)
         return report
 
-    pages = extract_pages(pdf_path)
+    pages = extract_pages(pdf_path, allow_image_only=use_ocr and not ocr.engine_label().startswith("unavailable"))
+    ocr_report = None
+    if use_ocr:  # read code screenshots (skips backgrounds, logos, icons; cached; within a time budget)
+        with pymupdf.open(pdf_path) as doc:
+            ocr_lines, ocr_report = ocr.read_pdf_images(doc, {p.number: p.text for p in pages},
+                                                        cache.get_ocr, cache.put_ocr)
+        for p in pages:
+            p.ocr_lines = ocr_lines.get(p.number, [])
     entries = {e.id: e for e in reg.entries}
     products: dict[str, Optional[eol.ProductData]] = {}
 
@@ -196,7 +221,8 @@ def analyze(pdf_path: Path, filename: str, kind: str = "upload", today: Optional
     analysis = Analysis(
         id=uuid.uuid4().hex[:12],
         created_at=datetime.now(timezone.utc),
-        source=SourceInfo(kind=kind, filename=filename, pages=len(pages)),
+        source=SourceInfo(kind=kind, filename=filename, pages=len(pages),
+                          ocr=OcrSummary(**vars(ocr_report)) if ocr_report else None),
         summary=summary,
         findings=findings,
         pages=[PageText(number=p.number, text=p.text) for p in pages],  # for the side-by-side Report
