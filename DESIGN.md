@@ -4,8 +4,7 @@ This file is the source of truth for how GroundEd looks, reads and behaves. If a
 with it, fix the component or update this file in the same commit.
 Tokens live in `frontend/src/index.css` (`@theme`). Reusable components live in `frontend/src/components/ui/`.
 
-> **v2, 14 Nov 2026.** Built from the UX process in [`docs/ux/`](docs/ux/): personas, jobs to be done,
-> information architecture, journey map and key flows.
+> **v2, 14 Nov 2026.** Built from the UX research and product architecture in [`docs/use-cases.md`](docs/use-cases.md) and [`docs/user-flow.md`](docs/user-flow.md): personas, jobs to be done, information architecture, journey map, and key flows.
 > **Decisions:**
 > - Palette **A · Lapis & Clay** on a **white canvas with soft grey panels (24 px corners)**.
 > - **Headings in Instrument Serif** (slightly bolder via a thin text stroke); Inter for everything else; Source Serif 4 italic only for quoted evidence.
